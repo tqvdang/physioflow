@@ -1,0 +1,26 @@
+{
+  "name": "@physioflow/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for PhysioFlow EMR",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "physioflow",
+    "emr",
+    "types",
+    "typescript"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,784 @@
+openapi: 3.0.3
+info:
+  title: PhysioFlow API
+  description: |
+    PhysioFlow Electronic Medical Records API for physiotherapy clinics.
+
+    This API provides endpoints for managing patients, appointments, treatments,
+    and other clinical data in a multi-tenant environment.
+  version: 1.0.0
+  contact:
+    name: PhysioFlow Support
+    email: support@physioflow.local
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.physioflow.local
+    description: Production server
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: patients
+    description: Patient management
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Returns the health status of the API
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      tags:
+        - health
+      summary: Readiness check
+      description: Returns the readiness status including dependency checks
+      operationId: getReady
+      responses:
+        '200':
+          description: API is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+        '503':
+          description: API is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+
+  /api/v1/patients:
+    get:
+      tags:
+        - patients
+      summary: List patients
+      description: Returns a paginated list of patients with filtering and search
+      operationId: listPatients
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          description: Search term (name, MRN, phone, email)
+          schema:
+            type: string
+        - name: gender
+          in: query
+          description: Filter by gender
+          schema:
+            type: string
+            enum: [male, female, other, prefer_not_to_say]
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+            default: true
+        - name: min_age
+          in: query
+          description: Filter by minimum age
+          schema:
+            type: integer
+            minimum: 0
+        - name: max_age
+          in: query
+          description: Filter by maximum age
+          schema:
+            type: integer
+            minimum: 0
+        - name: sort_by
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [created_at, updated_at, first_name, last_name, date_of_birth, mrn]
+            default: created_at
+        - name: sort_order
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of patients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - patients
+      summary: Create patient
+      description: Creates a new patient record
+      operationId: createPatient
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientRequest'
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Duplicate patient detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/patients/search:
+    get:
+      tags:
+        - patients
+      summary: Quick search patients
+      description: Quick search for patients by name, MRN, or phone with trigram matching
+      operationId: searchPatients
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 1
+        - name: limit
+          in: query
+          description: Maximum results
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/patients/check-duplicates:
+    get:
+      tags:
+        - patients
+      summary: Check for duplicate patients
+      description: Checks if a patient with similar information already exists
+      operationId: checkDuplicates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: first_name
+          in: query
+          required: true
+          description: First name
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          required: true
+          description: Last name
+          schema:
+            type: string
+        - name: phone
+          in: query
+          description: Phone number
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Duplicate check results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateCheckResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/patients/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Patient ID
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags:
+        - patients
+      summary: Get patient
+      description: Retrieves a patient by ID
+      operationId: getPatient
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Patient details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - patients
+      summary: Update patient
+      description: Updates an existing patient record
+      operationId: updatePatient
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePatientRequest'
+      responses:
+        '200':
+          description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags:
+        - patients
+      summary: Delete patient
+      description: Soft deletes a patient record
+      operationId: deletePatient
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Patient deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/patients/{id}/dashboard:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Patient ID
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags:
+        - patients
+      summary: Get patient dashboard
+      description: Retrieves aggregated patient data including appointments, treatments, and insurance
+      operationId: getPatientDashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Patient dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDashboard'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Keycloak
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: string
+          example: 1h30m45s
+
+    ReadyResponse:
+      type: object
+      required:
+        - status
+        - checks
+        - ready
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+        checks:
+          type: object
+          additionalProperties:
+            type: string
+        ready:
+          type: boolean
+
+    EmergencyContact:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 50
+        relationship:
+          type: string
+          maxLength: 50
+
+    Patient:
+      type: object
+      required:
+        - id
+        - clinic_id
+        - mrn
+        - first_name
+        - last_name
+        - full_name
+        - date_of_birth
+        - age
+        - gender
+        - language_preference
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        mrn:
+          type: string
+          description: Medical Record Number
+          example: PF-00001
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        first_name_vi:
+          type: string
+          maxLength: 100
+          description: First name in Vietnamese
+        last_name_vi:
+          type: string
+          maxLength: 100
+          description: Last name in Vietnamese
+        full_name:
+          type: string
+          description: Full name (first_name + last_name)
+        full_name_vi:
+          type: string
+          description: Full name in Vietnamese format (last_name_vi + first_name_vi)
+        date_of_birth:
+          type: string
+          format: date
+        age:
+          type: integer
+          description: Calculated age in years
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        phone:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        address:
+          type: string
+          maxLength: 500
+        address_vi:
+          type: string
+          maxLength: 500
+          description: Address in Vietnamese
+        language_preference:
+          type: string
+          enum: [vi, en]
+          default: vi
+        emergency_contact:
+          $ref: '#/components/schemas/EmergencyContact'
+        medical_alerts:
+          type: array
+          items:
+            type: string
+          description: Array of medical alerts/allergies
+        notes:
+          type: string
+          maxLength: 2000
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreatePatientRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - date_of_birth
+        - gender
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        first_name_vi:
+          type: string
+          maxLength: 100
+        last_name_vi:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        phone:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        address:
+          type: string
+          maxLength: 500
+        address_vi:
+          type: string
+          maxLength: 500
+        language_preference:
+          type: string
+          enum: [vi, en]
+          default: vi
+        emergency_contact:
+          $ref: '#/components/schemas/EmergencyContact'
+        medical_alerts:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          maxLength: 2000
+
+    UpdatePatientRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        first_name_vi:
+          type: string
+          maxLength: 100
+        last_name_vi:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        phone:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        address:
+          type: string
+          maxLength: 500
+        address_vi:
+          type: string
+          maxLength: 500
+        language_preference:
+          type: string
+          enum: [vi, en]
+        emergency_contact:
+          $ref: '#/components/schemas/EmergencyContact'
+        medical_alerts:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          maxLength: 2000
+        is_active:
+          type: boolean
+
+    PatientListResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - per_page
+        - total_pages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+        total:
+          type: integer
+          format: int64
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total_pages:
+          type: integer
+
+    PatientDashboard:
+      type: object
+      required:
+        - patient
+        - total_appointments
+        - upcoming_appointments
+        - completed_sessions
+        - active_treatment_plans
+      properties:
+        patient:
+          $ref: '#/components/schemas/Patient'
+        total_appointments:
+          type: integer
+        upcoming_appointments:
+          type: integer
+        completed_sessions:
+          type: integer
+        active_treatment_plans:
+          type: integer
+        last_visit:
+          type: string
+          format: date-time
+        next_appointment:
+          type: string
+          format: date-time
+        insurance_info:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientInsurance'
+
+    PatientInsurance:
+      type: object
+      required:
+        - id
+        - patient_id
+        - provider
+        - provider_type
+        - policy_number
+        - coverage_percentage
+        - valid_from
+        - is_primary
+        - is_active
+        - verification_status
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        provider_type:
+          type: string
+          description: "Type: BHYT (government), private, corporate"
+        policy_number:
+          type: string
+        group_number:
+          type: string
+        coverage_percentage:
+          type: number
+          format: float
+          description: Percentage of costs covered (0-100)
+        copay_amount:
+          type: number
+          format: float
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        is_primary:
+          type: boolean
+        is_active:
+          type: boolean
+        verification_status:
+          type: string
+          enum: [pending, verified, failed]
+
+    DuplicateCheckResponse:
+      type: object
+      required:
+        - duplicates
+        - count
+      properties:
+        duplicates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuplicateMatch'
+        count:
+          type: integer
+
+    DuplicateMatch:
+      type: object
+      required:
+        - patient
+        - match_score
+        - match_type
+      properties:
+        patient:
+          $ref: '#/components/schemas/Patient'
+        match_score:
+          type: number
+          format: float
+          description: Similarity score (0-1)
+        match_type:
+          type: string
+          enum: [phone, name]
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

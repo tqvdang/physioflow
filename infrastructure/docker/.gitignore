@@ -1,0 +1,14 @@
+# Environment files (contain secrets)
+.env
+.env.local
+.env.*.local
+
+# Development scripts directory
+dev-scripts/
+
+# Keycloak realm exports (may contain sensitive data)
+keycloak/realms/*.json
+
+# Keep directory structure
+!keycloak/realms/.gitkeep
+!dev-scripts/.gitkeep

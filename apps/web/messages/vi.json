@@ -1,0 +1,169 @@
+{
+  "auth": {
+    "subtitle": "He thong Quan ly Phong kham Vat ly Tri lieu",
+    "loginForm": "Bieu mau dang nhap",
+    "welcomeBack": "Chao mung tro lai",
+    "signInPrompt": "Dang nhap vao tai khoan cua ban de tiep tuc",
+    "signIn": "Dang nhap",
+    "signingIn": "Dang dang nhap...",
+    "loginError": "Dang nhap that bai. Vui long thu lai.",
+    "secureLogin": "Dang nhap an toan",
+    "securityFeature1": "Ket noi duoc ma hoa SSL/TLS",
+    "securityFeature2": "Xac thuc hai yeu to kha dung",
+    "allRightsReserved": "Da dang ky ban quyen.",
+    "authenticating": "Dang xac thuc...",
+    "pleaseWait": "Vui long doi trong khi chung toi xac minh thong tin dang nhap cua ban.",
+    "authenticationFailed": "Xac thuc that bai",
+    "backToLogin": "Quay lai trang dang nhap",
+    "invalidCallback": "Yeu cau xac thuc khong hop le",
+    "callbackError": "Khong the hoan tat xac thuc",
+    "logout": "Dang xuat",
+    "profile": "Ho so"
+  },
+  "sidebar": {
+    "nav": {
+      "dashboard": "Trang chu",
+      "schedule": "Lich hen",
+      "patients": "Benh nhan",
+      "library": "Thu vien",
+      "reports": "Bao cao"
+    },
+    "settings": "Cai dat",
+    "language": "Ngon ngu"
+  },
+  "header": {
+    "search": "Tim kiem...",
+    "quickActions": {
+      "title": "Thao tac nhanh",
+      "newPatient": "Benh nhan moi",
+      "newAssessment": "Danh gia moi",
+      "newSession": "Buoi tri lieu moi"
+    },
+    "notifications": "Thong bao",
+    "new": "moi",
+    "viewAllNotifications": "Xem tat ca thong bao",
+    "notificationItems": {
+      "appointmentReminder": "Nhac lich hen",
+      "appointmentReminderDesc": "Ban co 3 lich hen vao ngay mai",
+      "newPatient": "Benh nhan moi dang ky",
+      "newPatientDesc": "Nguyen Van A da duoc them vao danh sach benh nhan",
+      "reportReady": "Bao cao san sang",
+      "reportReadyDesc": "Bao cao tien do hang thang da san sang de xem"
+    },
+    "settings": "Cai dat"
+  },
+  "commandPalette": {
+    "placeholder": "Nhap lenh hoac tim kiem...",
+    "noResults": "Khong tim thay ket qua.",
+    "groups": {
+      "navigation": "Dieu huong",
+      "quickActions": "Thao tac nhanh",
+      "settings": "Cai dat"
+    },
+    "navigation": {
+      "dashboard": "Di den Trang chu",
+      "schedule": "Di den Lich hen",
+      "patients": "Di den Benh nhan",
+      "library": "Di den Thu vien",
+      "reports": "Di den Bao cao"
+    },
+    "actions": {
+      "newPatient": "Tao Benh nhan moi",
+      "newAssessment": "Tao Danh gia moi",
+      "newSession": "Tao Buoi tri lieu moi"
+    },
+    "settings": {
+      "profile": "Di den Ho so",
+      "preferences": "Di den Cai dat"
+    }
+  },
+  "dashboard": {
+    "title": "Trang chu",
+    "welcome": "Chao mung den PhysioFlow EMR",
+    "description": "Chao mung den PhysioFlow - He thong Ho so Benh an Dien tu danh cho Vat ly Tri lieu",
+    "greeting": {
+      "morning": "Chao buoi sang",
+      "afternoon": "Chao buoi chieu",
+      "evening": "Chao buoi toi",
+      "therapist": "Chuyen vien tri lieu"
+    },
+    "stats": {
+      "patients": "Benh nhan",
+      "patientsDescription": "Tong so benh nhan da dang ky",
+      "appointments": "Lich hen",
+      "appointmentsDescription": "Lich hen hom nay",
+      "sessions": "Buoi tri lieu",
+      "sessionsDescription": "Buoi tri lieu trong tuan",
+      "reports": "Bao cao",
+      "reportsDescription": "Bao cao cho xu ly"
+    },
+    "gettingStarted": {
+      "title": "Bat dau",
+      "description": "Day la trang chu cua PhysioFlow. Cac thanh phan va tinh nang se duoc them khi phat trien."
+    },
+    "schedule": {
+      "title": "Lich hen hom nay",
+      "viewAll": "Xem tat ca",
+      "noAppointments": "Khong co lich hen nao hom nay",
+      "minutes": "phut",
+      "status": {
+        "scheduled": "Da len lich",
+        "in-progress": "Dang dien ra",
+        "completed": "Hoan thanh",
+        "cancelled": "Da huy"
+      },
+      "type": {
+        "assessment": "Danh gia",
+        "treatment": "Dieu tri",
+        "followup": "Theo doi"
+      }
+    },
+    "quickActions": {
+      "title": "Thao tac nhanh",
+      "description": "Truy cap nhanh cac tac vu thuong dung",
+      "newPatient": "Benh nhan moi",
+      "newPatientDesc": "Dang ky benh nhan moi",
+      "newAssessment": "Danh gia moi",
+      "newAssessmentDesc": "Bat dau danh gia",
+      "newSession": "Buoi tri lieu moi",
+      "newSessionDesc": "Len lich buoi tri lieu",
+      "newReport": "Bao cao moi",
+      "newReportDesc": "Tao bao cao"
+    },
+    "recentPatients": {
+      "title": "Benh nhan gan day",
+      "description": "Benh nhan ban da lam viec gan day",
+      "viewAll": "Xem tat ca",
+      "noPatients": "Khong co benh nhan gan day",
+      "lastVisit": "Lan kham cuoi",
+      "progress": "Tien do",
+      "status": {
+        "active": "Dang dieu tri",
+        "paused": "Tam dung",
+        "completed": "Hoan thanh"
+      },
+      "continue": "Tiep tuc",
+      "view": "Xem"
+    },
+    "alerts": {
+      "title": "Canh bao & Nhac nho",
+      "description": "Thong bao va nhac nho quan trong",
+      "noAlerts": "Khong co canh bao nao luc nay",
+      "dismiss": "Bo qua",
+      "dismissAll": "Bo qua tat ca"
+    }
+  },
+  "common": {
+    "loading": "Dang tai...",
+    "error": "Da xay ra loi",
+    "save": "Luu",
+    "cancel": "Huy",
+    "delete": "Xoa",
+    "edit": "Chinh sua",
+    "create": "Tao moi",
+    "search": "Tim kiem",
+    "filter": "Loc",
+    "export": "Xuat",
+    "import": "Nhap"
+  }
+}

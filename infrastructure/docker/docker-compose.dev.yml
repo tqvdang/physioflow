@@ -1,0 +1,93 @@
+version: "3.8"
+
+# Development overrides for local development
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    # Mount for custom SQL scripts during development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+      - ${DEV_SQL_SCRIPTS:-./dev-scripts}:/dev-scripts:ro
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    # Disable persistence for faster restarts in dev
+    command: redis-server --save "" --appendonly no
+
+  keycloak:
+    environment:
+      KC_LOG_LEVEL: DEBUG
+      KC_FEATURES: preview
+    # Mount realm exports for development
+    volumes:
+      - ${KEYCLOAK_REALM_DIR:-./keycloak/realms}:/opt/keycloak/data/import:ro
+
+  minio:
+    environment:
+      MINIO_BROWSER: "on"
+
+  meilisearch:
+    environment:
+      MEILI_ENV: development
+      MEILI_LOG_LEVEL: DEBUG
+
+  # Development-only services
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: emr-mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    networks:
+      - emr-network
+
+  adminer:
+    image: adminer:latest
+    container_name: emr-adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: dracula
+    depends_on:
+      - postgres
+    networks:
+      - emr-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: emr-redis-commander
+    restart: unless-stopped
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8082}:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - emr-network
+
+networks:
+  emr-network:
+    name: emr-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: emr-postgres-data
+  redis_data:
+    name: emr-redis-data
+  minio_data:
+    name: emr-minio-data
+  meilisearch_data:
+    name: emr-meilisearch-data

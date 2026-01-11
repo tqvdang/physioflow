@@ -1,0 +1,169 @@
+{
+  "auth": {
+    "subtitle": "Physiotherapy Clinic Management System",
+    "loginForm": "Login form",
+    "welcomeBack": "Welcome back",
+    "signInPrompt": "Sign in to your account to continue",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "loginError": "Login failed. Please try again.",
+    "secureLogin": "Secure login",
+    "securityFeature1": "SSL/TLS encrypted connection",
+    "securityFeature2": "Two-factor authentication available",
+    "allRightsReserved": "All rights reserved.",
+    "authenticating": "Authenticating...",
+    "pleaseWait": "Please wait while we verify your credentials.",
+    "authenticationFailed": "Authentication Failed",
+    "backToLogin": "Back to login",
+    "invalidCallback": "Invalid authentication request",
+    "callbackError": "Could not complete authentication",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "sidebar": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "schedule": "Schedule",
+      "patients": "Patients",
+      "library": "Library",
+      "reports": "Reports"
+    },
+    "settings": "Settings",
+    "language": "Language"
+  },
+  "header": {
+    "search": "Search...",
+    "quickActions": {
+      "title": "Quick Actions",
+      "newPatient": "New Patient",
+      "newAssessment": "New Assessment",
+      "newSession": "New Session"
+    },
+    "notifications": "Notifications",
+    "new": "new",
+    "viewAllNotifications": "View all notifications",
+    "notificationItems": {
+      "appointmentReminder": "Appointment Reminder",
+      "appointmentReminderDesc": "You have 3 appointments scheduled for tomorrow",
+      "newPatient": "New Patient Registered",
+      "newPatientDesc": "Nguyen Van A has been added to your patient list",
+      "reportReady": "Report Ready",
+      "reportReadyDesc": "Monthly progress report is ready for review"
+    },
+    "settings": "Settings"
+  },
+  "commandPalette": {
+    "placeholder": "Type a command or search...",
+    "noResults": "No results found.",
+    "groups": {
+      "navigation": "Navigation",
+      "quickActions": "Quick Actions",
+      "settings": "Settings"
+    },
+    "navigation": {
+      "dashboard": "Go to Dashboard",
+      "schedule": "Go to Schedule",
+      "patients": "Go to Patients",
+      "library": "Go to Library",
+      "reports": "Go to Reports"
+    },
+    "actions": {
+      "newPatient": "Create New Patient",
+      "newAssessment": "Create New Assessment",
+      "newSession": "Create New Session"
+    },
+    "settings": {
+      "profile": "Go to Profile",
+      "preferences": "Go to Settings"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to PhysioFlow EMR",
+    "description": "Welcome to PhysioFlow - Your Physiotherapy Electronic Medical Records System",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "therapist": "Therapist"
+    },
+    "stats": {
+      "patients": "Patients",
+      "patientsDescription": "Total registered patients",
+      "appointments": "Appointments",
+      "appointmentsDescription": "Today's appointments",
+      "sessions": "Sessions",
+      "sessionsDescription": "This week's sessions",
+      "reports": "Reports",
+      "reportsDescription": "Pending reports"
+    },
+    "gettingStarted": {
+      "title": "Getting Started",
+      "description": "This is a placeholder for the PhysioFlow dashboard. Components and features will be added as development progresses."
+    },
+    "schedule": {
+      "title": "Today's Schedule",
+      "viewAll": "View All",
+      "noAppointments": "No appointments scheduled for today",
+      "minutes": "min",
+      "status": {
+        "scheduled": "Scheduled",
+        "in-progress": "In Progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "type": {
+        "assessment": "Assessment",
+        "treatment": "Treatment",
+        "followup": "Follow-up"
+      }
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "description": "Quickly access common tasks",
+      "newPatient": "New Patient",
+      "newPatientDesc": "Register new patient",
+      "newAssessment": "New Assessment",
+      "newAssessmentDesc": "Start assessment",
+      "newSession": "New Session",
+      "newSessionDesc": "Schedule session",
+      "newReport": "New Report",
+      "newReportDesc": "Generate report"
+    },
+    "recentPatients": {
+      "title": "Recent Patients",
+      "description": "Patients you've recently worked with",
+      "viewAll": "View All",
+      "noPatients": "No recent patients",
+      "lastVisit": "Last visit",
+      "progress": "Progress",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "completed": "Completed"
+      },
+      "continue": "Continue",
+      "view": "View"
+    },
+    "alerts": {
+      "title": "Alerts & Reminders",
+      "description": "Important notifications and reminders",
+      "noAlerts": "No alerts at this time",
+      "dismiss": "Dismiss",
+      "dismissAll": "Dismiss All"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
+  }
+}
