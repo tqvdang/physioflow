@@ -9,7 +9,7 @@
         build clean reset \
         api web infra migrate seed \
         psql redis-cli test lint \
-        secrets secrets-init secrets-export
+        secrets secrets-local secrets-init secrets-web secrets-push
 
 # Colors
 CYAN := \033[36m
@@ -233,6 +233,17 @@ secrets-web: ## Export secrets for web app (.env.local)
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
 	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv | grep "^NEXT_PUBLIC" > apps/web/.env.local
 	@echo "$(GREEN)Created apps/web/.env.local$(RESET)"
+
+secrets-push: ## Push local .env to Infisical (dev environment)
+	@echo "$(GREEN)Pushing .env to Infisical...$(RESET)"
+	@if [ ! -f .env ]; then \
+		echo "$(RED)Error: .env file not found$(RESET)"; \
+		exit 1; \
+	fi
+	@INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical secrets set $$(cat .env | grep -v '^#' | grep -v '^$$' | sed "s/'//g" | tr '\n' ' ') --env=dev
+	@echo "$(GREEN)Secrets pushed to Infisical (dev)$(RESET)"
 
 # =============================================================================
 # Quick Reference
