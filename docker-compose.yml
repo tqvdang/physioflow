@@ -189,23 +189,17 @@ services:
       - "${API_PORT:-7011}:8080"
     environment:
       # Server
-      SERVER_PORT: 8080
-      SERVER_ENV: development
+      PORT: 8080
+      ENV: development
       # Database
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${POSTGRES_USER:-emr}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
-      DB_NAME: ${POSTGRES_DB:-physioflow}
-      DB_SSLMODE: disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-emr}:${POSTGRES_PASSWORD:-emr_secret}@postgres:5432/${POSTGRES_DB:-physioflow}?sslmode=disable
       # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_URL: redis:6379
       # Keycloak
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: physioflow
       KEYCLOAK_CLIENT_ID: physioflow-api
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_API_CLIENT_SECRET:-physioflow-api-secret}
+      KEYCLOAK_SECRET: ${KEYCLOAK_API_CLIENT_SECRET:-physioflow-api-secret}
       # MinIO
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio_admin}

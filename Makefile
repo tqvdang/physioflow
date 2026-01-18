@@ -200,14 +200,14 @@ secrets: ## Pull secrets from Infisical and create .env file
 	fi
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
-	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv > .env
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv | sed "s/'//g" > .env
 	@echo "$(GREEN)Created .env file$(RESET)"
 
 secrets-local: ## Pull secrets for local environment
 	@echo "$(GREEN)Pulling local secrets from Infisical...$(RESET)"
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
-	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=local --format=dotenv > .env
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=local --format=dotenv | sed "s/'//g" > .env
 	@echo "$(GREEN)Created .env file from local environment$(RESET)"
 
 secrets-init: ## Initialize Infisical for this project (first time setup)
@@ -231,7 +231,7 @@ secrets-web: ## Export secrets for web app (.env.local)
 	@echo "$(GREEN)Creating apps/web/.env.local...$(RESET)"
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
-	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv | grep "^NEXT_PUBLIC" > apps/web/.env.local
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv | sed "s/'//g" | grep "^NEXT_PUBLIC" > apps/web/.env.local
 	@echo "$(GREEN)Created apps/web/.env.local$(RESET)"
 
 secrets-push: ## Push local .env to Infisical (dev environment)
