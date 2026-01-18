@@ -8,7 +8,8 @@
 .PHONY: help dev dev-local up down restart logs status \
         build clean reset \
         api web infra migrate seed \
-        psql redis-cli test lint
+        psql redis-cli test lint \
+        secrets secrets-init secrets-export
 
 # Colors
 CYAN := \033[36m
@@ -178,6 +179,60 @@ lint: ## Run linters
 
 typecheck: ## Run TypeScript type checking
 	cd apps/web && pnpm typecheck
+
+# =============================================================================
+# Secrets Management (Infisical)
+# =============================================================================
+
+INFISICAL_URL := https://secrets.trancloud.work
+
+# Project-specific credentials (set these in your shell profile)
+# PHYSIOFLOW_INFISICAL_CLIENT_ID
+# PHYSIOFLOW_INFISICAL_CLIENT_SECRET
+
+secrets: ## Pull secrets from Infisical and create .env file
+	@echo "$(GREEN)Pulling secrets from Infisical...$(RESET)"
+	@if [ -z "$$PHYSIOFLOW_INFISICAL_CLIENT_ID" ]; then \
+		echo "$(RED)Error: PHYSIOFLOW_INFISICAL_CLIENT_ID not set$(RESET)"; \
+		echo "Run: export PHYSIOFLOW_INFISICAL_CLIENT_ID=<your-client-id>"; \
+		echo "     export PHYSIOFLOW_INFISICAL_CLIENT_SECRET=<your-client-secret>"; \
+		exit 1; \
+	fi
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv > .env
+	@echo "$(GREEN)Created .env file$(RESET)"
+
+secrets-local: ## Pull secrets for local environment
+	@echo "$(GREEN)Pulling local secrets from Infisical...$(RESET)"
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=local --format=dotenv > .env
+	@echo "$(GREEN)Created .env file from local environment$(RESET)"
+
+secrets-init: ## Initialize Infisical for this project (first time setup)
+	@echo "$(CYAN)Infisical Setup for PhysioFlow$(RESET)"
+	@echo ""
+	@echo "1. Get Machine Identity credentials from: $(INFISICAL_URL)"
+	@echo "   Project: physioflow | Identity: physioflow-dev"
+	@echo ""
+	@echo "2. Add to your shell profile (~/.bashrc or ~/.zshrc):"
+	@echo "   export PHYSIOFLOW_INFISICAL_CLIENT_ID=<client-id>"
+	@echo "   export PHYSIOFLOW_INFISICAL_CLIENT_SECRET=<client-secret>"
+	@echo ""
+	@echo "3. Reload shell and run: make secrets"
+	@echo ""
+	@if [ ! -f .infisical.json ]; then \
+		echo '{"workspaceId": "27ea4da3-9a1e-4e84-aa71-31e9f9dce74c", "defaultEnvironment": "dev"}' > .infisical.json; \
+		echo "$(GREEN)Created .infisical.json$(RESET)"; \
+	fi
+
+secrets-web: ## Export secrets for web app (.env.local)
+	@echo "$(GREEN)Creating apps/web/.env.local...$(RESET)"
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=$$PHYSIOFLOW_INFISICAL_CLIENT_ID \
+	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
+	INFISICAL_API_URL=$(INFISICAL_URL) infisical export --env=dev --format=dotenv | grep "^NEXT_PUBLIC" > apps/web/.env.local
+	@echo "$(GREEN)Created apps/web/.env.local$(RESET)"
 
 # =============================================================================
 # Quick Reference

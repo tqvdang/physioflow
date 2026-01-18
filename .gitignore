@@ -103,3 +103,6 @@ debug.log
 *.local.json
 *.local.yaml
 *.local.yml
+
+# Infisical
+.infisical.json
