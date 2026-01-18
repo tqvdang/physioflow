@@ -31,6 +31,10 @@ next-env.d.ts
 
 # Testing
 coverage/
+test-results/
+playwright-report/
+tests/e2e/.auth/
+setup-error.png
 
 # IDE
 .idea/

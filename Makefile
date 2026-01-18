@@ -8,7 +8,7 @@
 .PHONY: help dev dev-local up down restart logs status \
         build clean reset \
         api web infra migrate seed \
-        psql redis-cli test lint \
+        psql redis-cli test test-e2e test-e2e-ui test-e2e-headed test-api test-all lint typecheck \
         secrets secrets-local secrets-init secrets-web secrets-push
 
 # Colors
@@ -168,17 +168,34 @@ redis-cli: ## Connect to Redis
 # Development Tools
 # =============================================================================
 
-test: ## Run all tests
-	@echo "$(GREEN)Running tests...$(RESET)"
+test: ## Run all tests (unit + integration)
+	@echo "$(GREEN)Running all tests...$(RESET)"
 	cd apps/api && go test ./...
-	cd apps/web && pnpm test
+
+test-e2e: ## Run Playwright e2e tests (requires running services)
+	@echo "$(GREEN)Running e2e tests...$(RESET)"
+	cd apps/web && pnpm test:e2e
+
+test-e2e-ui: ## Run Playwright e2e tests with UI
+	@echo "$(GREEN)Running e2e tests with UI...$(RESET)"
+	cd apps/web && pnpm test:e2e:ui
+
+test-e2e-headed: ## Run Playwright e2e tests in headed mode
+	cd apps/web && pnpm test:e2e:headed
+
+test-api: ## Run Go API integration tests
+	@echo "$(GREEN)Running API tests...$(RESET)"
+	cd apps/api && go test -v ./tests/integration/...
+
+test-all: test test-e2e ## Run all tests (unit + e2e)
+	@echo "$(GREEN)All tests completed$(RESET)"
 
 lint: ## Run linters
 	@echo "$(GREEN)Running linters...$(RESET)"
 	cd apps/web && pnpm lint
 
 typecheck: ## Run TypeScript type checking
-	cd apps/web && pnpm typecheck
+	cd apps/web && pnpm type-check
 
 # =============================================================================
 # Secrets Management (Infisical)
