@@ -1,0 +1,205 @@
+# =============================================================================
+# PhysioFlow EMR - Development Makefile
+# =============================================================================
+# Usage: make <target>
+# Run 'make help' to see available targets
+# =============================================================================
+
+.PHONY: help dev dev-local up down restart logs status \
+        build clean reset \
+        api web infra migrate seed \
+        psql redis-cli test lint
+
+# Colors
+CYAN := \033[36m
+GREEN := \033[32m
+YELLOW := \033[33m
+RED := \033[31m
+RESET := \033[0m
+
+# =============================================================================
+# Help
+# =============================================================================
+
+help: ## Show this help
+	@echo ""
+	@echo "$(CYAN)PhysioFlow EMR - Development Commands$(RESET)"
+	@echo "$(CYAN)======================================$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Quick Start:$(RESET)"
+	@echo "  $(YELLOW)make dev$(RESET)        - Start everything (Docker containers)"
+	@echo "  $(YELLOW)make dev-local$(RESET)  - Start infra + run apps locally (for hot reload)"
+	@echo ""
+	@echo "$(GREEN)All Commands:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-15s$(RESET) %s\n", $$1, $$2}'
+	@echo ""
+
+# =============================================================================
+# Main Development Commands
+# =============================================================================
+
+dev: ## Start full stack in Docker (API + Web + Infrastructure)
+	@echo "$(GREEN)Starting PhysioFlow EMR...$(RESET)"
+	docker compose up -d --build
+	@echo ""
+	@echo "$(GREEN)PhysioFlow is starting up!$(RESET)"
+	@echo ""
+	@echo "Services will be available at:"
+	@echo "  $(CYAN)Web App:$(RESET)      http://localhost:7010"
+	@echo "  $(CYAN)API:$(RESET)          http://localhost:7011"
+	@echo "  $(CYAN)Keycloak:$(RESET)     http://localhost:7014 (admin/admin_secret)"
+	@echo "  $(CYAN)MinIO:$(RESET)        http://localhost:7016 (minio_admin/minio_secret)"
+	@echo "  $(CYAN)PostgreSQL:$(RESET)   localhost:7012 (emr/emr_secret)"
+	@echo ""
+	@echo "$(YELLOW)Note: Keycloak takes ~60-90 seconds to start$(RESET)"
+	@echo "Run 'make logs' to see container logs"
+	@echo "Run 'make status' to check service health"
+
+dev-local: infra ## Start infrastructure only (for local app development with hot reload)
+	@echo ""
+	@echo "$(GREEN)Infrastructure is running!$(RESET)"
+	@echo ""
+	@echo "Now start the apps locally in separate terminals:"
+	@echo "  $(CYAN)Terminal 1 (API):$(RESET)  cd apps/api && go run cmd/api/main.go"
+	@echo "  $(CYAN)Terminal 2 (Web):$(RESET)  pnpm dev"
+	@echo ""
+
+infra: ## Start only infrastructure services (DB, Redis, Keycloak, etc.)
+	@echo "$(GREEN)Starting infrastructure services...$(RESET)"
+	docker compose up -d postgres redis keycloak minio meilisearch db-migrate
+	@make wait-healthy
+	@echo "$(GREEN)Infrastructure ready!$(RESET)"
+
+up: dev ## Alias for 'make dev'
+
+down: ## Stop all services
+	@echo "$(YELLOW)Stopping PhysioFlow...$(RESET)"
+	docker compose down
+	@echo "$(GREEN)All services stopped$(RESET)"
+
+restart: down dev ## Restart all services
+
+# =============================================================================
+# Build & Clean
+# =============================================================================
+
+build: ## Build all Docker images
+	@echo "$(GREEN)Building Docker images...$(RESET)"
+	docker compose build
+
+clean: ## Stop and remove all containers, networks
+	@echo "$(RED)Cleaning up...$(RESET)"
+	docker compose down -v --remove-orphans
+	@echo "$(GREEN)Cleanup complete$(RESET)"
+
+reset: ## Full reset - remove all data and rebuild
+	@echo "$(RED)WARNING: This will delete all data!$(RESET)"
+	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	docker compose down -v --remove-orphans
+	docker compose up -d --build
+	@echo "$(GREEN)Reset complete$(RESET)"
+
+# =============================================================================
+# Individual Services
+# =============================================================================
+
+api: ## Start only the API service
+	docker compose up -d api
+
+web: ## Start only the Web service
+	docker compose up -d web
+
+migrate: ## Run database migrations
+	@echo "$(GREEN)Running migrations...$(RESET)"
+	docker compose up db-migrate
+	@echo "$(GREEN)Migrations complete$(RESET)"
+
+seed: ## Seed the database with sample data
+	@echo "$(GREEN)Seeding database...$(RESET)"
+	docker compose exec postgres psql -U emr -d physioflow -f /seeds/exercises.sql
+	docker compose exec postgres psql -U emr -d physioflow -f /seeds/checklists.sql
+	@echo "$(GREEN)Seeding complete$(RESET)"
+
+# =============================================================================
+# Logs & Status
+# =============================================================================
+
+logs: ## View logs for all services
+	docker compose logs -f
+
+logs-api: ## View API logs
+	docker compose logs -f api
+
+logs-web: ## View Web logs
+	docker compose logs -f web
+
+status: ## Show service status
+	@echo ""
+	@echo "$(CYAN)Service Status:$(RESET)"
+	@docker compose ps
+	@echo ""
+
+wait-healthy: ## Wait for services to be healthy
+	@echo "$(YELLOW)Waiting for services to be healthy...$(RESET)"
+	@timeout=120; \
+	while [ $$timeout -gt 0 ]; do \
+		if docker compose ps | grep -q "unhealthy\|starting"; then \
+			sleep 5; \
+			timeout=$$((timeout - 5)); \
+			echo "Waiting... ($$timeout seconds remaining)"; \
+		else \
+			echo "$(GREEN)All services healthy!$(RESET)"; \
+			break; \
+		fi \
+	done
+
+# =============================================================================
+# Database Tools
+# =============================================================================
+
+psql: ## Connect to PostgreSQL
+	docker compose exec postgres psql -U emr -d physioflow
+
+redis-cli: ## Connect to Redis
+	docker compose exec redis redis-cli
+
+# =============================================================================
+# Development Tools
+# =============================================================================
+
+test: ## Run all tests
+	@echo "$(GREEN)Running tests...$(RESET)"
+	cd apps/api && go test ./...
+	cd apps/web && pnpm test
+
+lint: ## Run linters
+	@echo "$(GREEN)Running linters...$(RESET)"
+	cd apps/web && pnpm lint
+
+typecheck: ## Run TypeScript type checking
+	cd apps/web && pnpm typecheck
+
+# =============================================================================
+# Quick Reference
+# =============================================================================
+
+urls: ## Show all service URLs
+	@echo ""
+	@echo "$(CYAN)PhysioFlow Service URLs$(RESET)"
+	@echo "$(CYAN)========================$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Applications:$(RESET)"
+	@echo "  Web App:        http://localhost:7010"
+	@echo "  API:            http://localhost:7011"
+	@echo ""
+	@echo "$(GREEN)Infrastructure:$(RESET)"
+	@echo "  PostgreSQL:     localhost:7012 (emr/emr_secret)"
+	@echo "  Redis:          localhost:7013"
+	@echo "  Keycloak:       http://localhost:7014 (admin/admin_secret)"
+	@echo "  MinIO API:      http://localhost:7015"
+	@echo "  MinIO Console:  http://localhost:7016 (minio_admin/minio_secret)"
+	@echo "  Meilisearch:    http://localhost:7017"
+	@echo ""
+	@echo "$(GREEN)Test Users (password: 'password'):$(RESET)"
+	@echo "  admin, therapist1, assistant1, frontdesk1"
+	@echo ""

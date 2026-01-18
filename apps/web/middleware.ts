@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
+import { routing } from "@/i18n/routing";
 
 // Internationalization middleware configuration
-const intlMiddleware = createIntlMiddleware({
-  locales: ["vi", "en"],
-  defaultLocale: "vi",
-  localePrefix: "as-needed",
-});
+const intlMiddleware = createIntlMiddleware(routing);
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [

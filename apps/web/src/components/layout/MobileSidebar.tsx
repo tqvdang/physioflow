@@ -5,10 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  BarChart3,
+  BookOpen,
   Calendar,
-  FileText,
-  LayoutDashboard,
-  Library,
+  Home,
   LogOut,
   Menu,
   Settings,
@@ -38,11 +38,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "dashboard", href: "" },
+  { icon: Home, labelKey: "dashboard", href: "" },
   { icon: Calendar, labelKey: "schedule", href: "/schedule" },
   { icon: Users, labelKey: "patients", href: "/patients" },
-  { icon: Library, labelKey: "library", href: "/library" },
-  { icon: FileText, labelKey: "reports", href: "/reports" },
+  { icon: BookOpen, labelKey: "library", href: "/library" },
+  { icon: BarChart3, labelKey: "reports", href: "/reports" },
 ];
 
 interface MobileSidebarProps {
@@ -112,7 +112,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
               return (
                 <Link
                   key={item.labelKey}
-                  href={href}
+                  href={href as any}
                   onClick={handleNavClick}
                   className={cn(
                     "flex h-10 items-center gap-3 rounded-lg px-3 transition-colors",
@@ -158,7 +158,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
 
           <div className="flex flex-col gap-1">
             <Link
-              href={`/${locale}/settings/profile`}
+              href={`/${locale}/settings/profile` as any}
               onClick={handleNavClick}
               className="flex h-10 items-center gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
@@ -166,7 +166,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
               <span className="text-sm font-medium">{tAuth("profile")}</span>
             </Link>
             <Link
-              href={`/${locale}/settings`}
+              href={`/${locale}/settings` as any}
               onClick={handleNavClick}
               className="flex h-10 items-center gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >

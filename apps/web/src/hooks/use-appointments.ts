@@ -26,6 +26,7 @@ export const appointmentKeys = {
   details: () => [...appointmentKeys.all, "detail"] as const,
   detail: (id: string) => [...appointmentKeys.details(), id] as const,
   daySchedule: (date: string) => [...appointmentKeys.all, "day", date] as const,
+  today: () => [...appointmentKeys.all, "today"] as const,
   byPatient: (patientId: string) => [...appointmentKeys.all, "patient", patientId] as const,
   byTherapist: (therapistId: string, startDate: string, endDate: string) =>
     [...appointmentKeys.all, "therapist", therapistId, startDate, endDate] as const,
@@ -84,6 +85,31 @@ export function useAppointment(id: string, enabled = true) {
       return response.data;
     },
     enabled: enabled && !!id,
+  });
+}
+
+/**
+ * Hook to fetch today's appointments
+ */
+export function useTodayAppointments(therapistId?: string) {
+  const today = new Date().toISOString().split("T")[0];
+
+  return useQuery({
+    queryKey: appointmentKeys.today(),
+    queryFn: async () => {
+      const response = await api.get<Appointment[]>("/v1/appointments", {
+        params: {
+          start_date: today,
+          end_date: today,
+          therapist_id: therapistId,
+          per_page: 100,
+          sort_by: "start_time",
+          sort_order: "asc",
+        },
+      });
+      return response.data;
+    },
+    staleTime: 1000 * 60, // 1 minute
   });
 }
 

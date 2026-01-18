@@ -15,10 +15,18 @@ import type {
 } from "@/types/auth";
 
 // Environment configuration
-const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL ?? "http://localhost:8180";
+const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL ?? "http://localhost:7014";
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? "physioflow";
 const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID ?? "physioflow-web";
-const REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:7010";
+// Use locale-aware callback to avoid middleware redirect stripping query params
+const getRedirectUri = () => {
+  if (typeof window !== "undefined") {
+    const locale = document.documentElement.lang || "vi";
+    return `${BASE_URL}/${locale}`;
+  }
+  return `${BASE_URL}/vi`;
+};
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -68,7 +76,7 @@ function base64UrlEncode(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    binary += String.fromCharCode(bytes[i]!);
   }
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
@@ -96,7 +104,7 @@ function decodeJWT(token: string): KeycloakTokenClaims | null {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
 
-    const payload = parts[1];
+    const payload = parts[1]!;
     const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded);
   } catch {
@@ -255,7 +263,7 @@ export async function login(options: LoginOptions = {}): Promise<void> {
   const endpoints = getKeycloakEndpoints();
   const params = new URLSearchParams({
     client_id: KEYCLOAK_CLIENT_ID,
-    redirect_uri: `${REDIRECT_URI}/auth/callback`,
+    redirect_uri: `${getRedirectUri()}/auth/callback`,
     response_type: "code",
     scope: "openid profile email",
     state,
@@ -302,7 +310,7 @@ export async function handleCallback(code: string, state: string): Promise<AuthU
     body: new URLSearchParams({
       grant_type: "authorization_code",
       client_id: KEYCLOAK_CLIENT_ID,
-      redirect_uri: `${REDIRECT_URI}/auth/callback`,
+      redirect_uri: `${getRedirectUri()}/auth/callback`,
       code,
       code_verifier: codeVerifier,
     }),
@@ -415,7 +423,7 @@ export async function logout(options: LogoutOptions = {}): Promise<void> {
     params.set("id_token_hint", options.idTokenHint ?? idToken ?? "");
   }
 
-  const postLogoutUri = options.redirectUri ?? `${REDIRECT_URI}/auth/login`;
+  const postLogoutUri = options.redirectUri ?? `${getRedirectUri()}/auth/login`;
   params.set("post_logout_redirect_uri", postLogoutUri);
 
   // Redirect to Keycloak logout

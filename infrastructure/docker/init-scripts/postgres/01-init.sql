@@ -50,16 +50,11 @@ COMMENT ON EXTENSION "pg_trgm" IS 'Text similarity measurement and index searchi
 -- -----------------------------------------------------------------------------
 
 -- Keycloak requires its own database
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'keycloak') THEN
-        CREATE DATABASE keycloak;
-        RAISE NOTICE 'Keycloak database created';
-    END IF;
-END $$;
+-- Note: CREATE DATABASE cannot run inside a transaction, so we use a separate approach
+-- The database is created via shell script or manually if it doesn't exist
 
--- Grant privileges to the main user
-GRANT ALL PRIVILEGES ON DATABASE keycloak TO emr;
+-- Grant privileges to the main user (will work after keycloak db exists)
+-- GRANT ALL PRIVILEGES ON DATABASE keycloak TO emr;
 
 -- -----------------------------------------------------------------------------
 -- Create schemas for application organization

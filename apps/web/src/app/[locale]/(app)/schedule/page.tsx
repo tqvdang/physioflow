@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays } from "date-fns";
-import { vi, enUS } from "date-fns/locale";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Plus, Filter, Users, RefreshCw } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -32,24 +31,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { Calendar } from "@/components/schedule/Calendar";
-import { AppointmentCard } from "@/components/schedule/AppointmentCard";
 import { AppointmentDialog } from "@/components/schedule/AppointmentDialog";
 import {
   useAppointmentsByDateRange,
   useTherapists,
   useCancelAppointment,
   useDeleteAppointment,
-} from "@/hooks/useAppointments";
-import type { Appointment, CalendarView, AppointmentStatus, AppointmentType } from "@/types/appointment";
+} from "@/hooks/use-appointments";
+import type { Appointment, CalendarView, AppointmentStatus, AppointmentType, Therapist } from "@/types/appointment";
 
 export default function SchedulePage() {
-  const locale = useLocale();
   const t = useTranslations("schedule");
-  const { toast } = useToast();
-  const dateLocale = locale === "vi" ? vi : enUS;
 
   // State
   const [selectedDate, setSelectedDate] = React.useState(new Date());
@@ -123,11 +118,11 @@ export default function SchedulePage() {
     let filtered = appointments;
 
     if (statusFilters.length > 0) {
-      filtered = filtered.filter((a) => statusFilters.includes(a.status));
+      filtered = filtered.filter((a: Appointment) => statusFilters.includes(a.status));
     }
 
     if (typeFilters.length > 0) {
-      filtered = filtered.filter((a) => typeFilters.includes(a.type));
+      filtered = filtered.filter((a: Appointment) => typeFilters.includes(a.type));
     }
 
     return filtered;
@@ -153,21 +148,6 @@ export default function SchedulePage() {
     setDialogOpen(true);
   };
 
-  const handleEditAppointment = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setDialogOpen(true);
-  };
-
-  const handleCancelAppointment = (appointment: Appointment) => {
-    setAppointmentToAction(appointment);
-    setCancelDialogOpen(true);
-  };
-
-  const handleDeleteAppointment = (appointment: Appointment) => {
-    setAppointmentToAction(appointment);
-    setDeleteDialogOpen(true);
-  };
-
   const confirmCancel = async () => {
     if (!appointmentToAction) return;
 
@@ -176,16 +156,13 @@ export default function SchedulePage() {
         appointmentId: appointmentToAction.id,
         data: { reason: "Cancelled by user" },
       });
-      toast({
-        title: t("toast.cancelled"),
+      toast.success(t("toast.cancelled"), {
         description: t("toast.cancelledDesc"),
       });
       refetch();
     } catch (error) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: error instanceof Error ? error.message : t("toast.errorDesc"),
-        variant: "destructive",
       });
     } finally {
       setCancelDialogOpen(false);
@@ -198,16 +175,13 @@ export default function SchedulePage() {
 
     try {
       await deleteMutation.mutateAsync(appointmentToAction.id);
-      toast({
-        title: t("toast.deleted"),
+      toast.success(t("toast.deleted"), {
         description: t("toast.deletedDesc"),
       });
       refetch();
     } catch (error) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: error instanceof Error ? error.message : t("toast.errorDesc"),
-        variant: "destructive",
       });
     } finally {
       setDeleteDialogOpen(false);
@@ -248,7 +222,7 @@ export default function SchedulePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">{t("filter.allTherapists")}</SelectItem>
-              {therapists.map((therapist) => (
+              {therapists.map((therapist: Therapist) => (
                 <SelectItem key={therapist.id} value={therapist.id}>
                   {therapist.fullName}
                 </SelectItem>

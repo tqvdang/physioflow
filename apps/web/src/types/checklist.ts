@@ -16,7 +16,10 @@ export type ChecklistInputType =
   | "voice_text"
   | "multi_select"
   | "text"
-  | "number";
+  | "number"
+  | "duration"
+  | "strength_rating"
+  | "compliance";
 
 /**
  * A single option for quick_select or multi_select items

@@ -2,9 +2,10 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { VisitChecklist } from "@/components/checklist";
-import { useVisitChecklist } from "@/hooks/useChecklist";
+import { useVisitChecklist } from "@/hooks/use-checklists";
 
 /**
  * Session page - Full checklist workflow for patient visits
@@ -15,6 +16,7 @@ export default function SessionPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("session");
 
   const patientId = params.id as string;
   const visitId = searchParams.get("visit");
@@ -55,7 +57,7 @@ export default function SessionPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading session...</p>
+          <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     );
@@ -67,15 +69,15 @@ export default function SessionPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center p-8 max-w-md">
           <div className="text-6xl mb-4">:(</div>
-          <h1 className="text-xl font-semibold mb-2">Failed to load session</h1>
+          <h1 className="text-xl font-semibold mb-2">{t("error.loadFailed")}</h1>
           <p className="text-muted-foreground mb-4">
-            {error instanceof Error ? error.message : "An error occurred"}
+            {error instanceof Error ? error.message : t("error.generic")}
           </p>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
           >
-            Go Back
+            {t("goBack")}
           </button>
         </div>
       </div>
@@ -88,15 +90,15 @@ export default function SessionPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center p-8 max-w-md">
           <div className="text-6xl mb-4">?</div>
-          <h1 className="text-xl font-semibold mb-2">No visit selected</h1>
+          <h1 className="text-xl font-semibold mb-2">{t("noVisit.title")}</h1>
           <p className="text-muted-foreground mb-4">
-            Please select a visit to start a session.
+            {t("noVisit.description")}
           </p>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
           >
-            Go Back
+            {t("goBack")}
           </button>
         </div>
       </div>
@@ -109,15 +111,15 @@ export default function SessionPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center p-8 max-w-md">
           <div className="text-6xl mb-4">!</div>
-          <h1 className="text-xl font-semibold mb-2">No checklist available</h1>
+          <h1 className="text-xl font-semibold mb-2">{t("noChecklist.title")}</h1>
           <p className="text-muted-foreground mb-4">
-            This visit doesn't have an associated checklist template.
+            {t("noChecklist.description")}
           </p>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
           >
-            Go Back
+            {t("goBack")}
           </button>
         </div>
       </div>

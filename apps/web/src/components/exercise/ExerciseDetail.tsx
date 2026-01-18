@@ -5,14 +5,14 @@
  * Shows all exercise information with instructions and prescribe button
  */
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import type { Exercise } from "@/types/exercise";
-import { CATEGORY_INFO, DIFFICULTY_INFO, MUSCLE_GROUP_INFO } from "@/types/exercise";
+import type { Exercise, ExerciseCategory, ExerciseDifficulty, MuscleGroup } from "@/types/exercise";
+import { CATEGORY_INFO, DIFFICULTY_INFO } from "@/types/exercise";
 import {
   Dumbbell,
   Clock,
@@ -22,6 +22,40 @@ import {
   Image as ImageIcon,
   X,
 } from "lucide-react";
+
+// Map type values to translation keys
+const categoryKeyMap: Record<ExerciseCategory, string> = {
+  stretching: "stretching",
+  strengthening: "strengthening",
+  balance: "balance",
+  cardiovascular: "cardiovascular",
+  mobility: "mobility",
+  postural: "postural",
+};
+
+const difficultyKeyMap: Record<ExerciseDifficulty, string> = {
+  beginner: "beginner",
+  intermediate: "intermediate",
+  advanced: "advanced",
+};
+
+const muscleGroupKeyMap: Record<MuscleGroup, string> = {
+  neck: "neck",
+  shoulder: "shoulder",
+  upper_back: "upper_back",
+  lower_back: "lower_back",
+  chest: "chest",
+  core: "core",
+  hip: "hip",
+  glutes: "glutes",
+  quadriceps: "quadriceps",
+  hamstrings: "hamstrings",
+  calves: "calves",
+  ankle: "ankle",
+  wrist_forearm: "wrist_forearm",
+  elbow: "elbow",
+  full_body: "full_body",
+};
 
 interface ExerciseDetailProps {
   exercise: Exercise;
@@ -37,6 +71,7 @@ export function ExerciseDetail({
   className,
 }: ExerciseDetailProps) {
   const locale = useLocale();
+  const t = useTranslations("library");
   const isVi = locale === "vi";
 
   const name = isVi ? exercise.nameVi : exercise.name;
@@ -46,6 +81,10 @@ export function ExerciseDetail({
 
   const categoryInfo = CATEGORY_INFO[exercise.category];
   const difficultyInfo = DIFFICULTY_INFO[exercise.difficulty];
+
+  // Get translated labels
+  const categoryLabel = t(`categories.${categoryKeyMap[exercise.category]}`);
+  const difficultyLabel = t(`difficulties.${difficultyKeyMap[exercise.difficulty]}`);
 
   return (
     <Card className={cn("w-full max-w-2xl mx-auto", className)}>
@@ -98,10 +137,10 @@ export function ExerciseDetail({
           <CardTitle className="text-xl">{name}</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Badge className={cn(categoryInfo.color)}>
-              {isVi ? categoryInfo.labelVi : categoryInfo.label}
+              {categoryLabel}
             </Badge>
             <Badge variant="outline" className={cn(difficultyInfo.color)}>
-              {isVi ? difficultyInfo.labelVi : difficultyInfo.label}
+              {difficultyLabel}
             </Badge>
           </div>
         </div>
@@ -112,7 +151,7 @@ export function ExerciseDetail({
         {description && (
           <div>
             <h3 className="text-sm font-medium mb-2">
-              {isVi ? "Mo ta" : "Description"}
+              {t("detail.description")}
             </h3>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
@@ -123,14 +162,14 @@ export function ExerciseDetail({
         {/* Default parameters */}
         <div>
           <h3 className="text-sm font-medium mb-3">
-            {isVi ? "Thong so mac dinh" : "Default Parameters"}
+            {t("detail.defaultParameters")}
           </h3>
           <div className="grid grid-cols-3 gap-4">
             {exercise.defaultSets > 0 && (
               <div className="text-center p-3 bg-muted rounded-lg">
                 <div className="text-2xl font-bold">{exercise.defaultSets}</div>
                 <div className="text-xs text-muted-foreground">
-                  {isVi ? "Bo" : "Sets"}
+                  {t("card.sets")}
                 </div>
               </div>
             )}
@@ -138,7 +177,7 @@ export function ExerciseDetail({
               <div className="text-center p-3 bg-muted rounded-lg">
                 <div className="text-2xl font-bold">{exercise.defaultReps}</div>
                 <div className="text-xs text-muted-foreground">
-                  {isVi ? "Lan lap" : "Reps"}
+                  {t("card.reps")}
                 </div>
               </div>
             )}
@@ -149,7 +188,7 @@ export function ExerciseDetail({
                   {exercise.defaultHoldSecs}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {isVi ? "Giay" : "Seconds"}
+                  {t("card.seconds")}
                 </div>
               </div>
             )}
@@ -161,14 +200,13 @@ export function ExerciseDetail({
         {/* Muscle groups */}
         <div>
           <h3 className="text-sm font-medium mb-3">
-            {isVi ? "Nhom co" : "Muscle Groups"}
+            {t("filters.muscleGroup")}
           </h3>
           <div className="flex flex-wrap gap-2">
             {exercise.muscleGroups.map((mg) => {
-              const info = MUSCLE_GROUP_INFO[mg];
               return (
                 <Badge key={mg} variant="secondary">
-                  {isVi ? info.labelVi : info.label}
+                  {t(`muscleGroups.${muscleGroupKeyMap[mg]}`)}
                 </Badge>
               );
             })}
@@ -182,7 +220,7 @@ export function ExerciseDetail({
             <div>
               <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Dumbbell className="h-4 w-4" />
-                {isVi ? "Dung cu" : "Equipment"}
+                {t("card.equipment")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {exercise.equipment.map((item, index) => (
@@ -201,7 +239,7 @@ export function ExerciseDetail({
         {instructions && (
           <div>
             <h3 className="text-sm font-medium mb-3">
-              {isVi ? "Huong dan" : "Instructions"}
+              {t("detail.instructions")}
             </h3>
             <div className="text-sm text-muted-foreground whitespace-pre-line">
               {instructions}
@@ -216,7 +254,7 @@ export function ExerciseDetail({
             <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
               <h3 className="text-sm font-medium mb-2 flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
                 <AlertTriangle className="h-4 w-4" />
-                {isVi ? "Luu y" : "Precautions"}
+                {t("detail.precautions")}
               </h3>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
                 {precautions}
@@ -235,7 +273,7 @@ export function ExerciseDetail({
               onClick={() => onPrescribe(exercise)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              {isVi ? "Ke don bai tap nay" : "Prescribe this exercise"}
+              {t("detail.prescribeToPatient")}
             </Button>
           </>
         )}

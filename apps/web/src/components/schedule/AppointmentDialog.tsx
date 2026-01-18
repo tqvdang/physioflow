@@ -2,12 +2,10 @@
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { format, addMinutes, parseISO, setHours, setMinutes } from "date-fns";
-import { vi, enUS } from "date-fns/locale";
-import { useLocale, useTranslations } from "next-intl";
-import { CalendarIcon, Search, Loader2, AlertCircle } from "lucide-react";
+import { format, parseISO, setHours, setMinutes } from "date-fns";
+import { useTranslations } from "next-intl";
+import { Search, Loader2, AlertCircle } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,18 +32,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/components/ui/toast";
-import { usePatientSearch } from "@/hooks/usePatients";
-import { useTherapists, useTherapistAvailability, useCreateAppointment, useUpdateAppointment } from "@/hooks/useAppointments";
+import { toast } from "sonner";
+import { usePatientSearch } from "@/hooks/use-patients";
+import { useTherapists, useTherapistAvailability, useCreateAppointment, useUpdateAppointment } from "@/hooks/use-appointments";
 import type {
   Appointment,
   CreateAppointmentRequest,
   UpdateAppointmentRequest,
   AppointmentType,
   RecurrencePattern,
-  Therapist,
   AvailabilitySlot,
 } from "@/types/appointment";
 import { durationOptions, appointmentTypeOptions, recurrenceOptions } from "@/types/appointment";
@@ -84,10 +80,7 @@ export function AppointmentDialog({
   defaultPatientId,
   onSuccess,
 }: AppointmentDialogProps) {
-  const locale = useLocale();
   const t = useTranslations("schedule");
-  const { toast } = useToast();
-  const dateLocale = locale === "vi" ? vi : enUS;
 
   const isEditing = !!appointment;
 
@@ -97,7 +90,7 @@ export function AppointmentDialog({
   const [showPatientSearch, setShowPatientSearch] = React.useState(false);
 
   // Queries
-  const { data: therapists = [], isLoading: loadingTherapists } = useTherapists();
+  const { data: therapists = [] } = useTherapists();
   const { data: searchResults = [], isLoading: searchingPatients } = usePatientSearch(
     patientSearch,
     patientSearch.length >= 2
@@ -193,7 +186,9 @@ export function AppointmentDialog({
   const onSubmit = async (values: FormValues) => {
     try {
       // Build start time from date and time
-      const [hours, minutes] = values.time.split(":").map(Number);
+      const timeParts = values.time.split(":").map(Number);
+      const hours = timeParts[0] ?? 0;
+      const minutes = timeParts[1] ?? 0;
       const startDate = parseISO(values.date);
       const startTime = setMinutes(setHours(startDate, hours), minutes);
 
@@ -208,8 +203,7 @@ export function AppointmentDialog({
         };
 
         const result = await updateMutation.mutateAsync(updateData);
-        toast({
-          title: t("toast.updated"),
+        toast.success(t("toast.updated"), {
           description: t("toast.updatedDesc"),
         });
         onSuccess?.(result);
@@ -228,8 +222,7 @@ export function AppointmentDialog({
         };
 
         const result = await createMutation.mutateAsync(createData);
-        toast({
-          title: t("toast.created"),
+        toast.success(t("toast.created"), {
           description: t("toast.createdDesc"),
         });
         onSuccess?.(result);
@@ -237,10 +230,8 @@ export function AppointmentDialog({
 
       onOpenChange(false);
     } catch (error) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: error instanceof Error ? error.message : t("toast.errorDesc"),
-        variant: "destructive",
       });
     }
   };
@@ -267,7 +258,7 @@ export function AppointmentDialog({
                 control={form.control}
                 name="patientId"
                 rules={{ required: t("validation.patientRequired") }}
-                render={({ field }) => (
+                render={({ field: _field }) => (
                   <FormItem>
                     <FormLabel>{t("form.patient")}</FormLabel>
                     <FormControl>

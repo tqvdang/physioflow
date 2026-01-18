@@ -133,3 +133,36 @@ export interface PatientTimelineEntry {
   timestamp: string;
   metadata?: Record<string, unknown>;
 }
+
+/**
+ * Patient insurance info
+ */
+export interface PatientInsurance {
+  id: string;
+  patientId: string;
+  provider: string;
+  providerType: "bhyt" | "private" | "corporate";
+  policyNumber: string;
+  groupNumber?: string;
+  coveragePercentage: number;
+  copayAmount?: number;
+  validFrom: string;
+  validTo?: string;
+  isPrimary: boolean;
+  isActive: boolean;
+  verificationStatus: "pending" | "verified" | "failed";
+}
+
+/**
+ * Patient dashboard aggregated data
+ */
+export interface PatientDashboard {
+  patient: Patient;
+  totalAppointments: number;
+  upcomingAppointments: number;
+  completedSessions: number;
+  activeTreatmentPlans: number;
+  lastVisit?: string;
+  nextAppointment?: string;
+  insuranceInfo?: PatientInsurance[];
+}

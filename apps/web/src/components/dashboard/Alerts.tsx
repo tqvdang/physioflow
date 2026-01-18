@@ -31,28 +31,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 type AlertType = "warning" | "info" | "success" | "error";
 type AlertCategory = "appointment" | "report" | "follow-up" | "system";
 
-interface Alert {
+interface AlertData {
   id: string;
   type: AlertType;
   category: AlertCategory;
-  title: string;
-  description: string;
+  translationKey: string;
   timestamp: Date;
-  actionLabel?: string;
   actionHref?: string;
   dismissible?: boolean;
 }
 
-// Mock data for demonstration
-const mockAlerts: Alert[] = [
+// Mock alert data with translation keys
+const mockAlertData: AlertData[] = [
   {
     id: "1",
     type: "warning",
     category: "appointment",
-    title: "Lich hen chua xac nhan",
-    description: "3 lich hen ngay mai chua duoc benh nhan xac nhan",
+    translationKey: "unconfirmedAppointment",
     timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    actionLabel: "Xem chi tiet",
     actionHref: "/schedule?filter=unconfirmed",
     dismissible: true,
   },
@@ -60,10 +56,8 @@ const mockAlerts: Alert[] = [
     id: "2",
     type: "info",
     category: "report",
-    title: "Bao cao can hoan thanh",
-    description: "2 bao cao danh gia dang cho hoan thanh",
+    translationKey: "pendingReports",
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    actionLabel: "Xem bao cao",
     actionHref: "/reports?status=pending",
     dismissible: true,
   },
@@ -71,10 +65,8 @@ const mockAlerts: Alert[] = [
     id: "3",
     type: "warning",
     category: "follow-up",
-    title: "Nhac theo doi benh nhan",
-    description: "Nguyen Van A can duoc theo doi sau 2 tuan dieu tri",
+    translationKey: "followUpReminder",
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    actionLabel: "Xem benh nhan",
     actionHref: "/patients/1",
     dismissible: true,
   },
@@ -82,8 +74,7 @@ const mockAlerts: Alert[] = [
     id: "4",
     type: "success",
     category: "system",
-    title: "Cap nhat thanh cong",
-    description: "Thu vien bai tap da duoc cap nhat voi 5 bai tap moi",
+    translationKey: "updateSuccess",
     timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
     dismissible: true,
   },
@@ -91,10 +82,8 @@ const mockAlerts: Alert[] = [
     id: "5",
     type: "error",
     category: "system",
-    title: "Loi dong bo du lieu",
-    description: "Khong the dong bo du lieu voi he thong sao luu",
+    translationKey: "syncError",
     timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    actionLabel: "Thu lai",
     dismissible: false,
   },
 ];
@@ -103,7 +92,7 @@ export function Alerts() {
   const locale = useLocale();
   const t = useTranslations("dashboard.alerts");
   const dateLocale = locale === "vi" ? vi : enUS;
-  const [alerts, setAlerts] = React.useState(mockAlerts);
+  const [alerts, setAlerts] = React.useState(mockAlertData);
 
   const getAlertIcon = (type: AlertType) => {
     switch (type) {
@@ -196,6 +185,11 @@ export function Alerts() {
               alerts.map((alert) => {
                 const Icon = getAlertIcon(alert.type);
                 const CategoryIcon = getCategoryIcon(alert.category);
+                const title = t(`mockItems.${alert.translationKey}.title`);
+                const description = t(`mockItems.${alert.translationKey}.description`);
+                const actionLabel = t.has(`mockItems.${alert.translationKey}.action`)
+                  ? t(`mockItems.${alert.translationKey}.action`)
+                  : undefined;
 
                 return (
                   <div
@@ -220,11 +214,11 @@ export function Alerts() {
                       <Icon className={cn("mt-0.5 h-5 w-5", getIconColor(alert.type))} />
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{alert.title}</span>
+                          <span className="font-medium">{title}</span>
                           <CategoryIcon className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {alert.description}
+                          {description}
                         </p>
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs text-muted-foreground">
@@ -233,7 +227,7 @@ export function Alerts() {
                               locale: dateLocale,
                             })}
                           </span>
-                          {alert.actionLabel && alert.actionHref && (
+                          {actionLabel && alert.actionHref && (
                             <Button
                               variant="link"
                               size="sm"
@@ -241,7 +235,7 @@ export function Alerts() {
                               className="h-auto p-0 text-xs"
                             >
                               <Link href={`/${locale}${alert.actionHref}`}>
-                                {alert.actionLabel}
+                                {actionLabel}
                               </Link>
                             </Button>
                           )}

@@ -5,6 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { CommandPalette } from "@/components/common/CommandPalette";
 import { useIsMobile } from "@/hooks/use-media-query";
 
@@ -59,12 +60,17 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main
           className={cn(
             "flex-1 overflow-y-auto p-4 lg:p-6",
-            "bg-muted/30"
+            "bg-muted/30",
+            // Add bottom padding on mobile to account for bottom nav
+            "pb-20 lg:pb-6"
           )}
         >
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav />
 
       {/* Command Palette */}
       <CommandPalette

@@ -6,9 +6,9 @@
  */
 
 import { useState, useMemo } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useDebounce } from "@/hooks/use-media-query";
-import { useExercises } from "@/hooks/useExercises";
+import { useExercises } from "@/hooks/use-exercises";
 import { ExerciseCard } from "@/components/exercise/ExerciseCard";
 import { ExerciseDetail } from "@/components/exercise/ExerciseDetail";
 import { PrescribeDialog } from "@/components/exercise/PrescribeDialog";
@@ -22,12 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -38,7 +33,7 @@ import type {
   ExerciseSearchParams,
   PrescribeExerciseRequest,
 } from "@/types/exercise";
-import { CATEGORY_INFO, DIFFICULTY_INFO } from "@/types/exercise";
+import { CATEGORY_INFO } from "@/types/exercise";
 import { Search, Filter, Grid, List, X, Dumbbell } from "lucide-react";
 
 const ALL_CATEGORIES: ExerciseCategory[] = [
@@ -58,8 +53,6 @@ const ALL_DIFFICULTIES: ExerciseDifficulty[] = [
 
 export default function LibraryPage() {
   const t = useTranslations("library");
-  const locale = useLocale();
-  const isVi = locale === "vi";
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,12 +123,10 @@ export default function LibraryPage() {
       {/* Page header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          {isVi ? "Thu vien bai tap" : "Exercise Library"}
+          {t("title")}
         </h1>
         <p className="text-muted-foreground">
-          {isVi
-            ? "Tim kiem va ke don bai tap cho benh nhan"
-            : "Search and prescribe exercises for patients"}
+          {t("subtitle")}
         </p>
       </div>
 
@@ -145,7 +136,7 @@ export default function LibraryPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={isVi ? "Tim bai tap..." : "Search exercises..."}
+            placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -167,15 +158,15 @@ export default function LibraryPage() {
           >
             <SelectTrigger className="w-[160px]">
               <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder={isVi ? "Loai" : "Category"} />
+              <SelectValue placeholder={t("filters.category")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                {isVi ? "Tat ca loai" : "All categories"}
+                {t("allCategories")}
               </SelectItem>
               {ALL_CATEGORIES.map((cat) => (
                 <SelectItem key={cat} value={cat}>
-                  {isVi ? CATEGORY_INFO[cat].labelVi : CATEGORY_INFO[cat].label}
+                  {t(`categories.${cat}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -190,15 +181,15 @@ export default function LibraryPage() {
             }}
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder={isVi ? "Do kho" : "Difficulty"} />
+              <SelectValue placeholder={t("filters.difficulty")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                {isVi ? "Tat ca" : "All levels"}
+                {t("allLevels")}
               </SelectItem>
               {ALL_DIFFICULTIES.map((diff) => (
                 <SelectItem key={diff} value={diff}>
-                  {isVi ? DIFFICULTY_INFO[diff].labelVi : DIFFICULTY_INFO[diff].label}
+                  {t(`difficulties.${diff}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -208,7 +199,7 @@ export default function LibraryPage() {
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               <X className="h-4 w-4 mr-1" />
-              {isVi ? "Xoa bo loc" : "Clear"}
+              {t("filters.clear")}
             </Button>
           )}
 
@@ -238,7 +229,7 @@ export default function LibraryPage() {
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            {isVi ? "Bo loc:" : "Filters:"}
+            {t("activeFilters")}:
           </span>
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
@@ -251,9 +242,7 @@ export default function LibraryPage() {
           )}
           {selectedCategory !== "all" && (
             <Badge variant="secondary" className={cn("gap-1", CATEGORY_INFO[selectedCategory].color)}>
-              {isVi
-                ? CATEGORY_INFO[selectedCategory].labelVi
-                : CATEGORY_INFO[selectedCategory].label}
+              {t(`categories.${selectedCategory}`)}
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() => setSelectedCategory("all")}
@@ -262,9 +251,7 @@ export default function LibraryPage() {
           )}
           {selectedDifficulty !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              {isVi
-                ? DIFFICULTY_INFO[selectedDifficulty].labelVi
-                : DIFFICULTY_INFO[selectedDifficulty].label}
+              {t(`difficulties.${selectedDifficulty}`)}
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() => setSelectedDifficulty("all")}
@@ -280,8 +267,8 @@ export default function LibraryPage() {
           <Skeleton className="h-4 w-32" />
         ) : (
           <>
-            {total} {isVi ? "bai tap" : "exercises"}
-            {hasActiveFilters && ` (${isVi ? "da loc" : "filtered"})`}
+            {total} {t("exercisesCount")}
+            {hasActiveFilters && ` (${t("filtered")})`}
           </>
         )}
       </div>
@@ -308,26 +295,24 @@ export default function LibraryPage() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Dumbbell className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="font-medium">
-            {isVi ? "Khong the tai bai tap" : "Failed to load exercises"}
+            {t("error.loadFailed")}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            {isVi ? "Vui long thu lai sau" : "Please try again later"}
+            {t("error.tryAgain")}
           </p>
         </div>
       ) : exercises.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Dumbbell className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="font-medium">
-            {isVi ? "Khong tim thay bai tap" : "No exercises found"}
+            {t("empty.noResults")}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            {isVi
-              ? "Thu dieu chinh bo loc hoac tim kiem"
-              : "Try adjusting your filters or search"}
+            {t("empty.adjustFilters")}
           </p>
           {hasActiveFilters && (
             <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {isVi ? "Xoa bo loc" : "Clear filters"}
+              {t("filters.clear")}
             </Button>
           )}
         </div>
@@ -339,7 +324,7 @@ export default function LibraryPage() {
               : "space-y-4"
           )}
         >
-          {exercises.map((exercise) => (
+          {exercises.map((exercise: Exercise) => (
             <ExerciseCard
               key={exercise.id}
               exercise={exercise}
@@ -360,10 +345,10 @@ export default function LibraryPage() {
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
           >
-            {isVi ? "Truoc" : "Previous"}
+            {t("pagination.previous")}
           </Button>
           <span className="text-sm text-muted-foreground">
-            {isVi ? `Trang ${page} / ${totalPages}` : `Page ${page} of ${totalPages}`}
+            {t("pagination.page", { current: page, total: totalPages })}
           </span>
           <Button
             variant="outline"
@@ -371,7 +356,7 @@ export default function LibraryPage() {
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
           >
-            {isVi ? "Tiep" : "Next"}
+            {t("pagination.next")}
           </Button>
         </div>
       )}

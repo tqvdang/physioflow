@@ -6,7 +6,7 @@ services:
     container_name: emr-postgres
     restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-7012}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-emr}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
@@ -30,7 +30,7 @@ services:
     container_name: emr-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-7013}:6379"
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -47,7 +47,7 @@ services:
     container_name: emr-keycloak
     restart: unless-stopped
     ports:
-      - "${KEYCLOAK_PORT:-8180}:8080"
+      - "${KEYCLOAK_PORT:-7014}:8080"
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_secret}
@@ -59,7 +59,7 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_PROXY: edge
       # Environment variables for realm configuration
-      PHYSIOFLOW_WEB_URL: ${PHYSIOFLOW_WEB_URL:-http://localhost:3000}
+      PHYSIOFLOW_WEB_URL: ${PHYSIOFLOW_WEB_URL:-http://localhost:7010}
       KEYCLOAK_API_CLIENT_SECRET: ${KEYCLOAK_API_CLIENT_SECRET:-physioflow-api-secret-change-in-production}
     command: start-dev --import-realm
     volumes:
@@ -81,8 +81,8 @@ services:
     container_name: emr-minio
     restart: unless-stopped
     ports:
-      - "${MINIO_API_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_API_PORT:-7015}:9000"
+      - "${MINIO_CONSOLE_PORT:-7016}:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio_admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret}
@@ -124,7 +124,7 @@ services:
     container_name: emr-meilisearch
     restart: unless-stopped
     ports:
-      - "${MEILISEARCH_PORT:-7700}:7700"
+      - "${MEILISEARCH_PORT:-7017}:7700"
     environment:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-meili_master_key_dev}
       MEILI_ENV: development

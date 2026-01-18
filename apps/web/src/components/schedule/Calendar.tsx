@@ -1,17 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, addWeeks, subWeeks, type Locale } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AppointmentCard } from "./AppointmentCard";
-import type { Appointment, CalendarView, AppointmentType } from "@/types/appointment";
+import type { Appointment, CalendarView } from "@/types/appointment";
 import { getAppointmentBorderColor, getAppointmentBgColor } from "@/types/appointment";
 
 interface CalendarProps {
@@ -24,7 +23,7 @@ interface CalendarProps {
   onViewChange: (view: CalendarView) => void;
   onAppointmentClick?: (appointment: Appointment) => void;
   onSlotClick?: (date: Date, time: string) => void;
-  onAppointmentDrop?: (appointment: Appointment, newStartTime: Date) => void;
+  _onAppointmentDrop?: (appointment: Appointment, newStartTime: Date) => void;
 }
 
 // Time slots for day/week view (8 AM to 6 PM)
@@ -43,7 +42,6 @@ export function Calendar({
   onViewChange,
   onAppointmentClick,
   onSlotClick,
-  onAppointmentDrop,
 }: CalendarProps) {
   const locale = useLocale();
   const t = useTranslations("schedule");
@@ -126,7 +124,6 @@ export function Calendar({
           <DayView
             date={selectedDate}
             appointments={appointments}
-            dateLocale={dateLocale}
             onAppointmentClick={onAppointmentClick}
             onSlotClick={onSlotClick}
           />
@@ -143,7 +140,6 @@ export function Calendar({
           <MonthView
             date={selectedDate}
             appointments={appointments}
-            dateLocale={dateLocale}
             onAppointmentClick={onAppointmentClick}
             onDateChange={onDateChange}
           />
@@ -157,12 +153,11 @@ export function Calendar({
 interface DayViewProps {
   date: Date;
   appointments: Appointment[];
-  dateLocale: Locale;
   onAppointmentClick?: (appointment: Appointment) => void;
   onSlotClick?: (date: Date, time: string) => void;
 }
 
-function DayView({ date, appointments, dateLocale, onAppointmentClick, onSlotClick }: DayViewProps) {
+function DayView({ date, appointments, onAppointmentClick, onSlotClick }: DayViewProps) {
   const dayAppointments = appointments.filter((a) =>
     isSameDay(new Date(a.startTime), date)
   );
@@ -358,12 +353,11 @@ function WeekView({ date, appointments, dateLocale, onAppointmentClick, onSlotCl
 interface MonthViewProps {
   date: Date;
   appointments: Appointment[];
-  dateLocale: Locale;
   onAppointmentClick?: (appointment: Appointment) => void;
   onDateChange: (date: Date) => void;
 }
 
-function MonthView({ date, appointments, dateLocale, onAppointmentClick, onDateChange }: MonthViewProps) {
+function MonthView({ date, appointments, onAppointmentClick, onDateChange }: MonthViewProps) {
   const monthStart = startOfMonth(date);
   const monthEnd = endOfMonth(date);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });

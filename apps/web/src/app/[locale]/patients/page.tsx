@@ -8,6 +8,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +28,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { PatientStatusBadge } from "@/components/patient";
-import { usePatients } from "@/hooks/usePatients";
+import { usePatients } from "@/hooks/use-patients";
 import { formatDate, debounce } from "@/lib/utils";
 import type { Patient, PatientStatus } from "@/types/patient";
 import {
@@ -38,6 +39,8 @@ import {
   Edit,
   Play,
   Filter,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 /**
@@ -52,11 +55,41 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+/**
+ * Error state component
+ */
+function ErrorState({
+  message,
+  onRetry,
+  retryLabel,
+}: {
+  message: string;
+  onRetry: () => void;
+  retryLabel: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-muted-foreground text-center">{message}</p>
+        <Button variant="outline" onClick={onRetry}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          {retryLabel}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function PatientsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = (params.locale as string) ?? "vi";
+
+  // Translations
+  const t = useTranslations("patients");
+  const tCommon = useTranslations("common");
 
   // URL state
   const initialPage = Number(searchParams.get("page")) || 1;
@@ -84,7 +117,7 @@ export default function PatientsPage() {
   );
 
   // Fetch patients
-  const { data, isLoading } = usePatients({
+  const { data, isLoading, isError, refetch } = usePatients({
     page,
     pageSize: 10,
     search: debouncedSearch,
@@ -144,13 +177,13 @@ export default function PatientsPage() {
   const columns: Column<Patient>[] = [
     {
       key: "mrn",
-      header: "MRN",
+      header: t("table.mrn"),
       sortable: true,
       className: "w-24",
     },
     {
       key: "nameVi",
-      header: "Ten benh nhan",
+      header: t("table.name"),
       sortable: true,
       render: (_, patient) => {
         const displayName =
@@ -175,18 +208,18 @@ export default function PatientsPage() {
     },
     {
       key: "phone",
-      header: "So dien thoai",
+      header: t("table.phone"),
     },
     {
       key: "lastVisitDate",
-      header: "Lan kham cuoi",
+      header: t("table.lastVisit"),
       sortable: true,
       render: (value) =>
         value ? formatDate(value as string) : <span className="text-muted-foreground">-</span>,
     },
     {
       key: "status",
-      header: "Trang thai",
+      header: t("table.status"),
       render: (_, patient) => <PatientStatusBadge status={patient.status} />,
     },
     {
@@ -212,7 +245,7 @@ export default function PatientsPage() {
               }}
             >
               <Eye className="mr-2 h-4 w-4" />
-              Xem chi tiet
+              {t("actions.view")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -221,7 +254,7 @@ export default function PatientsPage() {
               }}
             >
               <Edit className="mr-2 h-4 w-4" />
-              Chinh sua
+              {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -231,7 +264,7 @@ export default function PatientsPage() {
               className="text-green-600"
             >
               <Play className="mr-2 h-4 w-4" />
-              Bat dau buoi tap
+              {t("actions.startSession")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -242,17 +275,17 @@ export default function PatientsPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Danh sach benh nhan</h1>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Quan ly thong tin va lich su dieu tri benh nhan
+            {t("description")}
           </p>
         </div>
-        <Link href={`/${locale}/patients/new`}>
+        <Link href={`/${locale}/patients/new` as any}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Benh nhan moi
+            {t("newPatient")}
           </Button>
         </Link>
       </div>
@@ -268,7 +301,7 @@ export default function PatientsPage() {
                 type="text"
                 value={search}
                 onChange={handleSearchChange}
-                placeholder="Tim kiem theo ten, MRN, so dien thoai..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-9"
               />
             </div>
@@ -280,41 +313,52 @@ export default function PatientsPage() {
             >
               <SelectTrigger className="w-full sm:w-48">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Trang thai" />
+                <SelectValue placeholder={t("status.all")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tat ca trang thai</SelectItem>
-                <SelectItem value="active">Dang dieu tri</SelectItem>
-                <SelectItem value="inactive">Khong hoat dong</SelectItem>
-                <SelectItem value="discharged">Da xuat vien</SelectItem>
-                <SelectItem value="pending">Cho xu ly</SelectItem>
+                <SelectItem value="all">{t("status.all")}</SelectItem>
+                <SelectItem value="active">{t("status.active")}</SelectItem>
+                <SelectItem value="inactive">{t("status.inactive")}</SelectItem>
+                <SelectItem value="discharged">{t("status.discharged")}</SelectItem>
+                <SelectItem value="pending">{t("status.pending")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
+      {/* Error State */}
+      {isError && (
+        <ErrorState
+          message={t("error")}
+          onRetry={() => refetch()}
+          retryLabel={tCommon("retry")}
+        />
+      )}
+
       {/* Patient Table */}
-      <Card>
-        <CardContent className="pt-6">
-          <DataTable
-            columns={columns}
-            data={data?.data ?? []}
-            keyField="id"
-            isLoading={isLoading}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            page={data?.meta.page ?? page}
-            pageSize={data?.meta.pageSize ?? 10}
-            total={data?.meta.total ?? 0}
-            totalPages={data?.meta.totalPages ?? 0}
-            onPageChange={handlePageChange}
-            onRowClick={handleRowClick}
-            emptyMessage="Khong tim thay benh nhan nao"
-          />
-        </CardContent>
-      </Card>
+      {!isError && (
+        <Card>
+          <CardContent className="pt-6">
+            <DataTable
+              columns={columns}
+              data={data?.data ?? []}
+              keyField="id"
+              isLoading={isLoading}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              page={data?.meta.page ?? page}
+              pageSize={data?.meta.pageSize ?? 10}
+              total={data?.meta.total ?? 0}
+              totalPages={data?.meta.totalPages ?? 0}
+              onPageChange={handlePageChange}
+              onRowClick={handleRowClick}
+              emptyMessage={t("empty")}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

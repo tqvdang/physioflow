@@ -5,13 +5,13 @@
  * Displays exercise info with image placeholder and quick info
  */
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Exercise } from "@/types/exercise";
-import { CATEGORY_INFO, DIFFICULTY_INFO, MUSCLE_GROUP_INFO } from "@/types/exercise";
+import type { Exercise, ExerciseCategory, ExerciseDifficulty, MuscleGroup } from "@/types/exercise";
+import { CATEGORY_INFO, DIFFICULTY_INFO } from "@/types/exercise";
 import { Dumbbell, Clock, Play, Plus, Image as ImageIcon } from "lucide-react";
 
 interface ExerciseCardProps {
@@ -23,6 +23,40 @@ interface ExerciseCardProps {
   className?: string;
 }
 
+// Map type values to translation keys
+const categoryKeyMap: Record<ExerciseCategory, string> = {
+  stretching: "stretching",
+  strengthening: "strengthening",
+  balance: "balance",
+  cardiovascular: "cardiovascular",
+  mobility: "mobility",
+  postural: "postural",
+};
+
+const difficultyKeyMap: Record<ExerciseDifficulty, string> = {
+  beginner: "beginner",
+  intermediate: "intermediate",
+  advanced: "advanced",
+};
+
+const muscleGroupKeyMap: Record<MuscleGroup, string> = {
+  neck: "neck",
+  shoulder: "shoulder",
+  upper_back: "upper_back",
+  lower_back: "lower_back",
+  chest: "chest",
+  core: "core",
+  hip: "hip",
+  glutes: "glutes",
+  quadriceps: "quadriceps",
+  hamstrings: "hamstrings",
+  calves: "calves",
+  ankle: "ankle",
+  wrist_forearm: "wrist_forearm",
+  elbow: "elbow",
+  full_body: "full_body",
+};
+
 export function ExerciseCard({
   exercise,
   variant = "full",
@@ -32,6 +66,7 @@ export function ExerciseCard({
   className,
 }: ExerciseCardProps) {
   const locale = useLocale();
+  const t = useTranslations("library");
   const isVi = locale === "vi";
 
   const name = isVi ? exercise.nameVi : exercise.name;
@@ -39,6 +74,10 @@ export function ExerciseCard({
 
   const categoryInfo = CATEGORY_INFO[exercise.category];
   const difficultyInfo = DIFFICULTY_INFO[exercise.difficulty];
+
+  // Get translated labels
+  const categoryLabel = t(`categories.${categoryKeyMap[exercise.category]}`);
+  const difficultyLabel = t(`difficulties.${difficultyKeyMap[exercise.difficulty]}`);
 
   // Get first few muscle groups for display
   const displayMuscleGroups = exercise.muscleGroups.slice(0, 3);
@@ -73,10 +112,10 @@ export function ExerciseCard({
               <h3 className="font-medium truncate">{name}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary" className={cn("text-xs", categoryInfo.color)}>
-                  {isVi ? categoryInfo.labelVi : categoryInfo.label}
+                  {categoryLabel}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
-                  {isVi ? difficultyInfo.labelVi : difficultyInfo.label}
+                  {difficultyLabel}
                 </Badge>
               </div>
             </div>
@@ -131,7 +170,7 @@ export function ExerciseCard({
         {/* Category badge */}
         <div className="absolute top-2 left-2">
           <Badge className={cn(categoryInfo.color)}>
-            {isVi ? categoryInfo.labelVi : categoryInfo.label}
+            {categoryLabel}
           </Badge>
         </div>
       </div>
@@ -153,18 +192,18 @@ export function ExerciseCard({
         {/* Difficulty and defaults */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
           <Badge variant="outline" className={cn("text-xs", difficultyInfo.color)}>
-            {isVi ? difficultyInfo.labelVi : difficultyInfo.label}
+            {difficultyLabel}
           </Badge>
 
           {exercise.defaultSets > 0 && (
             <span>
-              {exercise.defaultSets} {isVi ? "bo" : "sets"}
+              {exercise.defaultSets} {t("card.sets")}
             </span>
           )}
 
           {exercise.defaultReps > 0 && (
             <span>
-              {exercise.defaultReps} {isVi ? "lan" : "reps"}
+              {exercise.defaultReps} {t("card.reps")}
             </span>
           )}
 
@@ -179,10 +218,9 @@ export function ExerciseCard({
         {/* Muscle groups */}
         <div className="flex flex-wrap gap-1 mb-3">
           {displayMuscleGroups.map((mg) => {
-            const info = MUSCLE_GROUP_INFO[mg];
             return (
               <Badge key={mg} variant="secondary" className="text-xs">
-                {isVi ? info.labelVi : info.label}
+                {t(`muscleGroups.${muscleGroupKeyMap[mg]}`)}
               </Badge>
             );
           })}
@@ -210,7 +248,7 @@ export function ExerciseCard({
               className="flex-1"
               onClick={() => onView?.(exercise)}
             >
-              {isVi ? "Xem chi tiet" : "View details"}
+              {t("card.viewDetails")}
             </Button>
             {onPrescribe && (
               <Button
@@ -219,7 +257,7 @@ export function ExerciseCard({
                 onClick={() => onPrescribe(exercise)}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                {isVi ? "Ke don" : "Prescribe"}
+                {t("card.prescribe")}
               </Button>
             )}
           </div>

@@ -160,4 +160,14 @@ func registerRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	therapists := api.Group("/therapists")
 	therapists.GET("", h.Appointment.GetTherapists)
 	therapists.GET("/:id/availability", h.Appointment.GetTherapistAvailability)
+
+	// Exercise routes
+	exercises := api.Group("/exercises")
+	exercises.GET("", h.Exercise.List)
+	exercises.GET("/:id", h.Exercise.Get)
+	exercises.POST("", h.Exercise.Create)
+	exercises.PUT("/:id", h.Exercise.Update)
+	exercises.DELETE("/:id", h.Exercise.Delete)
+	exercises.POST("/:id/prescribe", h.Exercise.PrescribeExercise)
+	exercises.GET("/search", h.Exercise.Search)
 }

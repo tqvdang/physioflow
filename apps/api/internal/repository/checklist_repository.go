@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/tqvdang/physioflow/apps/api/internal/config"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
@@ -854,7 +855,7 @@ func (r *visitChecklistRepo) UpsertResponse(ctx context.Context, response *model
 
 // UpsertResponses creates or updates multiple responses.
 func (r *visitChecklistRepo) UpsertResponses(ctx context.Context, responses []model.ChecklistResponse) error {
-	tx, err := r.db.BeginTx(ctx, nil)
+	tx, err := r.db.BeginTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}

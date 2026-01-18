@@ -11,6 +11,9 @@ import {
   YesNoNA,
   VoiceText,
   MultiSelect,
+  DurationInput,
+  StrengthRating,
+  ComplianceInput,
 } from "./items";
 import { Input } from "@/components/ui/input";
 import type {
@@ -187,6 +190,49 @@ export function ChecklistItem({
             {typeof previousValue === "number" && previousValue !== value && (
               <DeltaDisplay current={value as number} previous={previousValue} />
             )}
+          </div>
+        );
+
+      case "duration":
+        return (
+          <div className="space-y-2">
+            <ItemHeader item={item} autoPopulated={autoPopulated} />
+            <DurationInput
+              value={typeof value === "number" ? value : 15}
+              onChange={(v) => onValueChange(v)}
+              previousValue={typeof previousValue === "number" ? previousValue : undefined}
+              disabled={disabled}
+              autoPopulated={autoPopulated}
+            />
+          </div>
+        );
+
+      case "strength_rating":
+        return (
+          <div className="space-y-2">
+            <ItemHeader item={item} autoPopulated={autoPopulated} />
+            <StrengthRating
+              value={typeof value === "number" ? value : 3}
+              onChange={(v) => onValueChange(v)}
+              baselineValue={typeof baselineValue === "number" ? baselineValue : undefined}
+              previousValue={typeof previousValue === "number" ? previousValue : undefined}
+              disabled={disabled}
+              autoPopulated={autoPopulated}
+            />
+          </div>
+        );
+
+      case "compliance":
+        return (
+          <div className="space-y-2">
+            <ItemHeader item={item} autoPopulated={autoPopulated} />
+            <ComplianceInput
+              value={typeof value === "number" ? value : 75}
+              onChange={(v) => onValueChange(v)}
+              previousValue={typeof previousValue === "number" ? previousValue : undefined}
+              disabled={disabled}
+              autoPopulated={autoPopulated}
+            />
           </div>
         );
 

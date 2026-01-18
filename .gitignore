@@ -23,7 +23,9 @@ coverage/
 .env.development
 .env.test
 .env.production
-*.env
+# Keep .env.example for reference
+!.env.example
+!**/.env.example
 
 # IDE and editors
 .idea/
@@ -89,6 +91,9 @@ credentials/
 tmp/
 temp/
 .cache/
+
+# Playwright
+.playwright-mcp/
 
 # Debug
 .debug/

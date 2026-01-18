@@ -1,169 +1,598 @@
 {
   "auth": {
-    "subtitle": "He thong Quan ly Phong kham Vat ly Tri lieu",
-    "loginForm": "Bieu mau dang nhap",
-    "welcomeBack": "Chao mung tro lai",
-    "signInPrompt": "Dang nhap vao tai khoan cua ban de tiep tuc",
-    "signIn": "Dang nhap",
-    "signingIn": "Dang dang nhap...",
-    "loginError": "Dang nhap that bai. Vui long thu lai.",
-    "secureLogin": "Dang nhap an toan",
-    "securityFeature1": "Ket noi duoc ma hoa SSL/TLS",
-    "securityFeature2": "Xac thuc hai yeu to kha dung",
-    "allRightsReserved": "Da dang ky ban quyen.",
-    "authenticating": "Dang xac thuc...",
-    "pleaseWait": "Vui long doi trong khi chung toi xac minh thong tin dang nhap cua ban.",
-    "authenticationFailed": "Xac thuc that bai",
-    "backToLogin": "Quay lai trang dang nhap",
-    "invalidCallback": "Yeu cau xac thuc khong hop le",
-    "callbackError": "Khong the hoan tat xac thuc",
-    "logout": "Dang xuat",
-    "profile": "Ho so"
+    "subtitle": "Hệ thống Quản lý Phòng khám Vật lý Trị liệu",
+    "loginForm": "Biểu mẫu đăng nhập",
+    "welcomeBack": "Chào mừng trở lại",
+    "signInPrompt": "Đăng nhập vào tài khoản của bạn để tiếp tục",
+    "signIn": "Đăng nhập",
+    "signingIn": "Đang đăng nhập...",
+    "loginError": "Đăng nhập thất bại. Vui lòng thử lại.",
+    "secureLogin": "Đăng nhập an toàn",
+    "securityFeature1": "Kết nối được mã hóa SSL/TLS",
+    "securityFeature2": "Xác thực hai yếu tố khả dụng",
+    "allRightsReserved": "Đã đăng ký bản quyền.",
+    "authenticating": "Đang xác thực...",
+    "pleaseWait": "Vui lòng đợi trong khi chúng tôi xác minh thông tin đăng nhập của bạn.",
+    "authenticationFailed": "Xác thực thất bại",
+    "backToLogin": "Quay lại trang đăng nhập",
+    "invalidCallback": "Yêu cầu xác thực không hợp lệ",
+    "callbackError": "Không thể hoàn tất xác thực",
+    "logout": "Đăng xuất",
+    "profile": "Hồ sơ"
   },
   "sidebar": {
     "nav": {
-      "dashboard": "Trang chu",
-      "schedule": "Lich hen",
-      "patients": "Benh nhan",
-      "library": "Thu vien",
-      "reports": "Bao cao"
+      "dashboard": "Trang chủ",
+      "schedule": "Lịch hẹn",
+      "patients": "Bệnh nhân",
+      "library": "Thư viện",
+      "reports": "Báo cáo"
     },
-    "settings": "Cai dat",
-    "language": "Ngon ngu"
+    "settings": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "more": "Xem thêm",
+    "switchLanguage": "Switch to English"
   },
   "header": {
-    "search": "Tim kiem...",
+    "search": "Tìm kiếm...",
     "quickActions": {
-      "title": "Thao tac nhanh",
-      "newPatient": "Benh nhan moi",
-      "newAssessment": "Danh gia moi",
-      "newSession": "Buoi tri lieu moi"
+      "title": "Thao tác nhanh",
+      "newPatient": "Bệnh nhân mới",
+      "newAssessment": "Đánh giá mới",
+      "newSession": "Buổi trị liệu mới"
     },
-    "notifications": "Thong bao",
-    "new": "moi",
-    "viewAllNotifications": "Xem tat ca thong bao",
+    "notifications": "Thông báo",
+    "new": "mới",
+    "viewAllNotifications": "Xem tất cả thông báo",
     "notificationItems": {
-      "appointmentReminder": "Nhac lich hen",
-      "appointmentReminderDesc": "Ban co 3 lich hen vao ngay mai",
-      "newPatient": "Benh nhan moi dang ky",
-      "newPatientDesc": "Nguyen Van A da duoc them vao danh sach benh nhan",
-      "reportReady": "Bao cao san sang",
-      "reportReadyDesc": "Bao cao tien do hang thang da san sang de xem"
+      "appointmentReminder": "Nhắc lịch hẹn",
+      "appointmentReminderDesc": "Bạn có 3 lịch hẹn vào ngày mai",
+      "newPatient": "Bệnh nhân mới đăng ký",
+      "newPatientDesc": "Nguyễn Văn A đã được thêm vào danh sách bệnh nhân",
+      "reportReady": "Báo cáo sẵn sàng",
+      "reportReadyDesc": "Báo cáo tiến độ hàng tháng đã sẵn sàng để xem"
     },
-    "settings": "Cai dat"
+    "settings": "Cài đặt"
   },
   "commandPalette": {
-    "placeholder": "Nhap lenh hoac tim kiem...",
-    "noResults": "Khong tim thay ket qua.",
+    "placeholder": "Nhập lệnh hoặc tìm kiếm...",
+    "noResults": "Không tìm thấy kết quả.",
     "groups": {
-      "navigation": "Dieu huong",
-      "quickActions": "Thao tac nhanh",
-      "settings": "Cai dat"
+      "navigation": "Điều hướng",
+      "quickActions": "Thao tác nhanh",
+      "settings": "Cài đặt"
     },
     "navigation": {
-      "dashboard": "Di den Trang chu",
-      "schedule": "Di den Lich hen",
-      "patients": "Di den Benh nhan",
-      "library": "Di den Thu vien",
-      "reports": "Di den Bao cao"
+      "dashboard": "Đi đến Trang chủ",
+      "schedule": "Đi đến Lịch hẹn",
+      "patients": "Đi đến Bệnh nhân",
+      "library": "Đi đến Thư viện",
+      "reports": "Đi đến Báo cáo"
     },
     "actions": {
-      "newPatient": "Tao Benh nhan moi",
-      "newAssessment": "Tao Danh gia moi",
-      "newSession": "Tao Buoi tri lieu moi"
+      "newPatient": "Tạo Bệnh nhân mới",
+      "newAssessment": "Tạo Đánh giá mới",
+      "newSession": "Tạo Buổi trị liệu mới"
     },
     "settings": {
-      "profile": "Di den Ho so",
-      "preferences": "Di den Cai dat"
+      "profile": "Đi đến Hồ sơ",
+      "preferences": "Đi đến Cài đặt"
     }
   },
   "dashboard": {
-    "title": "Trang chu",
-    "welcome": "Chao mung den PhysioFlow EMR",
-    "description": "Chao mung den PhysioFlow - He thong Ho so Benh an Dien tu danh cho Vat ly Tri lieu",
+    "title": "Trang chủ",
+    "welcome": "Chào mừng đến PhysioFlow EMR",
+    "description": "Chào mừng đến PhysioFlow - Hệ thống Hồ sơ Bệnh án Điện tử dành cho Vật lý Trị liệu",
     "greeting": {
-      "morning": "Chao buoi sang",
-      "afternoon": "Chao buoi chieu",
-      "evening": "Chao buoi toi",
-      "therapist": "Chuyen vien tri lieu"
+      "morning": "Chào buổi sáng",
+      "afternoon": "Chào buổi chiều",
+      "evening": "Chào buổi tối",
+      "therapist": "Chuyên viên trị liệu"
     },
     "stats": {
-      "patients": "Benh nhan",
-      "patientsDescription": "Tong so benh nhan da dang ky",
-      "appointments": "Lich hen",
-      "appointmentsDescription": "Lich hen hom nay",
-      "sessions": "Buoi tri lieu",
-      "sessionsDescription": "Buoi tri lieu trong tuan",
-      "reports": "Bao cao",
-      "reportsDescription": "Bao cao cho xu ly"
+      "patients": "Bệnh nhân",
+      "patientsDescription": "Tổng số bệnh nhân đã đăng ký",
+      "appointments": "Lịch hẹn",
+      "appointmentsDescription": "Lịch hẹn hôm nay",
+      "sessions": "Buổi trị liệu",
+      "sessionsDescription": "Buổi trị liệu trong tuần",
+      "reports": "Báo cáo",
+      "reportsDescription": "Báo cáo chờ xử lý"
     },
     "gettingStarted": {
-      "title": "Bat dau",
-      "description": "Day la trang chu cua PhysioFlow. Cac thanh phan va tinh nang se duoc them khi phat trien."
+      "title": "Bắt đầu",
+      "description": "Đây là trang chủ của PhysioFlow. Các thành phần và tính năng sẽ được thêm khi phát triển."
     },
     "schedule": {
-      "title": "Lich hen hom nay",
-      "viewAll": "Xem tat ca",
-      "noAppointments": "Khong co lich hen nao hom nay",
-      "minutes": "phut",
+      "title": "Lịch hẹn hôm nay",
+      "viewAll": "Xem tất cả",
+      "noAppointments": "Không có lịch hẹn nào hôm nay",
+      "minutes": "phút",
       "status": {
-        "scheduled": "Da len lich",
-        "in-progress": "Dang dien ra",
-        "completed": "Hoan thanh",
-        "cancelled": "Da huy"
+        "scheduled": "Đã lên lịch",
+        "in-progress": "Đang diễn ra",
+        "completed": "Hoàn thành",
+        "cancelled": "Đã hủy"
       },
       "type": {
-        "assessment": "Danh gia",
-        "treatment": "Dieu tri",
-        "followup": "Theo doi"
+        "assessment": "Đánh giá",
+        "treatment": "Điều trị",
+        "followup": "Theo dõi"
       }
     },
     "quickActions": {
-      "title": "Thao tac nhanh",
-      "description": "Truy cap nhanh cac tac vu thuong dung",
-      "newPatient": "Benh nhan moi",
-      "newPatientDesc": "Dang ky benh nhan moi",
-      "newAssessment": "Danh gia moi",
-      "newAssessmentDesc": "Bat dau danh gia",
-      "newSession": "Buoi tri lieu moi",
-      "newSessionDesc": "Len lich buoi tri lieu",
-      "newReport": "Bao cao moi",
-      "newReportDesc": "Tao bao cao"
+      "title": "Thao tác nhanh",
+      "description": "Truy cập nhanh các tác vụ thường dùng",
+      "newPatient": "Bệnh nhân mới",
+      "newPatientDesc": "Đăng ký bệnh nhân mới",
+      "newAssessment": "Đánh giá mới",
+      "newAssessmentDesc": "Bắt đầu đánh giá",
+      "newSession": "Buổi trị liệu mới",
+      "newSessionDesc": "Lên lịch buổi trị liệu",
+      "newReport": "Báo cáo mới",
+      "newReportDesc": "Tạo báo cáo"
     },
     "recentPatients": {
-      "title": "Benh nhan gan day",
-      "description": "Benh nhan ban da lam viec gan day",
-      "viewAll": "Xem tat ca",
-      "noPatients": "Khong co benh nhan gan day",
-      "lastVisit": "Lan kham cuoi",
-      "progress": "Tien do",
+      "title": "Bệnh nhân gần đây",
+      "description": "Bệnh nhân bạn đã làm việc gần đây",
+      "viewAll": "Xem tất cả",
+      "noPatients": "Không có bệnh nhân gần đây",
+      "lastVisit": "Lần khám cuối",
+      "progress": "Tiến độ",
       "status": {
-        "active": "Dang dieu tri",
-        "paused": "Tam dung",
-        "completed": "Hoan thanh"
+        "active": "Đang điều trị",
+        "paused": "Tạm dừng",
+        "completed": "Hoàn thành"
       },
-      "continue": "Tiep tuc",
+      "continue": "Tiếp tục",
       "view": "Xem"
     },
     "alerts": {
-      "title": "Canh bao & Nhac nho",
-      "description": "Thong bao va nhac nho quan trong",
-      "noAlerts": "Khong co canh bao nao luc nay",
-      "dismiss": "Bo qua",
-      "dismissAll": "Bo qua tat ca"
+      "title": "Cảnh báo & Nhắc nhở",
+      "description": "Thông báo và nhắc nhở quan trọng",
+      "noAlerts": "Không có cảnh báo nào lúc này",
+      "dismiss": "Bỏ qua",
+      "dismissAll": "Bỏ qua tất cả",
+      "mockItems": {
+        "unconfirmedAppointment": {
+          "title": "Lịch hẹn chưa xác nhận",
+          "description": "3 lịch hẹn ngày mai chưa được bệnh nhân xác nhận",
+          "action": "Xem chi tiết"
+        },
+        "pendingReports": {
+          "title": "Báo cáo cần hoàn thành",
+          "description": "2 báo cáo đánh giá đang chờ hoàn thành",
+          "action": "Xem báo cáo"
+        },
+        "followUpReminder": {
+          "title": "Nhắc theo dõi bệnh nhân",
+          "description": "Nguyễn Văn A cần được theo dõi sau 2 tuần điều trị",
+          "action": "Xem bệnh nhân"
+        },
+        "updateSuccess": {
+          "title": "Cập nhật thành công",
+          "description": "Thư viện bài tập đã được cập nhật với 5 bài tập mới"
+        },
+        "syncError": {
+          "title": "Lỗi đồng bộ dữ liệu",
+          "description": "Không thể đồng bộ dữ liệu với hệ thống sao lưu",
+          "action": "Thử lại"
+        }
+      }
     }
   },
   "common": {
-    "loading": "Dang tai...",
-    "error": "Da xay ra loi",
-    "save": "Luu",
-    "cancel": "Huy",
-    "delete": "Xoa",
-    "edit": "Chinh sua",
-    "create": "Tao moi",
-    "search": "Tim kiem",
-    "filter": "Loc",
-    "export": "Xuat",
-    "import": "Nhap"
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "create": "Tạo mới",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "export": "Xuất",
+    "import": "Nhập",
+    "retry": "Thử lại",
+    "noData": "Không có dữ liệu"
+  },
+  "schedule": {
+    "title": "Lịch hẹn",
+    "subtitle": "Quản lý lịch hẹn và lịch làm việc",
+    "createNew": "Tạo lịch hẹn",
+    "today": "Hôm nay",
+    "view": {
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng"
+    },
+    "filter": {
+      "allTherapists": "Tất cả chuyên viên",
+      "status": "Trạng thái",
+      "type": "Loại"
+    },
+    "status": {
+      "scheduled": "Đã lên lịch",
+      "confirmed": "Đã xác nhận",
+      "in_progress": "Đang diễn ra",
+      "completed": "Hoàn thành",
+      "cancelled": "Đã hủy",
+      "no_show": "Vắng mặt"
+    },
+    "type": {
+      "assessment": "Đánh giá",
+      "treatment": "Điều trị",
+      "followup": "Theo dõi",
+      "consultation": "Tư vấn",
+      "other": "Khác"
+    },
+    "notes": "Ghi chú",
+    "recurring": "Lịch hẹn định kỳ",
+    "actions": {
+      "edit": "Chỉnh sửa",
+      "reschedule": "Đổi lịch",
+      "cancel": "Hủy lịch",
+      "delete": "Xóa"
+    },
+    "dialog": {
+      "createTitle": "Tạo lịch hẹn",
+      "createDesc": "Lên lịch hẹn mới cho bệnh nhân",
+      "editTitle": "Chỉnh sửa lịch hẹn",
+      "editDesc": "Thay đổi thông tin lịch hẹn",
+      "cancel": "Hủy",
+      "save": "Lưu thay đổi",
+      "create": "Tạo lịch hẹn"
+    },
+    "cancelDialog": {
+      "title": "Hủy lịch hẹn",
+      "description": "Bạn có chắc chắn muốn hủy lịch hẹn này? Hành động này không thể hoàn tác.",
+      "cancel": "Quay lại",
+      "confirm": "Hủy lịch hẹn",
+      "cancelling": "Đang hủy..."
+    },
+    "deleteDialog": {
+      "title": "Xóa lịch hẹn",
+      "description": "Bạn có chắc chắn muốn xóa vĩnh viễn lịch hẹn này? Hành động này không thể hoàn tác.",
+      "cancel": "Quay lại",
+      "confirm": "Xóa",
+      "deleting": "Đang xóa..."
+    },
+    "form": {
+      "patient": "Bệnh nhân",
+      "searchPatient": "Tìm bệnh nhân theo tên hoặc MRN...",
+      "noPatients": "Không tìm thấy bệnh nhân",
+      "change": "Đổi",
+      "therapist": "Chuyên viên trị liệu",
+      "selectTherapist": "Chọn chuyên viên trị liệu",
+      "date": "Ngày",
+      "time": "Giờ",
+      "availableSlots": "Khung giờ trống",
+      "noSlots": "Không có khung giờ trống cho ngày này",
+      "duration": "Thời lượng",
+      "type": "Loại",
+      "room": "Phòng",
+      "roomPlaceholder": "VD: Phòng 101",
+      "notes": "Ghi chú",
+      "notesPlaceholder": "Ghi chú thêm...",
+      "recurrence": "Lặp lại",
+      "recurrenceCount": "Số lịch hẹn",
+      "recurrenceCountDesc": "Số lượng lịch hẹn cần tạo",
+      "recurrenceEndDate": "Ngày kết thúc",
+      "recurrenceEndDateDesc": "Hoặc chỉ định ngày kết thúc"
+    },
+    "recurrence": {
+      "none": "Không lặp lại",
+      "daily": "Hàng ngày",
+      "weekly": "Hàng tuần",
+      "biweekly": "2 tuần một lần",
+      "monthly": "Hàng tháng"
+    },
+    "validation": {
+      "patientRequired": "Vui lòng chọn bệnh nhân",
+      "therapistRequired": "Vui lòng chọn chuyên viên trị liệu",
+      "dateRequired": "Vui lòng chọn ngày",
+      "timeRequired": "Vui lòng chọn giờ"
+    },
+    "toast": {
+      "created": "Đã tạo lịch hẹn",
+      "createdDesc": "Lịch hẹn đã được lên thành công",
+      "updated": "Đã cập nhật lịch hẹn",
+      "updatedDesc": "Lịch hẹn đã được cập nhật thành công",
+      "cancelled": "Đã hủy lịch hẹn",
+      "cancelledDesc": "Lịch hẹn đã được hủy",
+      "deleted": "Đã xóa lịch hẹn",
+      "deletedDesc": "Lịch hẹn đã được xóa",
+      "error": "Lỗi",
+      "errorDesc": "Đã xảy ra lỗi. Vui lòng thử lại."
+    },
+    "quickActions": {
+      "plus3Days": "+3 ngày",
+      "plus7Days": "+7 ngày"
+    }
+  },
+  "patients": {
+    "title": "Danh sách bệnh nhân",
+    "description": "Quản lý thông tin và lịch sử điều trị bệnh nhân",
+    "newPatient": "Bệnh nhân mới",
+    "searchPlaceholder": "Tìm kiếm theo tên, MRN, số điện thoại...",
+    "table": {
+      "mrn": "MRN",
+      "name": "Tên bệnh nhân",
+      "phone": "Số điện thoại",
+      "lastVisit": "Lần khám cuối",
+      "status": "Trạng thái",
+      "age": "Tuổi"
+    },
+    "status": {
+      "all": "Tất cả trạng thái",
+      "active": "Đang điều trị",
+      "inactive": "Không hoạt động",
+      "discharged": "Đã xuất viện",
+      "pending": "Chờ xử lý"
+    },
+    "actions": {
+      "view": "Xem chi tiết",
+      "edit": "Chỉnh sửa",
+      "startSession": "Bắt đầu buổi tập"
+    },
+    "empty": "Không tìm thấy bệnh nhân nào",
+    "error": "Không thể tải danh sách bệnh nhân",
+    "pagination": {
+      "showing": "Hiển thị {start} - {end} trong tổng số {total} kết quả",
+      "page": "Trang {current} / {total}"
+    }
+  },
+  "library": {
+    "title": "Thư viện bài tập",
+    "subtitle": "Duyệt và quản lý bài tập",
+    "searchPlaceholder": "Tìm kiếm bài tập...",
+    "filters": {
+      "category": "Danh mục",
+      "difficulty": "Độ khó",
+      "muscleGroup": "Nhóm cơ",
+      "clear": "Xóa bộ lọc"
+    },
+    "categories": {
+      "stretching": "Kéo giãn",
+      "strengthening": "Tăng cường sức mạnh",
+      "balance": "Thăng bằng",
+      "cardiovascular": "Tim mạch",
+      "mobility": "Vận động",
+      "postural": "Tư thế"
+    },
+    "difficulties": {
+      "beginner": "Cơ bản",
+      "intermediate": "Trung bình",
+      "advanced": "Nâng cao"
+    },
+    "muscleGroups": {
+      "neck": "Cổ",
+      "shoulder": "Vai",
+      "upper_back": "Lưng trên",
+      "lower_back": "Lưng dưới",
+      "chest": "Ngực",
+      "core": "Cơ trung tâm",
+      "hip": "Hông",
+      "glutes": "Cơ mông",
+      "quadriceps": "Cơ tứ đầu đùi",
+      "hamstrings": "Cơ gân kheo",
+      "calves": "Bắp chân",
+      "ankle": "Cổ chân",
+      "wrist_forearm": "Cổ tay & Cẳng tay",
+      "elbow": "Khuỷu tay",
+      "full_body": "Toàn thân"
+    },
+    "card": {
+      "sets": "Hiệp",
+      "reps": "Lần",
+      "hold": "Giữ",
+      "seconds": "giây",
+      "equipment": "Dụng cụ",
+      "viewDetails": "Xem chi tiết",
+      "prescribe": "Kê đơn"
+    },
+    "detail": {
+      "description": "Mô tả",
+      "defaultParameters": "Thông số mặc định",
+      "instructions": "Hướng dẫn",
+      "precautions": "Lưu ý",
+      "video": "Video",
+      "prescribeToPatient": "Kê đơn bài tập này"
+    },
+    "empty": {
+      "noExercises": "Không có bài tập nào",
+      "noResults": "Không tìm thấy bài tập phù hợp"
+    },
+    "prescription": {
+      "addToProgram": "Thêm vào chương trình",
+      "prescribed": "Đã kê đơn",
+      "prescribing": "Đang kê đơn...",
+      "title": "Kê đơn bài tập",
+      "prescribingTo": "Kê đơn cho",
+      "setParams": "Thiết lập thông số bài tập cho bệnh nhân",
+      "sets": "Số bộ",
+      "reps": "Số lần",
+      "holdSeconds": "Giữ (s)",
+      "frequency": "Tần suất",
+      "duration": "Thời gian",
+      "customInstructions": "Hướng dẫn đặc biệt",
+      "customInstructionsPlaceholder": "Thêm hướng dẫn cụ thể cho bệnh nhân...",
+      "notes": "Ghi chú (nội bộ)",
+      "notesPlaceholder": "Ghi chú cho bác sĩ...",
+      "cancel": "Hủy",
+      "prescribe": "Kê đơn",
+      "frequencies": {
+        "1x_day": "1 lần/ngày",
+        "2x_day": "2 lần/ngày",
+        "3x_day": "3 lần/ngày",
+        "1x_week": "1 lần/tuần",
+        "2x_week": "2 lần/tuần",
+        "3x_week": "3 lần/tuần",
+        "daily": "Hàng ngày",
+        "every_other_day": "Cách ngày"
+      },
+      "durations": {
+        "2_weeks": "2 tuần",
+        "4_weeks": "4 tuần",
+        "6_weeks": "6 tuần",
+        "8_weeks": "8 tuần",
+        "12_weeks": "12 tuần"
+      }
+    }
+  },
+  "session": {
+    "title": "Buổi trị liệu",
+    "checklist": "Danh sách kiểm tra",
+    "timer": "Đồng hồ",
+    "elapsed": "Đã trôi qua",
+    "sections": {
+      "pretreatment": "Trước điều trị",
+      "assessment": "Đánh giá",
+      "treatment": "Điều trị",
+      "wrapup": "Kết thúc"
+    },
+    "items": {
+      "reviewPlan": "Xem lại kế hoạch điều trị",
+      "compliance": "Tuân thủ tập tại nhà",
+      "painCheck": "Kiểm tra đau",
+      "rom": "Phạm vi vận động",
+      "strength": "Sức mạnh",
+      "specialTest": "Kiểm tra đặc biệt",
+      "manualTherapy": "Trị liệu bằng tay",
+      "therapeuticExercise": "Tập trị liệu",
+      "modalities": "Phương thức",
+      "homeProgram": "Cập nhật chương trình tại nhà",
+      "scheduleNext": "Đặt lịch hẹn tiếp",
+      "education": "Giáo dục bệnh nhân"
+    },
+    "values": {
+      "improved": "Cải thiện",
+      "same": "Không đổi",
+      "worse": "Xấu hơn",
+      "positive": "Dương tính",
+      "negative": "Âm tính",
+      "notApplicable": "Không áp dụng"
+    },
+    "actions": {
+      "complete": "Hoàn thành buổi trị liệu",
+      "generateNote": "Tạo ghi chú SOAP",
+      "save": "Lưu tiến độ",
+      "discard": "Hủy bỏ"
+    },
+    "quickSchedule": {
+      "plus3Days": "+3 ngày",
+      "plus7Days": "+7 ngày",
+      "custom": "Tùy chọn"
+    },
+    "soapNote": {
+      "title": "Ghi chú SOAP",
+      "subjective": "Chủ quan",
+      "objective": "Khách quan",
+      "assessment": "Đánh giá",
+      "plan": "Kế hoạch",
+      "sign": "Ký ghi chú",
+      "edit": "Chỉnh sửa ghi chú"
+    }
+  },
+  "patientDetail": {
+    "title": "Thông tin bệnh nhân",
+    "back": "Quay lại danh sách",
+    "actions": "Thao tác",
+    "edit": "Chỉnh sửa bệnh nhân",
+    "delete": "Xóa bệnh nhân",
+    "startSession": "Bắt đầu buổi tập",
+    "tabs": {
+      "status": "Trạng thái",
+      "sessions": "Buổi tập",
+      "exercises": "Bài tập",
+      "progress": "Tiến độ",
+      "files": "Tài liệu"
+    },
+    "status": {
+      "currentStatus": "Trạng thái hiện tại",
+      "pain": "Mức độ đau",
+      "rom": "Tầm vận động",
+      "goals": "Mục tiêu điều trị",
+      "improvement": "Cải thiện",
+      "progress": "Tiến độ"
+    },
+    "timeline": {
+      "title": "Dòng thời gian",
+      "session": "Buổi tập",
+      "noSessions": "Chưa có buổi tập nào"
+    },
+    "insurance": {
+      "title": "Bảo hiểm",
+      "provider": "Nhà cung cấp",
+      "policyNumber": "Số hợp đồng",
+      "coverage": "Phạm vi bảo hiểm",
+      "validFrom": "Hiệu lực từ",
+      "validTo": "Hiệu lực đến",
+      "status": {
+        "pending": "Chờ xác minh",
+        "verified": "Đã xác minh",
+        "failed": "Không hợp lệ"
+      }
+    },
+    "medicalAlerts": {
+      "title": "Cảnh báo y tế",
+      "noAlerts": "Không có cảnh báo y tế"
+    }
+  },
+  "patientForm": {
+    "titleNew": "Đăng ký bệnh nhân mới",
+    "titleEdit": "Chỉnh sửa thông tin",
+    "description": "Nhập thông tin bệnh nhân để tạo hồ sơ mới",
+    "updateDescription": "Cập nhật thông tin bệnh nhân {name}",
+    "notFound": "Không tìm thấy bệnh nhân",
+    "notFoundDescription": "Bệnh nhân bạn đang tìm không tồn tại hoặc đã bị xóa.",
+    "backToList": "Quay lại danh sách",
+    "fields": {
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "firstNameVi": "Tên (tiếng Việt)",
+      "lastNameVi": "Họ (tiếng Việt)",
+      "dateOfBirth": "Ngày sinh",
+      "gender": "Giới tính",
+      "phone": "Số điện thoại",
+      "email": "Địa chỉ email",
+      "address": "Địa chỉ",
+      "addressVi": "Địa chỉ (tiếng Việt)",
+      "languagePreference": "Ngôn ngữ ưu tiên"
+    },
+    "emergencyContact": {
+      "title": "Liên hệ khẩn cấp",
+      "name": "Tên người liên hệ",
+      "phone": "Số điện thoại liên hệ",
+      "relationship": "Mối quan hệ"
+    },
+    "medicalAlerts": {
+      "title": "Cảnh báo y tế",
+      "placeholder": "Nhập cảnh báo y tế (dị ứng, bệnh lý, v.v.)",
+      "add": "Thêm cảnh báo"
+    },
+    "notes": {
+      "title": "Ghi chú",
+      "placeholder": "Ghi chú thêm về bệnh nhân..."
+    },
+    "validation": {
+      "firstNameRequired": "Vui lòng nhập tên",
+      "lastNameRequired": "Vui lòng nhập họ",
+      "dateOfBirthRequired": "Vui lòng nhập ngày sinh",
+      "phoneRequired": "Vui lòng nhập số điện thoại",
+      "phoneInvalid": "Số điện thoại không hợp lệ",
+      "emailInvalid": "Địa chỉ email không hợp lệ"
+    },
+    "buttons": {
+      "save": "Lưu bệnh nhân",
+      "cancel": "Hủy",
+      "saving": "Đang lưu..."
+    }
+  },
+  "gender": {
+    "male": "Nam",
+    "female": "Nữ",
+    "other": "Khác",
+    "preferNotToSay": "Không muốn trả lời"
   }
 }

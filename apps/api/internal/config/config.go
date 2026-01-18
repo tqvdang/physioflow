@@ -57,18 +57,18 @@ func Load() (*Config, error) {
 	return &Config{
 		Env: getEnv("ENV", "development"),
 		Server: ServerConfig{
-			Port:         getEnv("PORT", "8080"),
+			Port:         getEnv("PORT", "7011"),
 			ReadTimeout:  getEnvAsInt("SERVER_READ_TIMEOUT", 30),
 			WriteTimeout: getEnvAsInt("SERVER_WRITE_TIMEOUT", 30),
 		},
 		Database: DatabaseConfig{
-			URL:             getEnv("DATABASE_URL", "postgres://physioflow:physioflow@localhost:5432/physioflow?sslmode=disable"),
+			URL:             getEnv("DATABASE_URL", "postgres://emr:emr_secret_dev_only@localhost:7012/physioflow?sslmode=disable"),
 			MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
 			MaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: getEnvAsInt("DB_CONN_MAX_LIFETIME", 300),
 		},
 		Redis: RedisConfig{
-			URL:      getEnv("REDIS_URL", "localhost:6379"),
+			URL:      getEnv("REDIS_URL", "localhost:7013"),
 			Password: getEnv("REDIS_PASSWORD", ""),
 			DB:       getEnvAsInt("REDIS_DB", 0),
 		},
@@ -78,7 +78,7 @@ func Load() (*Config, error) {
 			Expiration: getEnvAsInt("JWT_EXPIRATION", 3600),
 		},
 		Keycloak: KeycloakConfig{
-			URL:      getEnv("KEYCLOAK_URL", "http://localhost:8081"),
+			URL:      getEnv("KEYCLOAK_URL", "http://localhost:7014"),
 			Realm:    getEnv("KEYCLOAK_REALM", "physioflow"),
 			ClientID: getEnv("KEYCLOAK_CLIENT_ID", "physioflow-api"),
 			Secret:   getEnv("KEYCLOAK_SECRET", ""),

@@ -1,0 +1,261 @@
+# =============================================================================
+# PhysioFlow EMR - Full Stack Development Environment
+# =============================================================================
+# Usage: docker compose up -d
+# Or use the Makefile: make dev
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # Database Services
+  # ===========================================================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: physioflow-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-7012}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-emr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-physioflow}
+      LANG: vi_VN.utf8
+      LC_ALL: vi_VN.utf8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/db/migrations:/migrations:ro
+      - ./infrastructure/db/seeds:/seeds:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-emr} -d ${POSTGRES_DB:-physioflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - physioflow-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: physioflow-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-7013}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - physioflow-network
+
+  # ===========================================================================
+  # Authentication
+  # ===========================================================================
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: physioflow-keycloak
+    restart: unless-stopped
+    ports:
+      - "${KEYCLOAK_PORT:-7014}:8080"
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_secret}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${POSTGRES_USER:-emr}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      PHYSIOFLOW_WEB_URL: ${PHYSIOFLOW_WEB_URL:-http://localhost:7010}
+      KEYCLOAK_API_CLIENT_SECRET: ${KEYCLOAK_API_CLIENT_SECRET:-physioflow-api-secret}
+    command: start-dev --import-realm
+    volumes:
+      - ./infrastructure/docker/keycloak/realms:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - physioflow-network
+
+  # ===========================================================================
+  # Storage & Search
+  # ===========================================================================
+
+  minio:
+    image: minio/minio:latest
+    container_name: physioflow-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT:-7015}:9000"
+      - "${MINIO_CONSOLE_PORT:-7016}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - physioflow-network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: physioflow-meilisearch
+    restart: unless-stopped
+    ports:
+      - "${MEILISEARCH_PORT:-7017}:7700"
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-meili_master_key_dev}
+      MEILI_ENV: development
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - physioflow-network
+
+  # ===========================================================================
+  # Database Migration Runner
+  # ===========================================================================
+
+  db-migrate:
+    image: postgres:16-alpine
+    container_name: physioflow-db-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./infrastructure/db/migrations:/migrations:ro
+      - ./infrastructure/db/seeds:/seeds:ro
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-emr}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
+      PGDATABASE: ${POSTGRES_DB:-physioflow}
+    entrypoint: >
+      /bin/sh -c "
+        echo 'Waiting for PostgreSQL...';
+        sleep 5;
+        echo 'Running migrations...';
+        for f in /migrations/*.sql; do
+          echo \"Running $$f\";
+          psql -f \"$$f\" 2>&1 || true;
+        done;
+        echo 'Running seeds...';
+        for f in /seeds/patients.sql /seeds/exercises.sql /seeds/checklists.sql; do
+          if [ -f \"$$f\" ]; then
+            echo \"Seeding $$f\";
+            psql -f \"$$f\" 2>&1 || true;
+          fi;
+        done;
+        echo 'Database setup complete!';
+      "
+    networks:
+      - physioflow-network
+
+  # ===========================================================================
+  # Application Services
+  # ===========================================================================
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: physioflow-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-7011}:8080"
+    environment:
+      # Server
+      SERVER_PORT: 8080
+      SERVER_ENV: development
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-emr}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-emr_secret}
+      DB_NAME: ${POSTGRES_DB:-physioflow}
+      DB_SSLMODE: disable
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Keycloak
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: physioflow
+      KEYCLOAK_CLIENT_ID: physioflow-api
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_API_CLIENT_SECRET:-physioflow-api-secret}
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio_admin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio_secret}
+      MINIO_USE_SSL: "false"
+      # Meilisearch
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: ${MEILI_MASTER_KEY:-meili_master_key_dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    networks:
+      - physioflow-network
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    container_name: physioflow-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-7010}:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:${API_PORT:-7011}
+      NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:${KEYCLOAK_PORT:-7014}
+      NEXT_PUBLIC_KEYCLOAK_REALM: physioflow
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: physioflow-web
+    depends_on:
+      - api
+    networks:
+      - physioflow-network
+
+networks:
+  physioflow-network:
+    name: physioflow-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: physioflow-postgres-data
+  redis_data:
+    name: physioflow-redis-data
+  minio_data:
+    name: physioflow-minio-data
+  meilisearch_data:
+    name: physioflow-meilisearch-data

@@ -1,10 +1,15 @@
 "use client";
 
+/**
+ * React Query hooks for checklist data management
+ */
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import type {
   VisitChecklist,
+  ChecklistTemplate,
   ChecklistResponseValue,
   UpdateResponseRequest,
   CompleteChecklistRequest,
@@ -18,10 +23,44 @@ import type {
  */
 export const checklistKeys = {
   all: ["checklists"] as const,
+  templates: () => [...checklistKeys.all, "templates"] as const,
+  template: (id: string) => [...checklistKeys.templates(), id] as const,
   visit: (visitId: string) => [...checklistKeys.all, "visit", visitId] as const,
   active: (checklistId: string) => [...checklistKeys.all, "active", checklistId] as const,
   note: (checklistId: string) => [...checklistKeys.all, "note", checklistId] as const,
 };
+
+/**
+ * Hook to fetch all checklist templates
+ */
+export function useChecklistTemplates(enabled = true) {
+  return useQuery({
+    queryKey: checklistKeys.templates(),
+    queryFn: async () => {
+      const response = await api.get<ChecklistTemplate[]>("/v1/checklist-templates");
+      return response.data;
+    },
+    enabled,
+    staleTime: 1000 * 60 * 5, // 5 minutes - templates don't change often
+  });
+}
+
+/**
+ * Hook to fetch a single checklist template
+ */
+export function useChecklistTemplate(templateId: string, enabled = true) {
+  return useQuery({
+    queryKey: checklistKeys.template(templateId),
+    queryFn: async () => {
+      const response = await api.get<ChecklistTemplate>(
+        `/v1/checklist-templates/${templateId}`
+      );
+      return response.data;
+    },
+    enabled: enabled && !!templateId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
 
 /**
  * Hook to fetch visit checklist data
@@ -30,7 +69,7 @@ export function useVisitChecklist(visitId: string) {
   return useQuery({
     queryKey: checklistKeys.visit(visitId),
     queryFn: async () => {
-      const response = await api.get<VisitChecklist>(`/visits/${visitId}/checklist`);
+      const response = await api.get<VisitChecklist>(`/v1/visits/${visitId}/checklist`);
       return response.data;
     },
     enabled: !!visitId,
@@ -40,15 +79,49 @@ export function useVisitChecklist(visitId: string) {
 }
 
 /**
+ * Request to start a new visit checklist
+ */
+interface StartChecklistRequest {
+  visitId: string;
+  templateId: string;
+  patientId: string;
+}
+
+/**
+ * Hook to start a new visit checklist
+ */
+export function useStartVisitChecklist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: StartChecklistRequest) => {
+      const response = await api.post<VisitChecklist>(
+        `/v1/visits/${request.visitId}/checklist`,
+        {
+          template_id: request.templateId,
+          patient_id: request.patientId,
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      // Set the checklist in cache
+      queryClient.setQueryData(checklistKeys.visit(variables.visitId), data);
+      queryClient.setQueryData(checklistKeys.active(data.id), data);
+    },
+  });
+}
+
+/**
  * Hook to update a single checklist response with optimistic updates
  */
-export function useUpdateResponse() {
+export function useUpdateChecklistResponse() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (request: UpdateResponseRequest) => {
       const response = await api.patch<VisitChecklist>(
-        `/checklists/${request.checklistId}/responses/${request.itemId}`,
+        `/v1/checklists/${request.checklistId}/responses/${request.itemId}`,
         { value: request.value }
       );
       return response.data;
@@ -115,8 +188,8 @@ export function useCompleteChecklist() {
   return useMutation({
     mutationFn: async (request: CompleteChecklistRequest) => {
       const response = await api.post<VisitChecklist>(
-        `/checklists/${request.checklistId}/complete`,
-        { elapsedSeconds: request.elapsedSeconds }
+        `/v1/checklists/${request.checklistId}/complete`,
+        { elapsed_seconds: request.elapsedSeconds }
       );
       return response.data;
     },
@@ -136,7 +209,7 @@ export function useGeneratedNote(checklistId: string) {
     queryKey: checklistKeys.note(checklistId),
     queryFn: async () => {
       const response = await api.get<GeneratedNote>(
-        `/checklists/${checklistId}/note`
+        `/v1/checklists/${checklistId}/note`
       );
       return response.data;
     },
@@ -161,8 +234,8 @@ export function useUpdateNote() {
       sign?: boolean;
     }) => {
       const endpoint = sign
-        ? `/checklists/${checklistId}/note/sign`
-        : `/checklists/${checklistId}/note`;
+        ? `/v1/checklists/${checklistId}/note/sign`
+        : `/v1/checklists/${checklistId}/note`;
       const response = await api.patch<GeneratedNote>(endpoint, note);
       return response.data;
     },
@@ -258,9 +331,9 @@ export function useQuickSchedule(patientId: string) {
       const scheduledDate = new Date();
       scheduledDate.setDate(scheduledDate.getDate() + days);
 
-      const response = await api.post(`/patients/${patientId}/appointments`, {
-        scheduledDate: scheduledDate.toISOString(),
-        preferredTime,
+      const response = await api.post(`/v1/patients/${patientId}/appointments`, {
+        scheduled_date: scheduledDate.toISOString(),
+        preferred_time: preferredTime,
       });
       return response.data;
     },

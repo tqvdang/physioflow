@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ interface LanguageToggleProps {
 
 export function LanguageToggle({ className }: LanguageToggleProps) {
   const locale = useLocale();
+  const t = useTranslations("sidebar");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -29,7 +30,7 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
         "flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
         className
       )}
-      aria-label={locale === "vi" ? "Switch to English" : "Chuyen sang Tieng Viet"}
+      aria-label={t("switchLanguage")}
     >
       <span
         className={cn(

@@ -107,19 +107,19 @@ export function Header({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/patients/new`}>
+              <Link href={`/${locale}/patients/new` as any}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 {t("quickActions.newPatient")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/assessments/new`}>
+              <Link href={`/${locale}/assessments/new` as any}>
                 <FileText className="mr-2 h-4 w-4" />
                 {t("quickActions.newAssessment")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/sessions/new`}>
+              <Link href={`/${locale}/sessions/new` as any}>
                 <Calendar className="mr-2 h-4 w-4" />
                 {t("quickActions.newSession")}
               </Link>
@@ -137,19 +137,19 @@ export function Header({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/patients/new`}>
+              <Link href={`/${locale}/patients/new` as any}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 {t("quickActions.newPatient")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/assessments/new`}>
+              <Link href={`/${locale}/assessments/new` as any}>
                 <FileText className="mr-2 h-4 w-4" />
                 {t("quickActions.newAssessment")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/sessions/new`}>
+              <Link href={`/${locale}/sessions/new` as any}>
                 <Calendar className="mr-2 h-4 w-4" />
                 {t("quickActions.newSession")}
               </Link>
@@ -203,7 +203,7 @@ export function Header({
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="justify-center">
-              <Link href={`/${locale}/notifications`}>
+              <Link href={`/${locale}/notifications` as any}>
                 {t("viewAllNotifications")}
               </Link>
             </DropdownMenuItem>
@@ -234,13 +234,13 @@ export function Header({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/settings/profile`}>
+              <Link href={`/${locale}/settings/profile` as any}>
                 <User className="mr-2 h-4 w-4" />
                 {tAuth("profile")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/settings`}>
+              <Link href={`/${locale}/settings` as any}>
                 <Settings className="mr-2 h-4 w-4" />
                 {t("settings")}
               </Link>

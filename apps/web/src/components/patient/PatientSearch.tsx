@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PatientStatusBadge } from "./PatientStatusBadge";
-import { usePatientSearch } from "@/hooks/usePatients";
+import { usePatientSearch } from "@/hooks/use-patients";
 import { cn, debounce } from "@/lib/utils";
 import { Search, Loader2, X } from "lucide-react";
 import type { Patient } from "@/types/patient";
@@ -186,7 +186,7 @@ export function PatientSearch({
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               <span className="ml-2 text-sm text-muted-foreground">
-                Dang tim kiem...
+                Đang tìm kiếm...
               </span>
             </div>
           ) : patients && patients.length > 0 ? (

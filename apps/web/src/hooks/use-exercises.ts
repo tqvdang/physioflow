@@ -20,6 +20,18 @@ import type {
 } from "@/types/exercise";
 import type { PaginatedResponse } from "@/types";
 
+/**
+ * API response structure for exercise list from Go backend
+ * Maps to handler.ExerciseListResponse
+ */
+interface ExerciseListApiResponse {
+  data: Exercise[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
 // Query keys
 export const exerciseKeys = {
   all: ["exercises"] as const,
@@ -43,7 +55,8 @@ export function useExercises(params: ExerciseSearchParams = {}) {
   return useQuery({
     queryKey: exerciseKeys.list(params),
     queryFn: async () => {
-      const response = await api.get<Exercise[]>("/v1/exercises", {
+      // The Go API returns ExerciseListResponse directly with data, total, page, per_page, total_pages
+      const response = await api.get<ExerciseListApiResponse>("/v1/exercises", {
         params: {
           page: params.page,
           per_page: params.perPage,
@@ -55,13 +68,18 @@ export function useExercises(params: ExerciseSearchParams = {}) {
           sort_order: params.sortOrder,
         },
       });
+
+      // Map the API response to our PaginatedResponse format
+      // The api.get returns { data: ExerciseListApiResponse } so we need response.data
+      const apiResponse = response.data as unknown as ExerciseListApiResponse;
+
       return {
-        data: response.data,
-        meta: response.meta ?? {
-          page: params.page ?? 1,
-          pageSize: params.perPage ?? 20,
-          total: 0,
-          totalPages: 0,
+        data: apiResponse.data ?? [],
+        meta: {
+          page: apiResponse.page ?? params.page ?? 1,
+          pageSize: apiResponse.per_page ?? params.perPage ?? 20,
+          total: apiResponse.total ?? 0,
+          totalPages: apiResponse.total_pages ?? 0,
         },
       } as PaginatedResponse<Exercise>;
     },

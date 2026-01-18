@@ -106,11 +106,11 @@ make status
 ```
 
 This will start:
-- **PostgreSQL** on `localhost:5432` (physioflow & keycloak databases)
-- **Redis** on `localhost:6379`
-- **Keycloak** at `http://localhost:8180` (admin/admin_secret_dev_only)
-- **MinIO** at `http://localhost:9000` (console: `http://localhost:9001`)
-- **Meilisearch** at `http://localhost:7700`
+- **PostgreSQL** on `localhost:7012` (physioflow & keycloak databases)
+- **Redis** on `localhost:7013`
+- **Keycloak** at `http://localhost:7014` (admin/admin_secret_dev_only)
+- **MinIO** at `http://localhost:7015` (console: `http://localhost:7016`)
+- **Meilisearch** at `http://localhost:7017`
 
 ### 3. Configure Applications
 
@@ -132,8 +132,8 @@ pnpm dev
 ```
 
 This starts:
-- **Web app** at `http://localhost:3000`
-- **API server** at `http://localhost:8080`
+- **Web app** at `http://localhost:7010`
+- **API server** at `http://localhost:7011`
 - **Mobile app** via Expo (follow terminal instructions)
 
 ## Project Structure
@@ -225,19 +225,19 @@ go run cmd/api/main.go
 
 #### Web Application (`apps/web/.env.local`)
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_URL=http://localhost:7011/api
 NEXT_PUBLIC_APP_NAME=PhysioFlow
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:7010
 
 # Keycloak Authentication
-NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8180
+NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:7014
 NEXT_PUBLIC_KEYCLOAK_REALM=physioflow
 NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=physioflow-web
 ```
 
 #### Mobile Application (`apps/mobile/.env`)
 ```bash
-EXPO_PUBLIC_API_URL=http://localhost:8080/api/v1
+EXPO_PUBLIC_API_URL=http://localhost:7011/api/v1
 ```
 
 #### Docker Services (`infrastructure/docker/.env`)
@@ -375,7 +375,7 @@ graph TB
 
 The API follows a clean architecture pattern with distinct layers:
 
-**Base URL**: `http://localhost:8080/api/v1`
+**Base URL**: `http://localhost:7011/api/v1`
 
 #### Core Endpoints
 
@@ -504,15 +504,15 @@ Keycloak is pre-configured with test users for development:
 
 | Username | Password | Role | Email |
 |----------|----------|------|-------|
-| `admin` | `password` | super_admin | admin@physioflow.local |
-| `clinic_admin` | `password` | clinic_admin | clinic.admin@physioflow.local |
-| `therapist1` | `password` | therapist | therapist1@physioflow.local |
-| `assistant1` | `password` | assistant | assistant1@physioflow.local |
-| `frontdesk1` | `password` | front_desk | frontdesk1@physioflow.local |
-| `patient1` | `password` | patient | patient1@physioflow.local |
+| `admin` | `Admin@123` | super_admin | admin@physioflow.local |
+| `clinic_admin` | `ClinicAdmin@123` | clinic_admin | clinic.admin@physioflow.local |
+| `therapist1` | `Therapist@123` | therapist | therapist1@physioflow.local |
+| `assistant1` | `Assistant@123` | assistant | assistant1@physioflow.local |
+| `frontdesk1` | `FrontDesk@123` | front_desk | frontdesk1@physioflow.local |
+| `patient1` | `Patient@123` | patient | patient1@physioflow.local |
 
 **Keycloak Admin Console**:
-- URL: `http://localhost:8180`
+- URL: `http://localhost:7014`
 - Username: `admin`
 - Password: `admin_secret_dev_only`
 - Realm: `physioflow`

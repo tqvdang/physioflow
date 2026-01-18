@@ -1,6 +1,6 @@
 import { getAccessToken, getRefreshToken, saveTokens, clearAuth } from './auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:7011/api/v1';
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean;

@@ -5,3 +5,6 @@ export { QuickSelect } from "./QuickSelect";
 export { YesNoNA } from "./YesNoNA";
 export { VoiceText } from "./VoiceText";
 export { MultiSelect } from "./MultiSelect";
+export { DurationInput } from "./DurationInput";
+export { StrengthRating } from "./StrengthRating";
+export { ComplianceInput } from "./ComplianceInput";

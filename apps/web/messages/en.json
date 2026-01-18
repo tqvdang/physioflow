@@ -29,7 +29,9 @@
       "reports": "Reports"
     },
     "settings": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "more": "More",
+    "switchLanguage": "Chuyển sang Tiếng Việt"
   },
   "header": {
     "search": "Search...",
@@ -150,7 +152,33 @@
       "description": "Important notifications and reminders",
       "noAlerts": "No alerts at this time",
       "dismiss": "Dismiss",
-      "dismissAll": "Dismiss All"
+      "dismissAll": "Dismiss All",
+      "mockItems": {
+        "unconfirmedAppointment": {
+          "title": "Unconfirmed Appointments",
+          "description": "3 appointments tomorrow have not been confirmed by patients",
+          "action": "View Details"
+        },
+        "pendingReports": {
+          "title": "Reports Pending",
+          "description": "2 assessment reports are awaiting completion",
+          "action": "View Reports"
+        },
+        "followUpReminder": {
+          "title": "Follow-up Reminder",
+          "description": "Nguyen Van A needs follow-up after 2 weeks of treatment",
+          "action": "View Patient"
+        },
+        "updateSuccess": {
+          "title": "Update Successful",
+          "description": "Exercise library has been updated with 5 new exercises"
+        },
+        "syncError": {
+          "title": "Data Sync Error",
+          "description": "Unable to sync data with backup system",
+          "action": "Retry"
+        }
+      }
     }
   },
   "common": {
@@ -164,6 +192,407 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "retry": "Retry",
+    "noData": "No data"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "subtitle": "Manage appointments and calendar",
+    "createNew": "New Appointment",
+    "today": "Today",
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "filter": {
+      "allTherapists": "All Therapists",
+      "status": "Status",
+      "type": "Type"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No Show"
+    },
+    "type": {
+      "assessment": "Assessment",
+      "treatment": "Treatment",
+      "followup": "Follow-up",
+      "consultation": "Consultation",
+      "other": "Other"
+    },
+    "notes": "Notes",
+    "recurring": "Recurring appointment",
+    "actions": {
+      "edit": "Edit",
+      "reschedule": "Reschedule",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Create Appointment",
+      "createDesc": "Schedule a new appointment for a patient",
+      "editTitle": "Edit Appointment",
+      "editDesc": "Modify appointment details",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "create": "Create Appointment"
+    },
+    "cancelDialog": {
+      "title": "Cancel Appointment",
+      "description": "Are you sure you want to cancel this appointment? This action cannot be undone.",
+      "cancel": "Go Back",
+      "confirm": "Cancel Appointment",
+      "cancelling": "Cancelling..."
+    },
+    "deleteDialog": {
+      "title": "Delete Appointment",
+      "description": "Are you sure you want to permanently delete this appointment? This action cannot be undone.",
+      "cancel": "Go Back",
+      "confirm": "Delete",
+      "deleting": "Deleting..."
+    },
+    "form": {
+      "patient": "Patient",
+      "searchPatient": "Search patient by name or MRN...",
+      "noPatients": "No patients found",
+      "change": "Change",
+      "therapist": "Therapist",
+      "selectTherapist": "Select a therapist",
+      "date": "Date",
+      "time": "Time",
+      "availableSlots": "Available Time Slots",
+      "noSlots": "No available slots for this date",
+      "duration": "Duration",
+      "type": "Type",
+      "room": "Room",
+      "roomPlaceholder": "e.g., Room 101",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "recurrence": "Repeat",
+      "recurrenceCount": "Number of appointments",
+      "recurrenceCountDesc": "How many appointments to create",
+      "recurrenceEndDate": "End date",
+      "recurrenceEndDateDesc": "Or specify an end date"
+    },
+    "recurrence": {
+      "none": "Does not repeat",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Every 2 weeks",
+      "monthly": "Monthly"
+    },
+    "validation": {
+      "patientRequired": "Please select a patient",
+      "therapistRequired": "Please select a therapist",
+      "dateRequired": "Please select a date",
+      "timeRequired": "Please select a time"
+    },
+    "toast": {
+      "created": "Appointment created",
+      "createdDesc": "The appointment has been scheduled successfully",
+      "updated": "Appointment updated",
+      "updatedDesc": "The appointment has been updated successfully",
+      "cancelled": "Appointment cancelled",
+      "cancelledDesc": "The appointment has been cancelled",
+      "deleted": "Appointment deleted",
+      "deletedDesc": "The appointment has been removed",
+      "error": "Error",
+      "errorDesc": "Something went wrong. Please try again."
+    },
+    "quickActions": {
+      "plus3Days": "+3 days",
+      "plus7Days": "+7 days"
+    }
+  },
+  "patients": {
+    "title": "Patient List",
+    "description": "Manage patient information and treatment history",
+    "newPatient": "New Patient",
+    "searchPlaceholder": "Search by name, MRN, phone...",
+    "table": {
+      "mrn": "MRN",
+      "name": "Patient Name",
+      "phone": "Phone Number",
+      "lastVisit": "Last Visit",
+      "status": "Status",
+      "age": "Age"
+    },
+    "status": {
+      "all": "All Statuses",
+      "active": "Active",
+      "inactive": "Inactive",
+      "discharged": "Discharged",
+      "pending": "Pending"
+    },
+    "actions": {
+      "view": "View Details",
+      "edit": "Edit",
+      "startSession": "Start Session"
+    },
+    "empty": "No patients found",
+    "error": "Unable to load patient list",
+    "pagination": {
+      "showing": "Showing {start} - {end} of {total} results",
+      "page": "Page {current} / {total}"
+    }
+  },
+  "library": {
+    "title": "Exercise Library",
+    "subtitle": "Browse and manage exercises",
+    "searchPlaceholder": "Search exercises...",
+    "filters": {
+      "category": "Category",
+      "difficulty": "Difficulty",
+      "muscleGroup": "Muscle Group",
+      "clear": "Clear Filters"
+    },
+    "categories": {
+      "stretching": "Stretching",
+      "strengthening": "Strengthening",
+      "balance": "Balance",
+      "cardiovascular": "Cardiovascular",
+      "mobility": "Mobility",
+      "postural": "Postural"
+    },
+    "difficulties": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "muscleGroups": {
+      "neck": "Neck",
+      "shoulder": "Shoulder",
+      "upper_back": "Upper Back",
+      "lower_back": "Lower Back",
+      "chest": "Chest",
+      "core": "Core",
+      "hip": "Hip",
+      "glutes": "Glutes",
+      "quadriceps": "Quadriceps",
+      "hamstrings": "Hamstrings",
+      "calves": "Calves",
+      "ankle": "Ankle",
+      "wrist_forearm": "Wrist & Forearm",
+      "elbow": "Elbow",
+      "full_body": "Full Body"
+    },
+    "card": {
+      "sets": "Sets",
+      "reps": "Reps",
+      "hold": "Hold",
+      "seconds": "seconds",
+      "equipment": "Equipment",
+      "viewDetails": "View Details",
+      "prescribe": "Prescribe"
+    },
+    "detail": {
+      "description": "Description",
+      "defaultParameters": "Default Parameters",
+      "instructions": "Instructions",
+      "precautions": "Precautions",
+      "video": "Video",
+      "prescribeToPatient": "Prescribe this exercise"
+    },
+    "empty": {
+      "noExercises": "No exercises available",
+      "noResults": "No exercises match your search criteria"
+    },
+    "prescription": {
+      "addToProgram": "Add to Program",
+      "prescribed": "Prescribed",
+      "prescribing": "Prescribing...",
+      "title": "Prescribe Exercise",
+      "prescribingTo": "Prescribing to",
+      "setParams": "Set exercise parameters for the patient",
+      "sets": "Sets",
+      "reps": "Reps",
+      "holdSeconds": "Hold (s)",
+      "frequency": "Frequency",
+      "duration": "Duration",
+      "customInstructions": "Custom Instructions",
+      "customInstructionsPlaceholder": "Add specific instructions for the patient...",
+      "notes": "Notes (internal)",
+      "notesPlaceholder": "Notes for therapist...",
+      "cancel": "Cancel",
+      "prescribe": "Prescribe",
+      "frequencies": {
+        "1x_day": "1x per day",
+        "2x_day": "2x per day",
+        "3x_day": "3x per day",
+        "1x_week": "1x per week",
+        "2x_week": "2x per week",
+        "3x_week": "3x per week",
+        "daily": "Daily",
+        "every_other_day": "Every other day"
+      },
+      "durations": {
+        "2_weeks": "2 weeks",
+        "4_weeks": "4 weeks",
+        "6_weeks": "6 weeks",
+        "8_weeks": "8 weeks",
+        "12_weeks": "12 weeks"
+      }
+    }
+  },
+  "session": {
+    "title": "Session",
+    "checklist": "Visit Checklist",
+    "timer": "Timer",
+    "elapsed": "Elapsed",
+    "sections": {
+      "pretreatment": "Pre-Treatment",
+      "assessment": "Assessment",
+      "treatment": "Treatment",
+      "wrapup": "Wrap-up"
+    },
+    "items": {
+      "reviewPlan": "Review treatment plan",
+      "compliance": "Home exercise compliance",
+      "painCheck": "Pain check",
+      "rom": "Range of Motion",
+      "strength": "Strength",
+      "specialTest": "Special Test",
+      "manualTherapy": "Manual Therapy",
+      "therapeuticExercise": "Therapeutic Exercise",
+      "modalities": "Modalities",
+      "homeProgram": "Update home program",
+      "scheduleNext": "Schedule next visit",
+      "education": "Patient education"
+    },
+    "values": {
+      "improved": "Improved",
+      "same": "Same",
+      "worse": "Worse",
+      "positive": "Positive",
+      "negative": "Negative",
+      "notApplicable": "N/A"
+    },
+    "actions": {
+      "complete": "Complete Session",
+      "generateNote": "Generate SOAP Note",
+      "save": "Save Progress",
+      "discard": "Discard"
+    },
+    "quickSchedule": {
+      "plus3Days": "+3 days",
+      "plus7Days": "+7 days",
+      "custom": "Custom"
+    },
+    "soapNote": {
+      "title": "SOAP Note",
+      "subjective": "Subjective",
+      "objective": "Objective",
+      "assessment": "Assessment",
+      "plan": "Plan",
+      "sign": "Sign Note",
+      "edit": "Edit Note"
+    }
+  },
+  "patientDetail": {
+    "title": "Patient Details",
+    "back": "Back to Patients",
+    "actions": "Actions",
+    "edit": "Edit Patient",
+    "delete": "Delete Patient",
+    "startSession": "Start Session",
+    "tabs": {
+      "status": "Status",
+      "sessions": "Sessions",
+      "exercises": "Exercises",
+      "progress": "Progress",
+      "files": "Files"
+    },
+    "status": {
+      "currentStatus": "Current Status",
+      "pain": "Pain Level",
+      "rom": "Range of Motion",
+      "goals": "Treatment Goals",
+      "improvement": "Improvement",
+      "progress": "Progress"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "session": "Session",
+      "noSessions": "No sessions recorded yet"
+    },
+    "insurance": {
+      "title": "Insurance",
+      "provider": "Provider",
+      "policyNumber": "Policy Number",
+      "coverage": "Coverage",
+      "validFrom": "Valid From",
+      "validTo": "Valid To",
+      "status": {
+        "pending": "Pending",
+        "verified": "Verified",
+        "failed": "Failed"
+      }
+    },
+    "medicalAlerts": {
+      "title": "Medical Alerts",
+      "noAlerts": "No medical alerts"
+    }
+  },
+  "patientForm": {
+    "titleNew": "Register New Patient",
+    "titleEdit": "Edit Patient",
+    "description": "Enter patient information to create a new record",
+    "updateDescription": "Update information for {name}",
+    "notFound": "Patient Not Found",
+    "notFoundDescription": "The patient you are looking for does not exist or has been deleted.",
+    "backToList": "Back to Patient List",
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "firstNameVi": "First Name (Vietnamese)",
+      "lastNameVi": "Last Name (Vietnamese)",
+      "dateOfBirth": "Date of Birth",
+      "gender": "Gender",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "address": "Address",
+      "addressVi": "Address (Vietnamese)",
+      "languagePreference": "Language Preference"
+    },
+    "emergencyContact": {
+      "title": "Emergency Contact",
+      "name": "Contact Name",
+      "phone": "Contact Phone",
+      "relationship": "Relationship"
+    },
+    "medicalAlerts": {
+      "title": "Medical Alerts",
+      "placeholder": "Enter medical alert (allergies, conditions, etc.)",
+      "add": "Add Alert"
+    },
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Additional notes about the patient..."
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "dateOfBirthRequired": "Date of birth is required",
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Invalid phone number format",
+      "emailInvalid": "Invalid email format"
+    },
+    "buttons": {
+      "save": "Save Patient",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    }
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "preferNotToSay": "Prefer not to say"
   }
 }

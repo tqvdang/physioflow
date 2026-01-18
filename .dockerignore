@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Version control
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker
+.docker/
+docker-compose*.yml
+Dockerfile*
+
+# Documentation
+*.md
+docs/
+
+# Testing
+coverage/
+.nyc_output/
+*.test.*
+*.spec.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Turbo
+.turbo/
+
+# Claude
+.claude/
+.playwright-mcp/
+
+# Infrastructure (not needed in app builds)
+infrastructure/

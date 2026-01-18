@@ -13,10 +13,10 @@ func CORS(cfg *config.Config) echo.MiddlewareFunc {
 	if cfg.IsDevelopment() {
 		return middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins: []string{
-				"http://localhost:3000",
-				"http://localhost:3001",
+				"http://localhost:7010",
+				"http://localhost:7011",
 				"http://localhost:5173",
-				"http://127.0.0.1:3000",
+				"http://127.0.0.1:7010",
 				"http://127.0.0.1:5173",
 			},
 			AllowMethods: []string{

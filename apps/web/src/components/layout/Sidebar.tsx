@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  BarChart3,
+  BookOpen,
   Calendar,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  LayoutDashboard,
-  Library,
+  Home,
   LogOut,
   Settings,
   User,
@@ -46,11 +46,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "dashboard", href: "" },
+  { icon: Home, labelKey: "dashboard", href: "" },
   { icon: Calendar, labelKey: "schedule", href: "/schedule" },
   { icon: Users, labelKey: "patients", href: "/patients" },
-  { icon: Library, labelKey: "library", href: "/library" },
-  { icon: FileText, labelKey: "reports", href: "/reports" },
+  { icon: BookOpen, labelKey: "library", href: "/library" },
+  { icon: BarChart3, labelKey: "reports", href: "/reports" },
 ];
 
 interface SidebarProps {
@@ -99,7 +99,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b px-4">
           <Link
-            href={`/${locale}`}
+            href={`/${locale}` as any}
             className="flex items-center gap-2 font-semibold"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -138,7 +138,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
                   <Tooltip key={item.labelKey}>
                     <TooltipTrigger asChild>
                       <Link
-                        href={href}
+                        href={href as any}
                         className={cn(
                           "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
                           active
@@ -159,7 +159,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
               return (
                 <Link
                   key={item.labelKey}
-                  href={href}
+                  href={href as any}
                   className={cn(
                     "flex h-10 items-center gap-3 rounded-lg px-3 transition-colors",
                     active
@@ -242,13 +242,13 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings/profile`}>
+                <Link href={`/${locale}/settings/profile` as any}>
                   <User className="mr-2 h-4 w-4" />
                   {tAuth("profile")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings`}>
+                <Link href={`/${locale}/settings` as any}>
                   <Settings className="mr-2 h-4 w-4" />
                   {t("settings")}
                 </Link>
