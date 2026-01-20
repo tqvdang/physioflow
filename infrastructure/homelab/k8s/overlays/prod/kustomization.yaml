@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: physioflow-prod
+
+resources:
+  - ../../base
+  - nodeport-services.yaml
+  - secrets.yaml
+
+patches:
+  - path: configmap-patch.yaml
+  - path: deployment-patch.yaml
+
+images:
+  - name: registry.trancloud.work:5000/physioflow-web
+    newTag: prod
+  - name: registry.trancloud.work:5000/physioflow-api
+    newTag: prod
+
+commonLabels:
+  environment: prod

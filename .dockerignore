@@ -37,6 +37,11 @@ coverage/
 .nyc_output/
 *.test.*
 *.spec.*
+tests/
+**/tests/
+**/__tests__/
+playwright-report/
+test-results/
 
 # OS
 .DS_Store

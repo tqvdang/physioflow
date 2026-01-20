@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: physioflow-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physioflow
+      component: web
+  template:
+    metadata:
+      labels:
+        app: physioflow
+        component: web
+    spec:
+      containers:
+        - name: web
+          image: registry.trancloud.work/physioflow-web:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: physioflow-config
+            - secretRef:
+                name: physioflow-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30

@@ -1,0 +1,216 @@
+{
+  "realm": "physioflow-staging",
+  "enabled": true,
+  "displayName": "PhysioFlow Staging",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 1800,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 7200,
+  "ssoSessionMaxLifespan": 86400,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["vi", "en"],
+  "defaultLocale": "vi",
+  "passwordPolicy": "length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1)",
+  "roles": {
+    "realm": [
+      {
+        "name": "super_admin",
+        "description": "Super administrator with full system access"
+      },
+      {
+        "name": "clinic_admin",
+        "description": "Clinic administrator with full clinic management access"
+      },
+      {
+        "name": "therapist",
+        "description": "Physical therapist with patient treatment access"
+      },
+      {
+        "name": "assistant",
+        "description": "Therapy assistant with limited treatment access"
+      },
+      {
+        "name": "front_desk",
+        "description": "Front desk staff with scheduling and patient intake access"
+      },
+      {
+        "name": "patient",
+        "description": "Patient with access to their own records"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "administrators",
+      "path": "/administrators",
+      "realmRoles": ["super_admin"]
+    },
+    {
+      "name": "clinic_staff",
+      "path": "/clinic_staff",
+      "realmRoles": []
+    }
+  ],
+  "defaultRoles": ["patient"],
+  "clients": [
+    {
+      "clientId": "physioflow-web",
+      "name": "PhysioFlow Web Application",
+      "description": "Public client for the PhysioFlow web frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "rootUrl": "https://physioflow-staging.trancloud.work",
+      "baseUrl": "/",
+      "redirectUris": [
+        "https://physioflow-staging.trancloud.work/*"
+      ],
+      "webOrigins": [
+        "https://physioflow-staging.trancloud.work"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "https://physioflow-staging.trancloud.work/*"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "roles", "physioflow-scope"]
+    },
+    {
+      "clientId": "physioflow-api",
+      "name": "PhysioFlow API Server",
+      "description": "Confidential client for the PhysioFlow backend API",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": false,
+      "secret": "${PHYSIOFLOW_API_CLIENT_SECRET}",
+      "attributes": {
+        "use.refresh.tokens": "true"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "roles", "physioflow-scope"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "physioflow-scope",
+      "description": "Custom scope for PhysioFlow application",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Access to PhysioFlow"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "clinic_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "clinic_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clinic_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "google",
+      "providerId": "google",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "${GOOGLE_OAUTH_CLIENT_ID}",
+        "clientSecret": "${GOOGLE_OAUTH_CLIENT_SECRET}",
+        "defaultScope": "openid profile email",
+        "syncMode": "IMPORT"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@physioflow.local",
+      "email": "admin@physioflow.local",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "System",
+      "lastName": "Administrator",
+      "attributes": {
+        "tenant_id": ["default"],
+        "locale": ["vi"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin@123",
+          "temporary": true
+        }
+      ],
+      "realmRoles": ["super_admin"]
+    }
+  ]
+}

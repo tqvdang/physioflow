@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: physioflow-config
+data:
+  ENVIRONMENT: "prod"
+  LOG_LEVEL: "warn"
+
+  # Web App
+  NEXT_PUBLIC_API_URL: "https://physioflow.trancloud.work/api"
+  NEXT_PUBLIC_APP_URL: "https://physioflow.trancloud.work"
+
+  # Keycloak (public)
+  NEXT_PUBLIC_KEYCLOAK_URL: "https://keycloak.trancloud.work"
+  NEXT_PUBLIC_KEYCLOAK_REALM: "physioflow-prod"
+  NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: "physioflow-web"
+
+  # API
+  API_HOST: "0.0.0.0"
+  API_PORT: "7011"
+  KEYCLOAK_URL: "https://keycloak.trancloud.work"
+  KEYCLOAK_REALM: "physioflow-prod"
+  KEYCLOAK_CLIENT_ID: "physioflow-api"

@@ -106,3 +106,8 @@ debug.log
 
 # Infisical
 .infisical.json
+
+# Playwright
+playwright-report/
+test-results/
+tests/e2e/.auth/

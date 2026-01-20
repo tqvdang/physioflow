@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: physioflow-config
+data:
+  # Placeholder - overridden by environment overlays
+  ENVIRONMENT: "base"

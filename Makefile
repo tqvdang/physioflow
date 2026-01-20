@@ -9,7 +9,9 @@
         build clean reset \
         api web infra migrate seed \
         psql redis-cli test test-e2e test-e2e-ui test-e2e-headed test-api test-all lint typecheck \
-        secrets secrets-local secrets-init secrets-web secrets-push
+        secrets secrets-local secrets-init secrets-web secrets-push \
+        deploy-dev deploy-staging deploy-prod deploy-build \
+        homelab-keycloak homelab-secrets homelab-status homelab-setup
 
 # Colors
 CYAN := \033[36m
@@ -261,6 +263,54 @@ secrets-push: ## Push local .env to Infisical (dev environment)
 	INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=$$PHYSIOFLOW_INFISICAL_CLIENT_SECRET \
 	INFISICAL_API_URL=$(INFISICAL_URL) infisical secrets set $$(cat .env | grep -v '^#' | grep -v '^$$' | sed "s/'//g" | tr '\n' ' ') --env=dev
 	@echo "$(GREEN)Secrets pushed to Infisical (dev)$(RESET)"
+
+# =============================================================================
+# Homelab Deployment
+# =============================================================================
+
+HOMELAB_DIR := infrastructure/homelab
+
+deploy-dev: ## Deploy to homelab dev environment
+	@echo "$(GREEN)Deploying to dev environment...$(RESET)"
+	$(HOMELAB_DIR)/scripts/deploy.sh dev --all
+
+deploy-staging: ## Deploy to homelab staging environment
+	@echo "$(GREEN)Deploying to staging environment...$(RESET)"
+	$(HOMELAB_DIR)/scripts/deploy.sh staging --all
+
+deploy-prod: ## Deploy to homelab production environment
+	@echo "$(YELLOW)Deploying to PRODUCTION environment...$(RESET)"
+	@read -p "Are you sure you want to deploy to production? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	$(HOMELAB_DIR)/scripts/deploy.sh prod --all
+
+deploy-build: ## Build images for all environments
+	@echo "$(GREEN)Building images...$(RESET)"
+	$(HOMELAB_DIR)/scripts/deploy.sh dev --build
+	$(HOMELAB_DIR)/scripts/deploy.sh staging --build
+	$(HOMELAB_DIR)/scripts/deploy.sh prod --build
+
+homelab-keycloak: ## Import Keycloak realms to homelab
+	@echo "$(GREEN)Importing Keycloak realms...$(RESET)"
+	$(HOMELAB_DIR)/scripts/import-keycloak-realms.sh
+
+homelab-secrets: ## Sync secrets from Infisical (usage: make homelab-secrets ENV=dev)
+	@echo "$(GREEN)Syncing secrets for $(ENV) environment...$(RESET)"
+	$(HOMELAB_DIR)/scripts/sync-secrets.sh $(ENV)
+
+homelab-status: ## Check homelab deployment status
+	@echo "$(CYAN)PhysioFlow Homelab Status$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Dev Environment:$(RESET)"
+	@kubectl get pods -n physioflow-dev 2>/dev/null || echo "  Not deployed"
+	@echo ""
+	@echo "$(GREEN)Staging Environment:$(RESET)"
+	@kubectl get pods -n physioflow-staging 2>/dev/null || echo "  Not deployed"
+	@echo ""
+	@echo "$(GREEN)Production Environment:$(RESET)"
+	@kubectl get pods -n physioflow-prod 2>/dev/null || echo "  Not deployed"
+
+homelab-setup: ## Show homelab setup instructions
+	@$(HOMELAB_DIR)/scripts/setup-infisical-project.sh
 
 # =============================================================================
 # Quick Reference

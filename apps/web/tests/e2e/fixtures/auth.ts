@@ -1,6 +1,6 @@
 import { test as base, expect, Page } from '@playwright/test';
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:7014';
+const _KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:7014';
 
 /**
  * Test user credentials
