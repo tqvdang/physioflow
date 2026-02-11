@@ -61,6 +61,32 @@ func (m *MockOutcomeMeasuresRepository) GetLibraryByID(ctx context.Context, id s
 	return args.Get(0).(*model.OutcomeMeasureLibrary), args.Error(1)
 }
 
+func (m *MockOutcomeMeasuresRepository) GetByID(ctx context.Context, id string) (*model.OutcomeMeasure, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.OutcomeMeasure), args.Error(1)
+}
+
+func (m *MockOutcomeMeasuresRepository) Update(ctx context.Context, measure *model.OutcomeMeasure) error {
+	args := m.Called(ctx, measure)
+	return args.Error(0)
+}
+
+func (m *MockOutcomeMeasuresRepository) Delete(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockOutcomeMeasuresRepository) GetLibraryByType(ctx context.Context, measureType model.MeasureType) (*model.OutcomeMeasureLibrary, error) {
+	args := m.Called(ctx, measureType)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.OutcomeMeasureLibrary), args.Error(1)
+}
+
 // TestCalculateProgress tests progress calculation formula
 func TestCalculateProgress(t *testing.T) {
 	now := time.Now()
@@ -527,6 +553,304 @@ func TestRecordMeasure(t *testing.T) {
 	assert.NotNil(t, result.Interpretation)
 
 	mockRepo.AssertExpectations(t)
+}
+
+// TestOutcomeMeasuresService_UpdateMeasure tests the UpdateMeasure method
+func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
+	now := time.Now()
+	clinicID := "clinic-123"
+	therapistID := "therapist-123"
+	patientID := "patient-123"
+	measureID := "measure-123"
+	libraryID := "lib-vas"
+
+	library := &model.OutcomeMeasureLibrary{
+		ID:             libraryID,
+		MeasureType:    model.MeasureTypeVAS,
+		Name:           "Visual Analog Scale",
+		MinScore:       0,
+		MaxScore:       10,
+		HigherIsBetter: false,
+		ScoringMethod:  &model.ScoringMethod{Method: "sum"},
+	}
+
+	tests := []struct {
+		name    string
+		req     *model.UpdateOutcomeMeasureRequest
+		setup   func(*MockOutcomeMeasuresRepository)
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name: "successful update with new responses",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: patientID,
+				Responses: &[]model.MeasureResponse{
+					{QuestionID: "q1", Value: 8.0},
+				},
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:          measureID,
+					PatientID:   patientID,
+					ClinicID:    clinicID,
+					TherapistID: therapistID,
+					LibraryID:   libraryID,
+					Score:       5.0,
+					Responses:   []model.MeasureResponse{{QuestionID: "q1", Value: 5.0}},
+					MeasuredAt:  now,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("GetLibraryByID", mock.Anything, libraryID).Return(library, nil)
+				m.On("Update", mock.Anything, mock.AnythingOfType("*model.OutcomeMeasure")).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "update notes only",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: patientID,
+				Notes:     stringPtr("Updated notes"),
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:          measureID,
+					PatientID:   patientID,
+					ClinicID:    clinicID,
+					TherapistID: therapistID,
+					LibraryID:   libraryID,
+					Score:       5.0,
+					Responses:   []model.MeasureResponse{{QuestionID: "q1", Value: 5.0}},
+					Notes:       "Original notes",
+					MeasuredAt:  now,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("Update", mock.Anything, mock.AnythingOfType("*model.OutcomeMeasure")).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "update measured_at only",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: patientID,
+				MeasuredAt: stringPtr(now.Add(24 * time.Hour).Format(time.RFC3339)),
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:          measureID,
+					PatientID:   patientID,
+					ClinicID:    clinicID,
+					TherapistID: therapistID,
+					LibraryID:   libraryID,
+					Score:       5.0,
+					MeasuredAt:  now,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("Update", mock.Anything, mock.AnythingOfType("*model.OutcomeMeasure")).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "patient mismatch",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: "wrong-patient",
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+					ClinicID:  clinicID,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+			},
+			wantErr: true,
+			errMsg:  "does not belong to patient",
+		},
+		{
+			name: "clinic mismatch",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: patientID,
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+					ClinicID:  "different-clinic",
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+			},
+			wantErr: true,
+			errMsg:  "does not belong to clinic",
+		},
+		{
+			name: "measure not found",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: "non-existent",
+				PatientID: patientID,
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				m.On("GetByID", mock.Anything, "non-existent").Return(nil, fmt.Errorf("not found"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid measured_at format",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID:  measureID,
+				PatientID:  patientID,
+				MeasuredAt: stringPtr("invalid-date"),
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+					ClinicID:  clinicID,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+			},
+			wantErr: true,
+			errMsg:  "invalid measured_at format",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockOutcomeMeasuresRepository)
+			service := NewOutcomeMeasuresService(mockRepo)
+
+			if tt.setup != nil {
+				tt.setup(mockRepo)
+			}
+
+			result, err := service.UpdateMeasure(context.Background(), clinicID, therapistID, tt.req)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+
+				if tt.req.Responses != nil {
+					// Score should be recalculated
+					assert.Equal(t, 8.0, result.Score)
+				}
+				if tt.req.Notes != nil {
+					assert.Equal(t, *tt.req.Notes, result.Notes)
+				}
+				if tt.req.MeasuredAt != nil {
+					expected, _ := time.Parse(time.RFC3339, *tt.req.MeasuredAt)
+					assert.Equal(t, expected.Unix(), result.MeasuredAt.Unix())
+				}
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+// TestOutcomeMeasuresService_DeleteMeasure tests the DeleteMeasure method
+func TestOutcomeMeasuresService_DeleteMeasure(t *testing.T) {
+	patientID := "patient-123"
+	measureID := "measure-123"
+	userID := "user-123"
+
+	tests := []struct {
+		name    string
+		patientID string
+		measureID string
+		setup   func(*MockOutcomeMeasuresRepository)
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name:      "successful delete",
+			patientID: patientID,
+			measureID: measureID,
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("Delete", mock.Anything, measureID).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:      "patient mismatch",
+			patientID: "wrong-patient",
+			measureID: measureID,
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+			},
+			wantErr: true,
+			errMsg:  "does not belong to patient",
+		},
+		{
+			name:      "measure not found",
+			patientID: patientID,
+			measureID: "non-existent",
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				m.On("GetByID", mock.Anything, "non-existent").Return(nil, fmt.Errorf("not found"))
+			},
+			wantErr: true,
+		},
+		{
+			name:      "delete operation fails",
+			patientID: patientID,
+			measureID: measureID,
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:        measureID,
+					PatientID: patientID,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("Delete", mock.Anything, measureID).Return(fmt.Errorf("database error"))
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockOutcomeMeasuresRepository)
+			service := NewOutcomeMeasuresService(mockRepo)
+
+			if tt.setup != nil {
+				tt.setup(mockRepo)
+			}
+
+			err := service.DeleteMeasure(context.Background(), tt.patientID, tt.measureID, userID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+// Helper function to create string pointers
+func stringPtr(s string) *string {
+	return &s
 }
 
 // TestTrendDirection tests trend calculation for different scenarios

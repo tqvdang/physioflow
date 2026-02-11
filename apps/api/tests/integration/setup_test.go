@@ -182,9 +182,16 @@ func registerTestRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	// Outcome measures routes
 	patients.POST("/:patientId/outcome-measures", h.OutcomeMeasures.RecordMeasure)
 	patients.GET("/:patientId/outcome-measures", h.OutcomeMeasures.GetPatientMeasures)
+	patients.PUT("/:patientId/outcome-measures/:measureId", h.OutcomeMeasures.UpdateMeasure)
+	patients.DELETE("/:patientId/outcome-measures/:measureId", h.OutcomeMeasures.DeleteMeasure)
 	patients.GET("/:patientId/outcome-measures/progress", h.OutcomeMeasures.CalculateProgress)
 	patients.GET("/:patientId/outcome-measures/trending", h.OutcomeMeasures.GetTrending)
 	api.GET("/outcome-measures/library", h.OutcomeMeasures.GetMeasureLibrary)
+
+	// Anatomy regions routes
+	anatomy := api.Group("/anatomy")
+	anatomy.GET("/regions", h.AnatomyRegions.ListRegions)
+	anatomy.GET("/regions/:id", h.AnatomyRegions.GetRegion)
 
 	// Billing routes
 	patients.POST("/:patientId/billing/invoice", h.Billing.CreateInvoice)

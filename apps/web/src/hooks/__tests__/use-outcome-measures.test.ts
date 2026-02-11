@@ -8,8 +8,10 @@ import {
   useMeasureLibrary,
   getMeasureDefinition,
   MEASURE_LIBRARY,
+  useUpdateOutcomeMeasure,
+  useDeleteOutcomeMeasure,
 } from '../use-outcome-measures';
-import { createWrapper, mockApiResponse } from '@/__tests__/utils';
+import { createWrapper, mockApiResponse, mockApiError } from '@/__tests__/utils';
 import { createTestQueryClient } from '@/__tests__/utils';
 import * as apiLib from '@/lib/api';
 import type { MeasureType } from '../use-outcome-measures';
@@ -101,10 +103,12 @@ describe('use-outcome-measures hooks', () => {
       expect(result.current.data).toHaveLength(8);
     });
 
-    it('has infinite staleTime', () => {
+    it('has infinite staleTime', async () => {
       const { result } = renderHook(() => useMeasureLibrary(), {
         wrapper: createWrapper(queryClient),
       });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       // Library data should never be stale
       expect(result.current.isStale).toBe(false);
@@ -649,6 +653,316 @@ describe('use-outcome-measures hooks', () => {
       });
 
       expect(apiSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useUpdateOutcomeMeasure', () => {
+    it('updates measure successfully', async () => {
+      const mockUpdated = {
+        id: 'measure-123',
+        patient_id: 'patient-123',
+        measure_type: 'VAS',
+        score: 85,
+        date: '2024-01-15',
+        phase: 'interim',
+        notes: 'Updated notes',
+        recorded_by: 'therapist-1',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-15T00:00:00Z',
+      };
+
+      const mockPut = vi.fn().mockResolvedValue(mockApiResponse(mockUpdated));
+      vi.spyOn(apiLib.api, 'put').mockImplementation(mockPut);
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await result.current.mutateAsync({
+        patientId: 'patient-123',
+        measureId: 'measure-123',
+        data: {
+          currentScore: 85,
+          measurementDate: '2024-01-15',
+          phase: 'interim',
+          notes: 'Updated notes',
+        },
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(mockPut).toHaveBeenCalledWith(
+        '/v1/patients/patient-123/outcome-measures/measure-123',
+        {
+          current_score: 85,
+          target_score: undefined,
+          measurement_date: '2024-01-15',
+          mcid_threshold: undefined,
+          phase: 'interim',
+          notes: 'Updated notes',
+          notes_vi: undefined,
+        }
+      );
+      expect(result.current.data?.score).toBe(85);
+      expect(result.current.data?.notes).toBe('Updated notes');
+    });
+
+    it('invalidates patient measures cache on success', async () => {
+      const mockUpdated = {
+        id: 'measure-123',
+        patient_id: 'patient-123',
+        measure_type: 'VAS',
+        score: 85,
+        date: '2024-01-15',
+        phase: 'interim',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-15T00:00:00Z',
+      };
+
+      vi.spyOn(apiLib.api, 'put').mockResolvedValue(mockApiResponse(mockUpdated));
+      const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await result.current.mutateAsync({
+        patientId: 'patient-123',
+        measureId: 'measure-123',
+        data: {
+          currentScore: 85,
+          measurementDate: '2024-01-15',
+          phase: 'interim',
+        },
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['outcome-measures', 'patient', 'patient-123'],
+      });
+    });
+
+    it('handles update with all optional fields', async () => {
+      const mockUpdated = {
+        id: 'measure-123',
+        patient_id: 'patient-123',
+        measure_type: 'LEFS',
+        score: 75,
+        date: '2024-01-15',
+        phase: 'discharge',
+        notes: 'Fully updated',
+        recorded_by: 'therapist-1',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-15T00:00:00Z',
+      };
+
+      vi.spyOn(apiLib.api, 'put').mockResolvedValue(mockApiResponse(mockUpdated));
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await result.current.mutateAsync({
+        patientId: 'patient-123',
+        measureId: 'measure-123',
+        data: {
+          currentScore: 75,
+          targetScore: 80,
+          measurementDate: '2024-01-15',
+          mcidThreshold: 9,
+          phase: 'discharge',
+          notes: 'Fully updated',
+          notesVi: 'Cập nhật đầy đủ',
+        },
+      });
+
+      expect(apiLib.api.put).toHaveBeenCalledWith(
+        '/v1/patients/patient-123/outcome-measures/measure-123',
+        expect.objectContaining({
+          current_score: 75,
+          target_score: 80,
+          mcid_threshold: 9,
+          notes: 'Fully updated',
+          notes_vi: 'Cập nhật đầy đủ',
+        })
+      );
+    });
+
+    it('handles 404 error', async () => {
+      vi.spyOn(apiLib.api, 'put').mockRejectedValue(
+        mockApiError(404, 'Measurement not found')
+      );
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'invalid-id',
+          data: {
+            currentScore: 85,
+            measurementDate: '2024-01-15',
+            phase: 'interim',
+          },
+        })
+      ).rejects.toThrow('Measurement not found');
+    });
+
+    it('handles 422 validation error', async () => {
+      vi.spyOn(apiLib.api, 'put').mockRejectedValue(
+        mockApiError(422, 'Invalid score value', 'validation_error')
+      );
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+          data: {
+            currentScore: 999, // Invalid
+            measurementDate: '2024-01-15',
+            phase: 'interim',
+          },
+        })
+      ).rejects.toThrow('Invalid score value');
+    });
+
+    it('handles server error', async () => {
+      vi.spyOn(apiLib.api, 'put').mockRejectedValue(
+        mockApiError(500, 'Internal Server Error')
+      );
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+          data: {
+            currentScore: 85,
+            measurementDate: '2024-01-15',
+            phase: 'interim',
+          },
+        })
+      ).rejects.toThrow('Internal Server Error');
+    });
+  });
+
+  describe('useDeleteOutcomeMeasure', () => {
+    it('deletes measure successfully', async () => {
+      const mockDelete = vi.fn().mockResolvedValue(mockApiResponse(null));
+      vi.spyOn(apiLib.api, 'delete').mockImplementation(mockDelete);
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await result.current.mutateAsync({
+        patientId: 'patient-123',
+        measureId: 'measure-123',
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(mockDelete).toHaveBeenCalledWith(
+        '/v1/patients/patient-123/outcome-measures/measure-123'
+      );
+    });
+
+    it('invalidates patient measures cache on success', async () => {
+      vi.spyOn(apiLib.api, 'delete').mockResolvedValue(mockApiResponse(null));
+      const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await result.current.mutateAsync({
+        patientId: 'patient-123',
+        measureId: 'measure-123',
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['outcome-measures', 'patient', 'patient-123'],
+      });
+    });
+
+    it('handles 404 error when measure not found', async () => {
+      vi.spyOn(apiLib.api, 'delete').mockRejectedValue(
+        mockApiError(404, 'Measurement not found')
+      );
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'invalid-id',
+        })
+      ).rejects.toThrow('Measurement not found');
+    });
+
+    it('handles 403 forbidden error', async () => {
+      vi.spyOn(apiLib.api, 'delete').mockRejectedValue(
+        mockApiError(403, 'Forbidden: Cannot delete this measurement')
+      );
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+        })
+      ).rejects.toThrow('Forbidden');
+    });
+
+    it('handles server error', async () => {
+      vi.spyOn(apiLib.api, 'delete').mockRejectedValue(
+        mockApiError(500, 'Internal Server Error')
+      );
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+        })
+      ).rejects.toThrow('Internal Server Error');
+    });
+
+    it('handles network error', async () => {
+      vi.spyOn(apiLib.api, 'delete').mockRejectedValue(
+        new Error('Network request failed')
+      );
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+        })
+      ).rejects.toThrow('Network request failed');
     });
   });
 });
