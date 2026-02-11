@@ -37,8 +37,12 @@ type Repository struct {
 	painLocation      PainLocationRepository
 	rom               ROMRepository
 	mmt               MMTRepository
-	bhytClaim         BHYTClaimRepository
-	report            ReportRepository
+	bhytClaim            BHYTClaimRepository
+	report               ReportRepository
+	reevaluation         ReevaluationRepository
+	assessmentTemplate   AssessmentTemplateRepository
+	financialReport      FinancialReportRepository
+	specialTest          SpecialTestRepository
 }
 
 // New creates a new Repository instance without database connection.
@@ -65,7 +69,11 @@ func New(cfg *config.Config) *Repository {
 		rom:               NewMockROMRepository(),
 		mmt:               NewMockMMTRepository(),
 		bhytClaim:         NewMockBHYTClaimRepository(),
-		report:            NewMockReportRepository(),
+		report:             NewMockReportRepository(),
+		reevaluation:       NewMockReevaluationRepository(),
+		assessmentTemplate: NewMockAssessmentTemplateRepository(),
+		financialReport:    NewMockFinancialReportRepository(),
+		specialTest:        NewMockSpecialTestRepository(),
 	}
 }
 
@@ -93,7 +101,11 @@ func NewWithDB(cfg *config.Config, db *DB) *Repository {
 		rom:               NewROMRepository(db),
 		mmt:               NewMMTRepository(db),
 		bhytClaim:         NewBHYTClaimRepository(db),
-		report:            NewReportRepository(db),
+		report:             NewReportRepository(db),
+		reevaluation:       NewReevaluationRepository(db),
+		assessmentTemplate: NewAssessmentTemplateRepository(db),
+		financialReport:    NewFinancialReportRepository(db),
+		specialTest:        NewSpecialTestRepository(db),
 	}
 }
 
@@ -200,6 +212,26 @@ func (r *Repository) BHYTClaim() BHYTClaimRepository {
 // Report returns the report repository.
 func (r *Repository) Report() ReportRepository {
 	return r.report
+}
+
+// Reevaluation returns the re-evaluation repository.
+func (r *Repository) Reevaluation() ReevaluationRepository {
+	return r.reevaluation
+}
+
+// FinancialReport returns the financial report repository.
+func (r *Repository) FinancialReport() FinancialReportRepository {
+	return r.financialReport
+}
+
+// AssessmentTemplate returns the assessment template repository.
+func (r *Repository) AssessmentTemplate() AssessmentTemplateRepository {
+	return r.assessmentTemplate
+}
+
+// SpecialTest returns the special test repository.
+func (r *Repository) SpecialTest() SpecialTestRepository {
+	return r.specialTest
 }
 
 // CheckDatabase verifies database connectivity.

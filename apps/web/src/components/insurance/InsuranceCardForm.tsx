@@ -60,39 +60,44 @@ import {
 const BHYT_CARD_REGEX = /^[A-Z]{2}\d{13}$/;
 
 // Form validation schema
-const insuranceFormSchema = z.object({
-  card_number: z
-    .string()
-    .min(1, "Vui long nhap so the BHYT")
-    .transform((val) => val.toUpperCase())
-    .pipe(
-      z
-        .string()
-        .regex(BHYT_CARD_REGEX, "Dinh dang the khong dung (VD: DN4012345678901)")
-    ),
-  prefix_code: z.string().min(1, "Vui long chon ma dau the"),
-  hospital_registration_code: z
-    .string()
-    .optional()
-    .refine((val) => !val || val.length === 5, {
-      message: "Ma KCB ban dau phai co dung 5 ky tu",
+const insuranceFormSchema = z
+  .object({
+    card_number: z
+      .string()
+      .min(1, "Vui long nhap so the BHYT")
+      .transform((val) => val.toUpperCase())
+      .pipe(
+        z
+          .string()
+          .regex(BHYT_CARD_REGEX, "Dinh dang the khong dung (VD: DN4012345678901)")
+      ),
+    prefix_code: z.string().min(1, "Vui long chon ma dau the"),
+    hospital_registration_code: z
+      .string()
+      .optional()
+      .refine((val) => !val || val.length === 5, {
+        message: "Ma KCB ban dau phai co dung 5 ky tu",
+      }),
+    expiration_date: z.date().optional().nullable(),
+    valid_from: z.date({
+      required_error: "Vui long chon ngay bat dau",
     }),
-  expiration_date: z.date().optional().nullable(),
-  valid_from: z.date({
-    required_error: "Vui long chon ngay bat dau",
-  }),
-  valid_to: z.date({
-    required_error: "Vui long chon ngay ket thuc",
-  }),
-  coverage_percent: z.coerce
-    .number()
-    .min(0, "Ty le chi tra phai tu 0-100")
-    .max(100, "Ty le chi tra phai tu 0-100"),
-  copay_rate: z.coerce
-    .number()
-    .min(0, "Ty le dong chi tra phai tu 0-100")
-    .max(100, "Ty le dong chi tra phai tu 0-100"),
-});
+    valid_to: z.date({
+      required_error: "Vui long chon ngay ket thuc",
+    }),
+    coverage_percent: z.coerce
+      .number()
+      .min(0, "Ty le chi tra phai tu 0-100")
+      .max(100, "Ty le chi tra phai tu 0-100"),
+    copay_rate: z.coerce
+      .number()
+      .min(0, "Ty le dong chi tra phai tu 0-100")
+      .max(100, "Ty le dong chi tra phai tu 0-100"),
+  })
+  .refine((data) => data.valid_from < data.valid_to, {
+    message: "Ngay bat dau phai truoc ngay ket thuc",
+    path: ["valid_to"],
+  });
 
 type InsuranceFormValues = z.infer<typeof insuranceFormSchema>;
 

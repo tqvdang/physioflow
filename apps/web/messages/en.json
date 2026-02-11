@@ -542,7 +542,8 @@
       "title": "Progress",
       "empty": "No progress data yet",
       "romMmt": "ROM / MMT Assessments",
-      "outcomeMeasures": "Outcome Measures"
+      "outcomeMeasures": "Outcome Measures",
+      "reevaluation": "Re-evaluation Comparison"
     }
   },
   "patientForm": {
@@ -586,8 +587,10 @@
       "lastNameRequired": "Last name is required",
       "dateOfBirthRequired": "Date of birth is required",
       "phoneRequired": "Phone number is required",
-      "phoneInvalid": "Invalid phone number format",
-      "emailInvalid": "Invalid email format"
+      "phoneInvalid": "Invalid Vietnamese phone format (09xxxxxxxx or +849xxxxxxxx)",
+      "emailInvalid": "Invalid email format",
+      "vietnameseNameInvalid": "Vietnamese name contains invalid characters",
+      "vietnamesePhoneInvalid": "Invalid Vietnamese phone number"
     },
     "buttons": {
       "save": "Save Patient",
@@ -675,6 +678,14 @@
       "knee_oa": "Knee Osteoarthritis",
       "post_stroke": "Post-Stroke Rehabilitation",
       "pediatric_delay": "Pediatric Development Delay"
+    },
+    "validation": {
+      "durationInvalid": "Protocol duration should be between 4-12 weeks",
+      "frequencyInvalid": "Treatment frequency should be 2-5 sessions per week",
+      "eligibility": "Patient may not be eligible for this protocol based on their diagnosis",
+      "exerciseContraindication": "One or more exercises are contraindicated for this condition",
+      "progressionCriteriaNotMet": "Phase progression criteria have not been met",
+      "hepExerciseCount": "Home exercise program should include 3-5 exercises"
     }
   },
   "billing": {
@@ -765,6 +776,13 @@
       "partially_paid": "Partially Paid",
       "cancelled": "Cancelled",
       "void": "Void"
+    },
+    "validation": {
+      "noLineItems": "Please add at least one service to the invoice",
+      "invalidQuantity": "Quantity must be at least 1",
+      "invalidUnitPrice": "Unit price must be greater than 0",
+      "serviceCodeInactive": "This service code is no longer active",
+      "paymentExceedsBalance": "Payment amount exceeds the balance due"
     },
     "claims": {
       "title": "BHYT Claims",
@@ -858,6 +876,14 @@
       "QuickDASH": "QuickDASH",
       "PSFS": "Patient-Specific Functional Scale",
       "FIM": "Functional Independence Measure"
+    },
+    "validation": {
+      "scoreOutOfRange": "Score is outside the valid range for this measure",
+      "baselineRequired": "A baseline measurement is required before recording interim or discharge scores",
+      "reassessmentTooSoon": "Re-assessment must be at least 2 weeks after the previous measurement",
+      "targetScoreUnrealistic": "Target score improvement exceeds realistic expectations",
+      "measureTypeConditionMismatch": "This measure type may not be appropriate for the patient's condition",
+      "mcidNotMet": "Change from baseline has not reached the MCID threshold"
     }
   },
   "insurance": {
@@ -888,7 +914,12 @@
       "invalidFormat": "Invalid card format",
       "invalidPrefix": "Invalid prefix code",
       "prefixDetected": "Prefix detected",
-      "unknownPrefix": "Unknown prefix"
+      "unknownPrefix": "Unknown prefix",
+      "duplicateCard": "This card number is already registered to another patient",
+      "validFromBeforeValidTo": "Valid From date must be before Valid To date",
+      "childCopayExempt": "Children under 6 are exempt from copay (100% coverage)",
+      "fiveYearBonusIneligible": "Card must be continuously active for 5+ years for the bonus",
+      "hospitalMismatch": "Hospital registration code does not match the registered facility"
     },
     "calculator": {
       "title": "Coverage Calculator",
@@ -1093,7 +1124,11 @@
     "noSummaryYet": "No discharge summary yet",
     "noSummaryDescription": "Click the button below to generate a discharge summary from the current plan.",
     "validation": {
-      "dateRequired": "Please select a planned discharge date"
+      "dateRequired": "Please select a planned discharge date",
+      "dateBeforeAdmission": "Discharge date cannot be before the admission date",
+      "minimumTreatmentDuration": "Minimum treatment duration is 2 weeks",
+      "dischargeCriteriaNotMet": "Discharge criteria have not been fully met",
+      "followUpRequired": "Follow-up recommendations are required when goals are not fully met"
     },
     "toast": {
       "planCreated": "Discharge plan created",
@@ -1137,6 +1172,7 @@
     }
   },
   "assessment": {
+    "pageTitle": "Assessments",
     "loading": "Loading...",
     "history": {
       "title": "Assessment History",
@@ -1181,6 +1217,14 @@
       "movementTypes": {
         "active": "Active",
         "passive": "Passive"
+      },
+      "validation": {
+        "jointRequired": "Please select a joint",
+        "sideRequired": "Please select a side",
+        "movementTypeRequired": "Please select a movement type",
+        "degreeRequired": "Please enter a degree value",
+        "degreeOutOfRange": "Degree exceeds the maximum for this joint ({max} degrees)",
+        "degreeNegative": "Degree cannot be negative"
       }
     },
     "mmt": {
@@ -1264,5 +1308,209 @@
         "grade5": "Full ROM against maximum resistance"
       }
     }
+  },
+  "reevaluation": {
+    "title": "Re-evaluation",
+    "newReevaluation": "New Re-evaluation",
+    "history": "History",
+    "item": "Item",
+    "assessmentType": "Assessment Type",
+    "measureLabel": "Measurement",
+    "measureLabelPlaceholder": "e.g., Shoulder Flexion Left Active",
+    "baselineValue": "Baseline Value",
+    "baselineValuePlaceholder": "Initial assessment value",
+    "currentValue": "Current Value",
+    "currentValuePlaceholder": "Current assessment value",
+    "direction": "Improvement Direction",
+    "higherIsBetter": "Higher is better (ROM, function)",
+    "lowerIsBetter": "Lower is better (pain scales)",
+    "mcidThreshold": "MCID Threshold",
+    "mcidThresholdPlaceholder": "Minimal clinically important difference",
+    "optional": "optional",
+    "addItem": "Add Measurement",
+    "preview": "Comparison Preview",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes about this re-evaluation...",
+    "submit": "Save Re-evaluation",
+    "submitting": "Saving...",
+    "noData": "No comparison data",
+    "noHistory": "No re-evaluation history for this patient",
+    "measure": "Measurement",
+    "baseline": "Baseline",
+    "current": "Current",
+    "change": "Change",
+    "interpretation": "Interpretation",
+    "mcid": "MCID",
+    "mcidYes": "Met",
+    "mcidNo": "Not Met",
+    "mcidAchievedCount": "MCID achieved",
+    "types": {
+      "rom": "Range of Motion",
+      "mmt": "Manual Muscle Testing",
+      "outcomeMeasure": "Outcome Measure"
+    },
+    "comparison": {
+      "improved": "Improved",
+      "declined": "Declined",
+      "stable": "Stable"
+    },
+    "toast": {
+      "created": "Re-evaluation saved",
+      "createdDesc": "The re-evaluation has been recorded successfully",
+      "error": "Failed to save re-evaluation"
+    }
+  },
+  "assessmentTemplates": {
+    "selectTemplate": "Select Assessment Template",
+    "filterByCategory": "Filter by category",
+    "loading": "Loading templates...",
+    "noTemplates": "No assessment templates available",
+    "items": "items",
+    "useTemplate": "Use Template",
+    "completed": "completed",
+    "additionalNotes": "Additional Notes",
+    "notesPlaceholder": "Additional clinical observations or notes...",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveAssessment": "Save Assessment",
+    "saveError": "Failed to save assessment result. Please try again.",
+    "selectOption": "Select an option",
+    "enterText": "Enter notes...",
+    "fieldRequired": "This field is required",
+    "outOfRange": "Value must be between {min} and {max}",
+    "noResults": "No assessment results recorded yet",
+    "resultsTitle": "Assessment Results",
+    "untitledAssessment": "Assessment",
+    "moreItems": "more items",
+    "notes": "Notes",
+    "categories": {
+      "all": "All Categories",
+      "musculoskeletal": "Musculoskeletal",
+      "neurological": "Neurological",
+      "pediatric": "Pediatric"
+    }
+  },
+  "specialTests": {
+    "title": "Special Tests Library",
+    "searchPlaceholder": "Search tests by name...",
+    "loading": "Loading special tests...",
+    "noTests": "No tests found for this category",
+    "noSearchResults": "No tests match your search",
+    "sensitivity": "Sensitivity",
+    "specificity": "Specificity",
+    "addToAssessment": "Add",
+    "added": "Added",
+    "result": "Result",
+    "interpretation": "Interpretation",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional observations or clinical notes...",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveResult": "Save Result",
+    "categories": {
+      "shoulder": "Shoulder",
+      "knee": "Knee",
+      "spine": "Spine",
+      "hip": "Hip",
+      "ankle": "Ankle",
+      "elbow": "Elbow"
+    },
+    "results": {
+      "positive": "Positive",
+      "negative": "Negative",
+      "inconclusive": "Inconclusive"
+    },
+    "history": {
+      "title": "Special Test History",
+      "noResults": "No special test results recorded for this patient",
+      "totalTests": "{count} test results recorded"
+    }
+  },
+  "reports": {
+    "title": "Financial Reports",
+    "subtitle": "Revenue tracking, outstanding payments, and productivity analysis",
+    "revenueTab": "Revenue",
+    "outstandingTab": "Outstanding",
+    "servicesTab": "Services",
+    "productivityTab": "Productivity",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "period": "Period",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "topN": "Show Top",
+    "refreshData": "Refresh Data",
+    "refreshing": "Refreshing...",
+    "exportCSV": "Export CSV",
+    "exporting": "Exporting...",
+    "totalRevenue": "Total Revenue",
+    "totalInvoices": "Total Invoices",
+    "insuranceRevenue": "Insurance Revenue",
+    "cashRevenue": "Cash Revenue",
+    "revenueTrend": "Revenue Trend",
+    "revenueBreakdown": "Insurance vs Cash Breakdown",
+    "totalOutstanding": "Total Outstanding",
+    "outstandingInvoices": "Outstanding Invoices",
+    "outstandingDetails": "Outstanding Invoice Details",
+    "invoiceNumber": "Invoice #",
+    "patientName": "Patient Name",
+    "totalAmount": "Total Amount",
+    "amountDue": "Amount Due",
+    "daysOutstanding": "Days Outstanding",
+    "agingBucket": "Aging Bucket",
+    "days": "days",
+    "noOutstandingPayments": "No outstanding payments found",
+    "totalServiceRevenue": "Total Service Revenue",
+    "servicesTracked": "Services Tracked",
+    "topServicesByRevenue": "Top Services by Revenue",
+    "serviceDetails": "Service Details",
+    "serviceCode": "Service Code",
+    "serviceName": "Service Name",
+    "quantitySold": "Qty Sold",
+    "revenue": "Revenue",
+    "totalSessions": "Total Sessions",
+    "avgRevenuePerSession": "Avg Revenue / Session",
+    "therapistProductivity": "Therapist Productivity",
+    "therapistName": "Therapist",
+    "sessions": "Sessions",
+    "avgPerSession": "Avg / Session",
+    "noProductivityData": "No productivity data available",
+    "errorLoadingRevenue": "Failed to load revenue report. Please try again.",
+    "errorLoadingAging": "Failed to load outstanding payments report. Please try again.",
+    "errorLoadingServices": "Failed to load services report. Please try again.",
+    "errorLoadingProductivity": "Failed to load productivity report. Please try again."
+  },
+  "validationErrors": {
+    "DUPLICATE_CARD_NUMBER": "This card number is already registered to another patient",
+    "CHILD_COPAY_EXEMPTION": "Children under 6 are exempt from copay under BHYT regulations",
+    "FIVE_YEAR_BONUS_INELIGIBLE": "Card must be continuously active for 5+ years for the bonus rate",
+    "HOSPITAL_REGISTRATION_MISMATCH": "Hospital registration code does not match the registered facility",
+    "INVALID_SCORE_RANGE": "Score is outside the valid range for this measure type",
+    "BASELINE_REQUIRED": "A baseline measurement must be recorded before interim or discharge scores",
+    "REASSESSMENT_TOO_SOON": "Re-assessment must be at least 2 weeks after the previous measurement",
+    "TARGET_SCORE_UNREALISTIC": "Target score improvement exceeds realistic clinical expectations",
+    "MEASURE_TYPE_CONDITION_MISMATCH": "This measure type may not be appropriate for the patient's condition",
+    "MCID_NOT_MET": "Change from baseline has not reached the minimal clinically important difference",
+    "INVALID_QUANTITY": "Quantity must be at least 1",
+    "INVALID_UNIT_PRICE": "Unit price must be greater than 0",
+    "PAYMENT_EXCEEDS_BALANCE": "Payment amount exceeds the outstanding balance",
+    "INVOICE_NO_LINE_ITEMS": "Invoice must contain at least one line item",
+    "SERVICE_CODE_INACTIVE": "This service code is no longer active",
+    "OVERPAYMENT_CREDIT": "Overpayment will be applied as credit to the patient's account",
+    "PROTOCOL_DURATION_INVALID": "Protocol duration should be between 4-12 weeks",
+    "PROTOCOL_FREQUENCY_INVALID": "Treatment frequency should be 2-5 sessions per week",
+    "PROTOCOL_ELIGIBILITY": "Patient may not meet eligibility criteria for this protocol",
+    "EXERCISE_CONTRAINDICATION": "One or more exercises are contraindicated for this condition",
+    "PROGRESSION_CRITERIA_NOT_MET": "Phase progression criteria have not been met yet",
+    "HEP_EXERCISE_COUNT": "Home exercise program should include 3-5 exercises",
+    "DISCHARGE_DATE_BEFORE_ADMISSION": "Discharge date cannot be before the admission date",
+    "MINIMUM_TREATMENT_DURATION": "Minimum treatment duration of 2 weeks has not been met",
+    "DISCHARGE_CRITERIA_NOT_MET": "Not all discharge criteria have been satisfied",
+    "FOLLOW_UP_REQUIRED": "Follow-up recommendations are required when treatment goals are not fully met",
+    "ROM_OUT_OF_RANGE": "ROM measurement exceeds the physiological maximum for this joint",
+    "INVALID_VIETNAMESE_NAME": "Name contains characters not valid for Vietnamese names",
+    "INVALID_VIETNAMESE_PHONE": "Phone number is not a valid Vietnamese format"
   }
 }

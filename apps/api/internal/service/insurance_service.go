@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/metrics"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
@@ -113,6 +114,48 @@ func (s *insuranceService) CreateInsurance(ctx context.Context, patientID, clini
 			return nil, fmt.Errorf("%w: invalid expiration_date format", repository.ErrInvalidInput)
 		}
 		expirationDate = &ed
+	}
+
+	// Validate coverage start date < end date
+	if validTo != nil && !validFrom.Before(*validTo) {
+		return nil, fmt.Errorf("%w: valid_from must be before valid_to", repository.ErrInvalidInput)
+	}
+
+	// Check for duplicate card number across patients
+	isDuplicate, err := s.repo.CheckDuplicateCard(ctx, req.CardNumber, patientID)
+	if err != nil {
+		log.Warn().Err(err).Str("card_number", req.CardNumber).Msg("failed to check duplicate card")
+	} else if isDuplicate {
+		metrics.RecordValidationError("duplicate_card")
+		return nil, valerr.ErrDuplicateCardNumber
+	}
+
+	// Validate co-payment exemption for children under 6
+	age := ageOnDate(dob, time.Now())
+	if age < 6 && prefix != model.BHYTPrefixChild {
+		log.Warn().
+			Int("age", age).
+			Str("prefix", prefix).
+			Msg("child under 6 should use TE prefix; continuing with provided prefix")
+	}
+
+	// Validate 5-year bonus only if card age >= 5 years
+	if req.FiveYearContinuous {
+		cardAgeYears := ageOnDate(validFrom, time.Now())
+		if cardAgeYears < 5 {
+			metrics.RecordValidationError("five_year_bonus_ineligible")
+			return nil, valerr.ErrFiveYearBonusIneligible
+		}
+	}
+
+	// Validate hospital registration matches facility if both are provided
+	if req.HospitalRegistrationCode != "" && req.RegisteredFacilityCode != "" {
+		if strings.TrimSpace(req.HospitalRegistrationCode) != strings.TrimSpace(req.RegisteredFacilityCode) {
+			log.Warn().
+				Str("hospital_code", req.HospitalRegistrationCode).
+				Str("facility_code", req.RegisteredFacilityCode).
+				Msg("hospital registration code differs from registered facility code")
+		}
 	}
 
 	card := &model.BHYTCard{
@@ -403,8 +446,13 @@ func (s *insuranceService) CalculateCoverage(ctx context.Context, patientID stri
 
 	coveragePercent := baseCoverage
 
+	// Co-payment exemption for children under 6: coverage = 100%, copay = 0
+	if IsChildUnder6CopayExempt(card.DateOfBirth) {
+		coveragePercent = 100.0
+	}
+
 	// Adjust for wrong facility level (not correct facility and not a referral)
-	if !req.IsCorrectFacility && !req.IsReferral {
+	if !req.IsCorrectFacility && !req.IsReferral && coveragePercent < 100.0 {
 		// Wrong facility without referral: coverage reduced to 40%
 		coveragePercent = 40.0
 	}
@@ -417,12 +465,19 @@ func (s *insuranceService) CalculateCoverage(ctx context.Context, patientID stri
 	}
 
 	// Five-year continuous enrollment bonus: additional coverage
+	// Validate that card age is actually >= 5 years
 	fiveYearAdjustment := 0.0
 	if card.FiveYearContinuous && coveragePercent < 100.0 {
-		// Patients with 5+ years continuous coverage who pay copay > 6 months salary
-		// get additional coverage. Simplified: reduce patient copay by 5%.
-		fiveYearAdjustment = 5.0
-		coveragePercent = minFloat64(coveragePercent+fiveYearAdjustment, 100.0)
+		cardAgeYears := ageOnDate(card.ValidFrom, time.Now())
+		if cardAgeYears >= 5 {
+			fiveYearAdjustment = 5.0
+			coveragePercent = minFloat64(coveragePercent+fiveYearAdjustment, 100.0)
+		} else {
+			log.Warn().
+				Int("card_age_years", cardAgeYears).
+				Str("card_id", card.ID).
+				Msg("five-year bonus flag set but card age < 5 years; ignoring bonus")
+		}
 	}
 
 	insurancePays := req.TotalAmount * (coveragePercent / 100.0)
@@ -463,4 +518,19 @@ func minFloat64(a, b float64) float64 {
 		return a
 	}
 	return b
+}
+
+// ageOnDate calculates the age in years from a birth date to a reference date.
+func ageOnDate(birthDate time.Time, referenceDate time.Time) int {
+	age := referenceDate.Year() - birthDate.Year()
+	if referenceDate.YearDay() < birthDate.YearDay() {
+		age--
+	}
+	return age
+}
+
+// IsChildUnder6CopayExempt returns true if the patient is under 6 years old and
+// therefore exempt from co-payment per Vietnamese BHYT regulations.
+func IsChildUnder6CopayExempt(dateOfBirth time.Time) bool {
+	return ageOnDate(dateOfBirth, time.Now()) < 6
 }

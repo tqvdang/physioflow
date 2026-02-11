@@ -21,6 +21,7 @@ type InsuranceRepository interface {
 	GetByPatientID(ctx context.Context, patientID string) (*model.BHYTCard, error)
 	Update(ctx context.Context, card *model.BHYTCard) error
 	ValidateCard(ctx context.Context, cardNumber string) (*model.BHYTValidationResult, error)
+	CheckDuplicateCard(ctx context.Context, cardNumber string, excludePatientID string) (bool, error)
 }
 
 // AuditRepository defines the interface for audit log data access.
@@ -339,6 +340,21 @@ func (r *postgresAuditRepo) LogAction(ctx context.Context, entry *model.AuditEnt
 	return nil
 }
 
+// CheckDuplicateCard checks if a card number is already registered to a different patient.
+func (r *postgresInsuranceRepo) CheckDuplicateCard(ctx context.Context, cardNumber string, excludePatientID string) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1 FROM insurance_info
+			WHERE card_number = $1 AND patient_id != $2 AND is_active = true
+		)`
+
+	var exists bool
+	if err := r.db.QueryRowContext(ctx, query, cardNumber, excludePatientID).Scan(&exists); err != nil {
+		return false, fmt.Errorf("failed to check duplicate card: %w", err)
+	}
+	return exists, nil
+}
+
 // mockInsuranceRepo provides a mock implementation for development.
 type mockInsuranceRepo struct{}
 
@@ -368,6 +384,10 @@ func (r *mockInsuranceRepo) ValidateCard(ctx context.Context, cardNumber string)
 		Errors:       []string{"mock mode: card not found"},
 		ValidatedAt:  time.Now(),
 	}, nil
+}
+
+func (r *mockInsuranceRepo) CheckDuplicateCard(ctx context.Context, cardNumber string, excludePatientID string) (bool, error) {
+	return false, nil
 }
 
 // mockAuditRepo provides a mock implementation for development.

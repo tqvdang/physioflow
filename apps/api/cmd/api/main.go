@@ -287,6 +287,41 @@ func registerRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	reports.GET("/discharge/:id/pdf", h.Report.DischargeSummaryPDF)
 	reports.GET("/invoice/:id/pdf", h.Report.InvoicePDF)
 
+	// Financial reporting routes
+	reports.GET("/revenue", h.FinancialReport.RevenueReport)
+	reports.GET("/outstanding", h.FinancialReport.OutstandingReport)
+	reports.GET("/services/top", h.FinancialReport.TopServicesReport)
+	reports.GET("/productivity", h.FinancialReport.ProductivityReport)
+	reports.GET("/:type/export", h.FinancialReport.ExportReport)
+	reports.POST("/refresh", h.FinancialReport.RefreshViews)
+
+	// Re-evaluation assessment routes
+	reevaluation := api.Group("/assessments/reevaluation",
+		middleware.RequireRole(middleware.RoleTherapist, middleware.RoleClinicAdmin, middleware.RoleSuperAdmin),
+	)
+	reevaluation.POST("", h.Reevaluation.CreateReevaluation)
+	reevaluation.GET("/patient/:patientId", h.Reevaluation.GetPatientReevaluations)
+	reevaluation.GET("/:id/comparison", h.Reevaluation.GetComparison)
+
+	// Assessment template routes
+	assessmentTemplates := api.Group("/assessment-templates",
+		middleware.RequireRole(middleware.RoleTherapist, middleware.RoleClinicAdmin, middleware.RoleSuperAdmin),
+	)
+	assessmentTemplates.GET("", h.AssessmentTemplate.ListTemplates)
+	assessmentTemplates.GET("/:id", h.AssessmentTemplate.GetTemplate)
+	assessmentTemplates.POST("/results", h.AssessmentTemplate.SaveResult)
+	assessmentTemplates.GET("/results/patient/:patientId", h.AssessmentTemplate.GetPatientResults)
+
+	// Special tests library routes
+	specialTests := api.Group("/special-tests",
+		middleware.RequireRole(middleware.RoleTherapist, middleware.RoleClinicAdmin, middleware.RoleSuperAdmin),
+	)
+	specialTests.GET("", h.SpecialTest.ListTests)
+	specialTests.GET("/search", h.SpecialTest.SearchTests)
+	specialTests.GET("/category/:category", h.SpecialTest.GetTestsByCategory)
+	specialTests.POST("/results", h.SpecialTest.RecordResult)
+	specialTests.GET("/results/patient/:patientId", h.SpecialTest.GetPatientResults)
+
 	// Metrics endpoint (no auth required)
 	// Supports both JSON (default) and Prometheus text format
 	e.GET("/metrics", metricsHandler)

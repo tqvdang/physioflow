@@ -11,6 +11,7 @@ import DischargeSummary from './DischargeSummary';
 import ClinicalProtocol from './ClinicalProtocol';
 import PatientProtocol from './PatientProtocol';
 import SyncQueue from './SyncQueue';
+import ReevaluationAssessment from './ReevaluationAssessment';
 
 export {
   Patient,
@@ -26,6 +27,7 @@ export {
   ClinicalProtocol,
   PatientProtocol,
   SyncQueue,
+  ReevaluationAssessment,
 };
 
 export const modelClasses = [
@@ -42,4 +44,5 @@ export const modelClasses = [
   ClinicalProtocol,
   PatientProtocol,
   SyncQueue,
+  ReevaluationAssessment,
 ];

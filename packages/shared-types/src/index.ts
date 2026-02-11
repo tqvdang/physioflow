@@ -52,3 +52,15 @@ export * from './mmt';
 
 // BHYT Claim Submission types
 export * from './bhyt-claim';
+
+// Re-evaluation Assessment types
+export * from './reevaluation';
+
+// Assessment Templates types
+export * from './assessment-templates';
+
+// Special Tests Library types
+export * from './special-tests';
+
+// Financial Reporting types
+export * from './reports';

@@ -3,15 +3,47 @@ package service
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
+
+// vietnameseNameRegex validates patient names with Vietnamese characters.
+// Allows: Latin letters, Vietnamese diacritics, and spaces.
+var vietnameseNameRegex = regexp.MustCompile(
+	`^[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s]+$`,
+)
+
+// vietnamesePhoneRegex validates Vietnamese phone numbers.
+// Format: starts with 0 or +84, followed by 3/5/7/8/9, then 8 digits.
+var vietnamesePhoneRegex = regexp.MustCompile(`^(0|\+84)(3|5|7|8|9)[0-9]{8}$`)
+
+// IsValidVietnameseName checks if a name contains only valid Vietnamese characters.
+func IsValidVietnameseName(name string) bool {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return false
+	}
+	return vietnameseNameRegex.MatchString(name)
+}
+
+// IsValidVietnamesePhone checks if a phone number matches Vietnamese format.
+func IsValidVietnamesePhone(phone string) bool {
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return true // Phone is optional
+	}
+	// Normalize before validation
+	phone = normalizePhone(phone)
+	return vietnamesePhoneRegex.MatchString(phone)
+}
 
 // PatientService defines the interface for patient business logic.
 type PatientService interface {
@@ -48,6 +80,19 @@ func NewPatientService(repo repository.PatientRepository, clinicRepo ClinicRepos
 
 // Create creates a new patient with business logic validation.
 func (s *patientService) Create(ctx context.Context, clinicID, userID string, req *model.CreatePatientRequest) (*model.Patient, error) {
+	// Validate Vietnamese name characters
+	if req.FirstNameVi != "" && !IsValidVietnameseName(req.FirstNameVi) {
+		return nil, valerr.ErrInvalidVietnameseName
+	}
+	if req.LastNameVi != "" && !IsValidVietnameseName(req.LastNameVi) {
+		return nil, valerr.ErrInvalidVietnameseName
+	}
+
+	// Validate Vietnamese phone number format
+	if req.Phone != "" && !IsValidVietnamesePhone(req.Phone) {
+		return nil, valerr.ErrInvalidVietnamesePhone
+	}
+
 	// Check for potential duplicates
 	if req.Phone != "" {
 		duplicates, err := s.repo.FindDuplicates(ctx, clinicID, req.Phone, req.FirstName, req.LastName)
@@ -141,6 +186,19 @@ func (s *patientService) Update(ctx context.Context, clinicID, id, userID string
 	patient, err := s.repo.GetByID(ctx, clinicID, id)
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate Vietnamese name characters on update
+	if req.FirstNameVi != nil && *req.FirstNameVi != "" && !IsValidVietnameseName(*req.FirstNameVi) {
+		return nil, valerr.ErrInvalidVietnameseName
+	}
+	if req.LastNameVi != nil && *req.LastNameVi != "" && !IsValidVietnameseName(*req.LastNameVi) {
+		return nil, valerr.ErrInvalidVietnameseName
+	}
+
+	// Validate Vietnamese phone number format on update
+	if req.Phone != nil && *req.Phone != "" && !IsValidVietnamesePhone(*req.Phone) {
+		return nil, valerr.ErrInvalidVietnamesePhone
 	}
 
 	// Apply updates

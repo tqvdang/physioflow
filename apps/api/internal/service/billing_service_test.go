@@ -328,17 +328,19 @@ func TestRecordPayment(t *testing.T) {
 			expectError:     false,
 		},
 		{
-			name: "Payment exceeds balance",
+			name: "Overpayment creates credit (no error)",
 			invoice: &model.Invoice{
 				ID:            "inv-4",
+				PatientID:     "patient-123",
 				Status:        model.InvoiceStatusPending,
 				PatientAmount: 100000,
 				PaidAmount:    0,
 				BalanceDue:    100000,
 			},
-			paymentAmount: 150000,
-			expectError:   true,
-			errorMsg:      "payment amount 150000 exceeds balance due 100000",
+			paymentAmount:   150000,
+			expectedStatus:  model.InvoiceStatusPaid,
+			expectedBalance: 0,
+			expectError:     false,
 		},
 		{
 			name: "Cannot pay cancelled invoice",
@@ -441,6 +443,7 @@ func TestCreateInvoice(t *testing.T) {
 		UnitPrice:     100000,
 		Currency:      "VND",
 		BHYTCoverable: true,
+		IsActive:      true,
 	}
 
 	tests := []struct {

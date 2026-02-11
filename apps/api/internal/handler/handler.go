@@ -21,8 +21,12 @@ type Handler struct {
 	PainLocation    *PainLocationHandler
 	ROM             *ROMHandler
 	MMT             *MMTHandler
-	BHYTClaim       *BHYTClaimHandler
-	Report          *ReportHandler
+	BHYTClaim        *BHYTClaimHandler
+	Report           *ReportHandler
+	Reevaluation         *ReevaluationHandler
+	FinancialReport      *FinancialReportHandler
+	AssessmentTemplate   *AssessmentTemplateHandler
+	SpecialTest          *SpecialTestHandler
 }
 
 // New creates a new Handler with all sub-handlers initialized.
@@ -45,5 +49,9 @@ func New(svc *service.Service) *Handler {
 		MMT:             NewMMTHandler(svc),
 		BHYTClaim:       NewBHYTClaimHandler(svc),
 		Report:          NewReportHandler(svc),
+		Reevaluation:       NewReevaluationHandler(svc),
+		FinancialReport:    NewFinancialReportHandler(svc),
+		AssessmentTemplate: NewAssessmentTemplateHandler(svc),
+		SpecialTest:        NewSpecialTestHandler(svc),
 	}
 }

@@ -10,9 +10,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
+
+// minTreatmentDuration is the minimum treatment duration (2 weeks) for most conditions.
+const minTreatmentDuration = 14 * 24 * time.Hour
 
 // DischargeService defines the interface for discharge planning business logic.
 type DischargeService interface {
@@ -52,6 +56,32 @@ func (s *dischargeService) CreateDischargePlan(ctx context.Context, clinicID, th
 			return nil, fmt.Errorf("invalid planned_date format: %w", err)
 		}
 		plannedDate = &parsed
+	}
+
+	// Validate discharge criteria: reason must be one of the recognized reasons
+	reason := model.DischargeReason(req.Reason)
+	validReasons := map[model.DischargeReason]bool{
+		model.DischargeReasonGoalsMet:      true,
+		model.DischargeReasonPlateau:       true,
+		model.DischargeReasonPatientChoice: true,
+		model.DischargeReasonReferral:      true,
+		model.DischargeReasonNonCompliance: true,
+		model.DischargeReasonInsurance:     true,
+		model.DischargeReasonRelocated:     true,
+		model.DischargeReasonMedical:       true,
+		model.DischargeReasonOther:         true,
+	}
+	if !validReasons[reason] {
+		return nil, fmt.Errorf("invalid discharge reason: %s", req.Reason)
+	}
+
+	// Require follow-up recommendations if goals not fully met
+	goalsFullyMet := reason == model.DischargeReasonGoalsMet
+	if !goalsFullyMet && len(req.Recommendations) == 0 {
+		log.Warn().
+			Str("patient_id", req.PatientID).
+			Str("reason", req.Reason).
+			Msg("follow-up recommendations are recommended when goals are not fully met")
 	}
 
 	var protocolID *string
@@ -197,6 +227,45 @@ func (s *dischargeService) GetDischargeSummary(ctx context.Context, id string) (
 
 // CompleteDischarge marks a patient as discharged.
 func (s *dischargeService) CompleteDischarge(ctx context.Context, patientID string, dischargeDate time.Time) error {
+	// Get the discharge plan to validate dates
+	plan, err := s.repo.GetPlanByPatientID(ctx, patientID)
+	if err != nil {
+		log.Warn().Err(err).Str("patient_id", patientID).Msg("could not fetch discharge plan for validation")
+	}
+
+	if plan != nil {
+		// Validate discharge date >= admission/plan creation date
+		if dischargeDate.Before(plan.CreatedAt) {
+			return valerr.ErrDischargeDateBeforeAdmission
+		}
+
+		// Validate minimum treatment duration (2 weeks)
+		if dischargeDate.Sub(plan.CreatedAt) < minTreatmentDuration {
+			reason := model.DischargeReason("")
+			if plan.Reason != "" {
+				reason = plan.Reason
+			}
+			// Allow early discharge for patient choice, medical change, or relocation
+			earlyDischargeOK := reason == model.DischargeReasonPatientChoice ||
+				reason == model.DischargeReasonMedical ||
+				reason == model.DischargeReasonRelocated
+			if !earlyDischargeOK {
+				log.Warn().
+					Str("patient_id", patientID).
+					Str("reason", string(reason)).
+					Dur("treatment_duration", dischargeDate.Sub(plan.CreatedAt)).
+					Msg("treatment duration is less than recommended minimum of 2 weeks")
+			}
+		}
+
+		// Validate discharge criteria met
+		if plan.Reason == "" {
+			log.Warn().
+				Str("patient_id", patientID).
+				Msg("discharge reason not set; discharge criteria may not be met")
+		}
+	}
+
 	if err := s.repo.CompleteDischarge(ctx, patientID, dischargeDate); err != nil {
 		return fmt.Errorf("failed to complete discharge: %w", err)
 	}
@@ -208,6 +277,7 @@ func (s *dischargeService) CompleteDischarge(ctx context.Context, patientID stri
 
 	return nil
 }
+
 
 // calculateBaselineComparisons groups measures by type and computes baseline vs discharge comparisons.
 func (s *dischargeService) calculateBaselineComparisons(measures []*model.OutcomeMeasure) []model.BaselineComparison {

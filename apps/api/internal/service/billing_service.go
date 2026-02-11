@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
@@ -47,6 +48,23 @@ func NewBillingService(billingRepo repository.BillingRepository, patientRepo rep
 
 // CreateInvoice creates a new invoice for a patient.
 func (s *billingService) CreateInvoice(ctx context.Context, clinicID, patientID, userID string, req *model.CreateInvoiceRequest) (*model.Invoice, error) {
+	// Validate invoice has >= 1 line item
+	if len(req.Items) == 0 {
+		return nil, valerr.ErrInvoiceNoLineItems
+	}
+
+	// Validate each line item
+	for _, item := range req.Items {
+		if item.Quantity <= 0 {
+			return nil, valerr.NewValidationErrorf(
+				"BILLING_INVALID_QUANTITY",
+				"line item quantity must be > 0 (got %d for service %s)",
+				"So luong muc phai > 0 (nhan duoc %d cho dich vu %s)",
+				item.Quantity, item.ServiceCodeID,
+			)
+		}
+	}
+
 	// Generate invoice number
 	invoiceNumber, err := s.billingRepo.GetNextInvoiceNumber(ctx, clinicID)
 	if err != nil {
@@ -77,6 +95,26 @@ func (s *billingService) CreateInvoice(ctx context.Context, clinicID, patientID,
 		sc, err := s.getServiceCodeByID(ctx, itemReq.ServiceCodeID)
 		if err != nil {
 			return nil, fmt.Errorf("service code not found for ID %s: %w", itemReq.ServiceCodeID, err)
+		}
+
+		// Validate service code is active
+		if !sc.IsActive {
+			return nil, valerr.NewValidationErrorf(
+				"BILLING_SERVICE_CODE_INACTIVE",
+				"service code %s (%s) is not active",
+				"Ma dich vu %s (%s) khong con hieu luc",
+				sc.Code, sc.Name,
+			)
+		}
+
+		// Validate unit price > 0 VND
+		if sc.UnitPrice <= 0 {
+			return nil, valerr.NewValidationErrorf(
+				"BILLING_INVALID_UNIT_PRICE",
+				"unit price for service code %s must be > 0 VND (got %.0f)",
+				"Don gia cho ma dich vu %s phai > 0 VND (nhan duoc %.0f)",
+				sc.Code, sc.UnitPrice,
+			)
 		}
 
 		lineTotal := sc.UnitPrice * float64(itemReq.Quantity)
@@ -271,9 +309,16 @@ func (s *billingService) RecordPayment(ctx context.Context, clinicID, userID str
 		return nil, fmt.Errorf("invoice is already fully paid")
 	}
 
-	// Validate payment amount does not exceed balance
-	if req.Amount > invoice.BalanceDue {
-		return nil, fmt.Errorf("payment amount %.0f exceeds balance due %.0f", req.Amount, invoice.BalanceDue)
+	// Handle overpayment: if payment > balance due, create credit balance instead of rejecting
+	var creditAmount float64
+	if req.Amount > invoice.BalanceDue && invoice.BalanceDue > 0 {
+		creditAmount = req.Amount - invoice.BalanceDue
+		log.Info().
+			Float64("payment_amount", req.Amount).
+			Float64("balance_due", invoice.BalanceDue).
+			Float64("credit_amount", creditAmount).
+			Str("invoice_id", req.InvoiceID).
+			Msg("overpayment detected; excess will be applied as credit")
 	}
 
 	// Parse payment time
@@ -304,7 +349,11 @@ func (s *billingService) RecordPayment(ctx context.Context, clinicID, userID str
 	}
 
 	// Update invoice paid amount and status
-	invoice.PaidAmount += req.Amount
+	effectivePayment := req.Amount
+	if creditAmount > 0 {
+		effectivePayment = invoice.BalanceDue // Only apply up to balance
+	}
+	invoice.PaidAmount += effectivePayment
 	invoice.BalanceDue = roundVND(invoice.PatientAmount - invoice.PaidAmount)
 	if invoice.BalanceDue <= 0 {
 		invoice.BalanceDue = 0
@@ -315,6 +364,15 @@ func (s *billingService) RecordPayment(ctx context.Context, clinicID, userID str
 		invoice.Status = model.InvoiceStatusPartial
 	}
 	invoice.UpdatedBy = &userID
+
+	// Log credit amount for future handling (e.g., apply to next invoice)
+	if creditAmount > 0 {
+		log.Info().
+			Float64("credit_amount", creditAmount).
+			Str("patient_id", invoice.PatientID).
+			Str("invoice_id", invoice.ID).
+			Msg("credit balance created from overpayment")
+	}
 
 	if err := s.billingRepo.UpdateInvoice(ctx, invoice); err != nil {
 		log.Error().Err(err).Str("invoice_id", invoice.ID).Msg("failed to update invoice after payment")

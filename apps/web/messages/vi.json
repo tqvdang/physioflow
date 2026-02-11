@@ -542,7 +542,8 @@
       "title": "Tien trinh",
       "empty": "Chua co du lieu tien trinh",
       "romMmt": "Danh gia ROM / MMT",
-      "outcomeMeasures": "Chi so ket qua"
+      "outcomeMeasures": "Chi so ket qua",
+      "reevaluation": "So sanh tai danh gia"
     }
   },
   "patientForm": {
@@ -586,8 +587,10 @@
       "lastNameRequired": "Vui lòng nhập họ",
       "dateOfBirthRequired": "Vui lòng nhập ngày sinh",
       "phoneRequired": "Vui lòng nhập số điện thoại",
-      "phoneInvalid": "Số điện thoại không hợp lệ",
-      "emailInvalid": "Địa chỉ email không hợp lệ"
+      "phoneInvalid": "Số điện thoại không hợp lệ (VD: 09xxxxxxxx hoặc +849xxxxxxxx)",
+      "emailInvalid": "Địa chỉ email không hợp lệ",
+      "vietnameseNameInvalid": "Tên tiếng Việt chứa ký tự không hợp lệ",
+      "vietnamesePhoneInvalid": "Số điện thoại Việt Nam không hợp lệ"
     },
     "buttons": {
       "save": "Lưu bệnh nhân",
@@ -629,7 +632,12 @@
       "invalidFormat": "Định dạng thẻ không đúng",
       "invalidPrefix": "Mã đầu thẻ không hợp lệ",
       "prefixDetected": "Mã đầu thẻ",
-      "unknownPrefix": "Mã đầu thẻ không xác định"
+      "unknownPrefix": "Mã đầu thẻ không xác định",
+      "duplicateCard": "Số thẻ này đã được đăng ký cho bệnh nhân khác",
+      "validFromBeforeValidTo": "Ngày bắt đầu phải trước ngày kết thúc",
+      "childCopayExempt": "Trẻ em dưới 6 tuổi được miễn đồng chi trả (100% bảo hiểm)",
+      "fiveYearBonusIneligible": "Thẻ phải hoạt động liên tục trên 5 năm để được hưởng ưu đãi",
+      "hospitalMismatch": "Mã KCB ban đầu không khớp với cơ sở đăng ký"
     },
     "calculator": {
       "title": "Tính chi phí",
@@ -743,6 +751,14 @@
       "knee_oa": "Thoái hóa khớp gối",
       "post_stroke": "Phục hồi chức năng sau đột quỵ",
       "pediatric_delay": "Chậm phát triển ở trẻ em"
+    },
+    "validation": {
+      "durationInvalid": "Thời gian phác đồ nên từ 4-12 tuần",
+      "frequencyInvalid": "Tần suất điều trị nên từ 2-5 buổi mỗi tuần",
+      "eligibility": "Bệnh nhân có thể không đủ điều kiện cho phác đồ này dựa trên chẩn đoán",
+      "exerciseContraindication": "Một hoặc nhiều bài tập chống chỉ định với tình trạng này",
+      "progressionCriteriaNotMet": "Tiêu chí chuyển giai đoạn chưa được đáp ứng",
+      "hepExerciseCount": "Chương trình tập tại nhà nên có 3-5 bài tập"
     }
   },
   "billing": {
@@ -833,6 +849,13 @@
       "partially_paid": "Thanh toán một phần",
       "cancelled": "Đã hủy",
       "void": "Vô hiệu"
+    },
+    "validation": {
+      "noLineItems": "Vui lòng thêm ít nhất một dịch vụ vào hóa đơn",
+      "invalidQuantity": "Số lượng phải ít nhất là 1",
+      "invalidUnitPrice": "Đơn giá phải lớn hơn 0",
+      "serviceCodeInactive": "Mã dịch vụ này không còn hoạt động",
+      "paymentExceedsBalance": "Số tiền thanh toán vượt quá số dư còn nợ"
     },
     "claims": {
       "title": "Hồ sơ BHYT",
@@ -926,6 +949,14 @@
       "QuickDASH": "QuickDASH",
       "PSFS": "Thang đo chức năng cụ thể",
       "FIM": "Thang đo độc lập chức năng"
+    },
+    "validation": {
+      "scoreOutOfRange": "Điểm nằm ngoài phạm vi hợp lệ cho thang đo này",
+      "baselineRequired": "Cần có kết quả đo ban đầu trước khi ghi nhận điểm trung gian hoặc xuất viện",
+      "reassessmentTooSoon": "Đánh giá lại phải cách lần đo trước ít nhất 2 tuần",
+      "targetScoreUnrealistic": "Mục tiêu cải thiện điểm vượt quá kỳ vọng thực tế",
+      "measureTypeConditionMismatch": "Loại thang đo này có thể không phù hợp với tình trạng bệnh nhân",
+      "mcidNotMet": "Thay đổi so với ban đầu chưa đạt ngưỡng MCID"
     }
   },
   "anatomy": {
@@ -1093,7 +1124,11 @@
     "noSummaryYet": "Chưa có tóm tắt xuất viện",
     "noSummaryDescription": "Nhấn nút bên dưới để tạo tóm tắt xuất viện từ kế hoạch hiện tại.",
     "validation": {
-      "dateRequired": "Vui lòng chọn ngày xuất viện dự kiến"
+      "dateRequired": "Vui lòng chọn ngày xuất viện dự kiến",
+      "dateBeforeAdmission": "Ngày xuất viện không thể trước ngày nhập viện",
+      "minimumTreatmentDuration": "Thời gian điều trị tối thiểu là 2 tuần",
+      "dischargeCriteriaNotMet": "Tiêu chí xuất viện chưa được đáp ứng đầy đủ",
+      "followUpRequired": "Cần có khuyến nghị theo dõi khi mục tiêu điều trị chưa đạt"
     },
     "toast": {
       "planCreated": "Đã tạo kế hoạch xuất viện",
@@ -1137,6 +1172,7 @@
     }
   },
   "assessment": {
+    "pageTitle": "Danh gia",
     "loading": "Dang tai...",
     "history": {
       "title": "Lich su danh gia",
@@ -1181,6 +1217,14 @@
       "movementTypes": {
         "active": "Chu dong",
         "passive": "Thu dong"
+      },
+      "validation": {
+        "jointRequired": "Vui long chon khop",
+        "sideRequired": "Vui long chon ben",
+        "movementTypeRequired": "Vui long chon loai van dong",
+        "degreeRequired": "Vui long nhap gia tri do",
+        "degreeOutOfRange": "Do vuot qua muc toi da cho khop nay ({max} do)",
+        "degreeNegative": "Do khong the am"
       }
     },
     "mmt": {
@@ -1264,5 +1308,209 @@
         "grade5": "Tam van dong day du chong luc toi da"
       }
     }
+  },
+  "reevaluation": {
+    "title": "Tai danh gia",
+    "newReevaluation": "Tai danh gia moi",
+    "history": "Lich su",
+    "item": "Muc",
+    "assessmentType": "Loai danh gia",
+    "measureLabel": "Phep do",
+    "measureLabelPlaceholder": "VD: Gap vai trai chu dong",
+    "baselineValue": "Gia tri ban dau",
+    "baselineValuePlaceholder": "Gia tri danh gia ban dau",
+    "currentValue": "Gia tri hien tai",
+    "currentValuePlaceholder": "Gia tri danh gia hien tai",
+    "direction": "Huong cai thien",
+    "higherIsBetter": "Cao hon la tot hon (ROM, chuc nang)",
+    "lowerIsBetter": "Thap hon la tot hon (thang dau)",
+    "mcidThreshold": "Nguong MCID",
+    "mcidThresholdPlaceholder": "Khac biet lam sang toi thieu co y nghia",
+    "optional": "tuy chon",
+    "addItem": "Them phep do",
+    "preview": "Xem truoc so sanh",
+    "notes": "Ghi chu",
+    "notesPlaceholder": "Ghi chu them ve tai danh gia nay...",
+    "submit": "Luu tai danh gia",
+    "submitting": "Dang luu...",
+    "noData": "Khong co du lieu so sanh",
+    "noHistory": "Khong co lich su tai danh gia cho benh nhan nay",
+    "measure": "Phep do",
+    "baseline": "Ban dau",
+    "current": "Hien tai",
+    "change": "Thay doi",
+    "interpretation": "Dien giai",
+    "mcid": "MCID",
+    "mcidYes": "Dat",
+    "mcidNo": "Chua dat",
+    "mcidAchievedCount": "MCID dat duoc",
+    "types": {
+      "rom": "Tam van dong",
+      "mmt": "Thu nghiem co thu cong",
+      "outcomeMeasure": "Phep do ket qua"
+    },
+    "comparison": {
+      "improved": "Cai thien",
+      "declined": "Giam sut",
+      "stable": "On dinh"
+    },
+    "toast": {
+      "created": "Da luu tai danh gia",
+      "createdDesc": "Tai danh gia da duoc ghi nhan thanh cong",
+      "error": "Khong the luu tai danh gia"
+    }
+  },
+  "assessmentTemplates": {
+    "selectTemplate": "Chon mau danh gia",
+    "filterByCategory": "Loc theo danh muc",
+    "loading": "Dang tai mau danh gia...",
+    "noTemplates": "Khong co mau danh gia nao",
+    "items": "muc",
+    "useTemplate": "Su dung mau",
+    "completed": "hoan thanh",
+    "additionalNotes": "Ghi chu them",
+    "notesPlaceholder": "Quan sat lam sang bo sung hoac ghi chu...",
+    "cancel": "Huy",
+    "saving": "Dang luu...",
+    "saveAssessment": "Luu danh gia",
+    "saveError": "Khong the luu ket qua danh gia. Vui long thu lai.",
+    "selectOption": "Chon mot tuy chon",
+    "enterText": "Nhap ghi chu...",
+    "fieldRequired": "Truong nay la bat buoc",
+    "outOfRange": "Gia tri phai tu {min} den {max}",
+    "noResults": "Chua co ket qua danh gia nao",
+    "resultsTitle": "Ket qua danh gia",
+    "untitledAssessment": "Danh gia",
+    "moreItems": "muc khac",
+    "notes": "Ghi chu",
+    "categories": {
+      "all": "Tat ca danh muc",
+      "musculoskeletal": "Co xuong khop",
+      "neurological": "Than kinh",
+      "pediatric": "Nhi khoa"
+    }
+  },
+  "specialTests": {
+    "title": "Thu Vien Test Dac Biet",
+    "searchPlaceholder": "Tim kiem test theo ten...",
+    "loading": "Dang tai danh sach test...",
+    "noTests": "Khong tim thay test cho danh muc nay",
+    "noSearchResults": "Khong co test phu hop voi tim kiem",
+    "sensitivity": "Do nhay",
+    "specificity": "Do dac hieu",
+    "addToAssessment": "Them",
+    "added": "Da them",
+    "result": "Ket qua",
+    "interpretation": "Giai thich",
+    "notes": "Ghi chu",
+    "notesPlaceholder": "Ghi chu lam sang bo sung...",
+    "cancel": "Huy",
+    "saving": "Dang luu...",
+    "saveResult": "Luu Ket Qua",
+    "categories": {
+      "shoulder": "Vai",
+      "knee": "Goi",
+      "spine": "Cot song",
+      "hip": "Hong",
+      "ankle": "Co chan",
+      "elbow": "Khuyu tay"
+    },
+    "results": {
+      "positive": "Duong tinh",
+      "negative": "Am tinh",
+      "inconclusive": "Khong ket luan"
+    },
+    "history": {
+      "title": "Lich Su Test Dac Biet",
+      "noResults": "Chua co ket qua test dac biet nao cho benh nhan nay",
+      "totalTests": "{count} ket qua test da ghi nhan"
+    }
+  },
+  "reports": {
+    "title": "Bao Cao Tai Chinh",
+    "subtitle": "Theo doi doanh thu, cong no va nang suat lam viec",
+    "revenueTab": "Doanh Thu",
+    "outstandingTab": "Cong No",
+    "servicesTab": "Dich Vu",
+    "productivityTab": "Nang Suat",
+    "startDate": "Ngay Bat Dau",
+    "endDate": "Ngay Ket Thuc",
+    "period": "Ky Bao Cao",
+    "daily": "Theo ngay",
+    "weekly": "Theo tuan",
+    "monthly": "Theo thang",
+    "yearly": "Theo nam",
+    "topN": "Hien thi Top",
+    "refreshData": "Lam Moi Du Lieu",
+    "refreshing": "Dang lam moi...",
+    "exportCSV": "Xuat CSV",
+    "exporting": "Dang xuat...",
+    "totalRevenue": "Tong Doanh Thu",
+    "totalInvoices": "Tong Hoa Don",
+    "insuranceRevenue": "Doanh Thu Bao Hiem",
+    "cashRevenue": "Doanh Thu Tien Mat",
+    "revenueTrend": "Xu Huong Doanh Thu",
+    "revenueBreakdown": "Bao Hiem vs Tien Mat",
+    "totalOutstanding": "Tong Cong No",
+    "outstandingInvoices": "Hoa Don Chua Thanh Toan",
+    "outstandingDetails": "Chi Tiet Cong No",
+    "invoiceNumber": "So Hoa Don",
+    "patientName": "Ten Benh Nhan",
+    "totalAmount": "Tong Tien",
+    "amountDue": "So Tien No",
+    "daysOutstanding": "So Ngay No",
+    "agingBucket": "Nhom Tuoi No",
+    "days": "ngay",
+    "noOutstandingPayments": "Khong co cong no nao",
+    "totalServiceRevenue": "Tong Doanh Thu Dich Vu",
+    "servicesTracked": "Dich Vu Theo Doi",
+    "topServicesByRevenue": "Dich Vu Hang Dau Theo Doanh Thu",
+    "serviceDetails": "Chi Tiet Dich Vu",
+    "serviceCode": "Ma Dich Vu",
+    "serviceName": "Ten Dich Vu",
+    "quantitySold": "So Luong",
+    "revenue": "Doanh Thu",
+    "totalSessions": "Tong Buoi Tri Lieu",
+    "avgRevenuePerSession": "Doanh Thu TB / Buoi",
+    "therapistProductivity": "Nang Suat Ky Thuat Vien",
+    "therapistName": "Ky Thuat Vien",
+    "sessions": "So Buoi",
+    "avgPerSession": "TB / Buoi",
+    "noProductivityData": "Chua co du lieu nang suat",
+    "errorLoadingRevenue": "Khong the tai bao cao doanh thu. Vui long thu lai.",
+    "errorLoadingAging": "Khong the tai bao cao cong no. Vui long thu lai.",
+    "errorLoadingServices": "Khong the tai bao cao dich vu. Vui long thu lai.",
+    "errorLoadingProductivity": "Khong the tai bao cao nang suat. Vui long thu lai."
+  },
+  "validationErrors": {
+    "DUPLICATE_CARD_NUMBER": "So the nay da duoc dang ky cho benh nhan khac",
+    "CHILD_COPAY_EXEMPTION": "Tre em duoi 6 tuoi duoc mien dong chi tra theo quy dinh BHYT",
+    "FIVE_YEAR_BONUS_INELIGIBLE": "The phai hoat dong lien tuc tren 5 nam de duoc huong uu dai",
+    "HOSPITAL_REGISTRATION_MISMATCH": "Ma KCB ban dau khong khop voi co so dang ky",
+    "INVALID_SCORE_RANGE": "Diem nam ngoai pham vi hop le cho thang do nay",
+    "BASELINE_REQUIRED": "Can co ket qua do ban dau truoc khi ghi nhan diem trung gian hoac xuat vien",
+    "REASSESSMENT_TOO_SOON": "Danh gia lai phai cach lan do truoc it nhat 2 tuan",
+    "TARGET_SCORE_UNREALISTIC": "Muc tieu cai thien diem vuot qua ky vong thuc te",
+    "MEASURE_TYPE_CONDITION_MISMATCH": "Loai thang do nay co the khong phu hop voi tinh trang benh nhan",
+    "MCID_NOT_MET": "Thay doi so voi ban dau chua dat nguong MCID",
+    "INVALID_QUANTITY": "So luong phai it nhat la 1",
+    "INVALID_UNIT_PRICE": "Don gia phai lon hon 0",
+    "PAYMENT_EXCEEDS_BALANCE": "So tien thanh toan vuot qua so du con no",
+    "INVOICE_NO_LINE_ITEMS": "Hoa don phai co it nhat mot dong dich vu",
+    "SERVICE_CODE_INACTIVE": "Ma dich vu nay khong con hoat dong",
+    "OVERPAYMENT_CREDIT": "So tien du se duoc ghi co vao tai khoan benh nhan",
+    "PROTOCOL_DURATION_INVALID": "Thoi gian phac do nen tu 4-12 tuan",
+    "PROTOCOL_FREQUENCY_INVALID": "Tan suat dieu tri nen tu 2-5 buoi moi tuan",
+    "PROTOCOL_ELIGIBILITY": "Benh nhan co the khong du dieu kien cho phac do nay",
+    "EXERCISE_CONTRAINDICATION": "Mot hoac nhieu bai tap chong chi dinh voi tinh trang nay",
+    "PROGRESSION_CRITERIA_NOT_MET": "Tieu chi chuyen giai doan chua duoc dap ung",
+    "HEP_EXERCISE_COUNT": "Chuong trinh tap tai nha nen co 3-5 bai tap",
+    "DISCHARGE_DATE_BEFORE_ADMISSION": "Ngay xuat vien khong the truoc ngay nhap vien",
+    "MINIMUM_TREATMENT_DURATION": "Thoi gian dieu tri toi thieu 2 tuan chua duoc dap ung",
+    "DISCHARGE_CRITERIA_NOT_MET": "Chua dat du tat ca tieu chi xuat vien",
+    "FOLLOW_UP_REQUIRED": "Can co khuyen nghi theo doi khi muc tieu dieu tri chua dat",
+    "ROM_OUT_OF_RANGE": "Ket qua do tam van dong vuot qua muc toi da sinh ly cho khop nay",
+    "INVALID_VIETNAMESE_NAME": "Ten chua ky tu khong hop le cho ten tieng Viet",
+    "INVALID_VIETNAMESE_PHONE": "So dien thoai khong dung dinh dang Viet Nam"
   }
 }

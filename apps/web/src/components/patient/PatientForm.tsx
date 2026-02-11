@@ -70,8 +70,10 @@ const LANGUAGE_OPTIONS = [
   { value: "en", label: "English" },
 ] as const;
 
+import { VIETNAMESE_NAME_REGEX, VIETNAMESE_PHONE_REGEX } from "@/lib/validations";
+
 // Vietnamese phone validation
-const vietnamesePhoneRegex = /^(0|84|\+84)(3|5|7|8|9)([0-9]{8})$/;
+const vietnamesePhoneRegex = VIETNAMESE_PHONE_REGEX;
 
 // Form schema based on OpenAPI CreatePatientRequest
 const patientFormSchema = z.object({
@@ -91,15 +93,23 @@ const patientFormSchema = z.object({
     required_error: "Vui lòng chọn giới tính",
   }),
 
-  // Vietnamese name fields (optional)
+  // Vietnamese name fields (optional, validated for Vietnamese characters)
   first_name_vi: z
     .string()
     .max(100, "Tên không được quá 100 ký tự")
+    .refine(
+      (val) => !val || VIETNAMESE_NAME_REGEX.test(val),
+      "Tên tiếng Việt chứa ký tự không hợp lệ"
+    )
     .optional()
     .or(z.literal("")),
   last_name_vi: z
     .string()
     .max(100, "Họ không được quá 100 ký tự")
+    .refine(
+      (val) => !val || VIETNAMESE_NAME_REGEX.test(val),
+      "Họ tiếng Việt chứa ký tự không hợp lệ"
+    )
     .optional()
     .or(z.literal("")),
 

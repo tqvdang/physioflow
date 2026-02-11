@@ -8,9 +8,24 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
+
+// jointSpecificMaxDegrees defines strict maximum ROM values per joint.
+// These are absolute maximums (slightly above normal range to account for hypermobility).
+var jointSpecificMaxDegrees = map[model.ROMJoint]float64{
+	model.ROMJointShoulder:      200, // Normal: 180, allow some hypermobility
+	model.ROMJointElbow:         160, // Normal: 150
+	model.ROMJointWrist:         100, // Normal: 80
+	model.ROMJointHip:           140, // Normal: 120
+	model.ROMJointKnee:          150, // Normal: 135
+	model.ROMJointAnkle:         70,  // Normal: 50
+	model.ROMJointCervicalSpine: 100, // Normal: 80
+	model.ROMJointThoracicSpine: 60,  // Normal: 40
+	model.ROMJointLumbarSpine:   80,  // Normal: 60
+}
 
 // ROMService defines the interface for ROM assessment business logic.
 type ROMService interface {
@@ -32,12 +47,27 @@ func NewROMService(repo repository.ROMRepository) ROMService {
 
 // RecordAssessment records a new ROM assessment for a patient.
 func (s *romService) RecordAssessment(ctx context.Context, clinicID, therapistID string, req *model.CreateROMAssessmentRequest) (*model.ROMAssessment, error) {
-	// Validate joint-specific degree range
+	// Validate degree >= 0
+	if req.Degree < 0 {
+		return nil, valerr.NewValidationErrorf(
+			"ASSESSMENT_ROM_OUT_OF_RANGE",
+			"ROM degree must be >= 0 (got %.1f)",
+			"Gia tri ROM phai >= 0 (nhan duoc %.1f)",
+			req.Degree,
+		)
+	}
+
+	// Validate joint-specific degree range with strict maximums
 	joint := model.ROMJoint(req.Joint)
-	if maxDegree, ok := model.NormalROMRanges[joint]; ok {
-		// Allow up to 2x normal range as a soft limit (some joints can exceed norms)
-		if req.Degree > maxDegree*2 {
-			return nil, fmt.Errorf("degree %.1f exceeds maximum expected range for %s (normal: %.0f)", req.Degree, req.Joint, maxDegree)
+	if maxDegree, ok := jointSpecificMaxDegrees[joint]; ok {
+		if req.Degree > maxDegree {
+			normalRange := model.NormalROMRanges[joint]
+			return nil, valerr.NewValidationErrorf(
+				"ASSESSMENT_ROM_OUT_OF_RANGE",
+				"ROM degree %.1f exceeds maximum for %s (normal: 0-%.0f, max allowed: %.0f)",
+				"Gia tri ROM %.1f vuot qua toi da cho %s (binh thuong: 0-%.0f, toi da cho phep: %.0f)",
+				req.Degree, req.Joint, normalRange, maxDegree,
+			)
 		}
 	}
 

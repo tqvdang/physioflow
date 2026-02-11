@@ -1,28 +1,35 @@
 "use client";
 
 /**
- * ROM/MMT Assessment page for a patient.
- * Displays forms for recording Range of Motion and Manual Muscle Testing,
- * plus a tabbed history view with trend indicators.
+ * Assessment page for a patient.
+ * Tabbed view with ROM/MMT recording forms and Re-evaluation comparison workflow.
  */
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROMForm } from "@/components/assessment/ROMForm";
 import { MMTForm } from "@/components/assessment/MMTForm";
 import { ROMMMTHistory } from "@/components/assessment/ROMMMTHistory";
+import { ReevaluationForm } from "@/components/assessment/ReevaluationForm";
 
 export default function AssessmentPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const patientId = params.id as string;
   const locale = (params.locale as string) ?? "vi";
 
   const t = useTranslations("assessment");
+  const tReeval = useTranslations("reevaluation");
+
+  // Support ?tab=reevaluation query param for deep linking
+  const tabParam = searchParams.get("tab");
+  const defaultTab = tabParam === "reevaluation" ? "reevaluation" : "rom-mmt";
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -36,18 +43,35 @@ export default function AssessmentPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t("rom.title")} / {t("mmt.title")}</h1>
+          <h1 className="text-2xl font-bold">{t("pageTitle")}</h1>
         </div>
       </div>
 
-      {/* ROM Form */}
-      <ROMForm patientId={patientId} />
+      <Tabs defaultValue={defaultTab}>
+        <TabsList>
+          <TabsTrigger value="rom-mmt">
+            {t("rom.title")} / {t("mmt.title")}
+          </TabsTrigger>
+          <TabsTrigger value="reevaluation">
+            {tReeval("title")}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* MMT Form */}
-      <MMTForm patientId={patientId} />
+        <TabsContent value="rom-mmt" className="mt-4 space-y-6">
+          {/* ROM Form */}
+          <ROMForm patientId={patientId} />
 
-      {/* History */}
-      <ROMMMTHistory patientId={patientId} />
+          {/* MMT Form */}
+          <MMTForm patientId={patientId} />
+
+          {/* History */}
+          <ROMMMTHistory patientId={patientId} />
+        </TabsContent>
+
+        <TabsContent value="reevaluation" className="mt-4">
+          <ReevaluationForm patientId={patientId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

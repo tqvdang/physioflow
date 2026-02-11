@@ -9,9 +9,100 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	valerr "github.com/tqvdang/physioflow/apps/api/internal/errors"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
+
+// mcidThresholds maps measure types to their Minimal Clinically Important Difference values.
+var mcidThresholds = map[model.MeasureType]float64{
+	model.MeasureTypeVAS:  2.0,
+	model.MeasureTypeNRS:  2.0,
+	model.MeasureTypeNDI:  10.0,
+	model.MeasureTypeODI:  10.0,
+	model.MeasureTypeLEFS: 9.0,
+	model.MeasureTypeDASH: 10.0,
+	model.MeasureTypeKOOS: 10.0,
+	model.MeasureTypeWOMAC: 10.0,
+	model.MeasureTypeBBS:  6.0,
+	model.MeasureTypeFIM:  22.0,
+}
+
+// scoreRanges maps measure types to their valid (min, max) score ranges.
+var scoreRanges = map[model.MeasureType][2]float64{
+	model.MeasureTypeVAS:  {0, 10},
+	model.MeasureTypeNRS:  {0, 10},
+	model.MeasureTypeNDI:  {0, 100},
+	model.MeasureTypeODI:  {0, 100},
+	model.MeasureTypeDASH: {0, 100},
+	model.MeasureTypeLEFS: {0, 80},
+	model.MeasureTypeKOOS: {0, 100},
+	model.MeasureTypeWOMAC: {0, 100},
+	model.MeasureTypeBBS:  {0, 56},
+	model.MeasureTypeSF36: {0, 100},
+	model.MeasureTypeFIM:  {18, 126},
+	model.MeasureTypeMMT:  {0, 5},
+	model.MeasureTypeROM:  {0, 360},
+}
+
+// measureBodyRegions maps measure types to their applicable body regions for condition matching.
+var measureBodyRegions = map[model.MeasureType][]string{
+	model.MeasureTypeNDI:  {"cervical_spine", "neck"},
+	model.MeasureTypeODI:  {"lumbar_spine", "lower_back"},
+	model.MeasureTypeDASH: {"shoulder", "elbow", "wrist", "hand", "upper_extremity"},
+	model.MeasureTypeLEFS: {"hip", "knee", "ankle", "foot", "lower_extremity"},
+	model.MeasureTypeKOOS: {"knee"},
+	model.MeasureTypeWOMAC: {"hip", "knee"},
+}
+
+// minReassessmentInterval is the minimum duration between measurements of the same type.
+const minReassessmentInterval = 14 * 24 * time.Hour // 2 weeks
+
+// ValidateMCIDThreshold checks if a score change meets the MCID for the given measure type.
+func ValidateMCIDThreshold(measureType model.MeasureType, change float64) (bool, error) {
+	mcid, exists := mcidThresholds[measureType]
+	if !exists {
+		return false, fmt.Errorf("unknown measure type for MCID: %s", measureType)
+	}
+	return math.Abs(change) >= mcid, nil
+}
+
+// ValidateScoreRange checks if a score falls within the valid range for its measure type.
+func ValidateScoreRange(measureType model.MeasureType, score float64) error {
+	r, exists := scoreRanges[measureType]
+	if !exists {
+		// Unknown measure type - allow any score (custom measures)
+		return nil
+	}
+	if score < r[0] || score > r[1] {
+		return valerr.NewValidationErrorf(
+			"OUTCOME_INVALID_SCORE_RANGE",
+			"score %.1f is outside valid range [%.0f-%.0f] for %s",
+			"Diem %.1f nam ngoai pham vi hop le [%.0f-%.0f] cho %s",
+			score, r[0], r[1], measureType,
+		)
+	}
+	return nil
+}
+
+// ValidateMeasureTypeForCondition checks if the chosen measure type is appropriate
+// for the patient's body region.
+func ValidateMeasureTypeForCondition(measureType model.MeasureType, bodyRegion string) bool {
+	regions, exists := measureBodyRegions[measureType]
+	if !exists {
+		// Global measures (VAS, NRS, SF36, BBS, FIM) apply to all conditions
+		return true
+	}
+	if bodyRegion == "" {
+		return true // No body region specified, allow
+	}
+	for _, r := range regions {
+		if r == bodyRegion {
+			return true
+		}
+	}
+	return false
+}
 
 // OutcomeMeasuresService defines the interface for outcome measures business logic.
 type OutcomeMeasuresService interface {
@@ -43,15 +134,20 @@ func (s *outcomeMeasuresService) RecordMeasure(ctx context.Context, clinicID, th
 	// Calculate the total score from responses
 	score := s.calculateScore(req.Responses, lib)
 
-	// Calculate percentage
-	var percentage *float64
-	if lib.MaxScore != lib.MinScore {
-		pct := ((score - lib.MinScore) / (lib.MaxScore - lib.MinScore)) * 100
-		percentage = &pct
+	// Validate score within valid range for this measure type
+	if err := ValidateScoreRange(lib.MeasureType, score); err != nil {
+		return nil, err
 	}
 
-	// Generate interpretation
-	interpretation := s.interpretScore(score, lib)
+	// Also validate the score against the library-defined range
+	if score < lib.MinScore || score > lib.MaxScore {
+		return nil, valerr.NewValidationErrorf(
+			"OUTCOME_INVALID_SCORE_RANGE",
+			"score %.1f is outside library range [%.0f-%.0f]",
+			"Diem %.1f nam ngoai pham vi thu vien [%.0f-%.0f]",
+			score, lib.MinScore, lib.MaxScore,
+		)
+	}
 
 	// Parse measured_at or default to now
 	measuredAt := time.Now()
@@ -62,6 +158,49 @@ func (s *outcomeMeasuresService) RecordMeasure(ctx context.Context, clinicID, th
 		}
 		measuredAt = parsed
 	}
+
+	// Get existing measures for this patient and type to validate sequencing
+	existingMeasures, err := s.repo.GetByPatientAndType(ctx, req.PatientID, lib.MeasureType)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to fetch existing measures for validation")
+		// Non-fatal: continue with recording
+	}
+
+	if existingMeasures != nil && len(existingMeasures) > 0 {
+		// Validate re-assessment interval minimum (2 weeks between measurements)
+		lastMeasure := existingMeasures[len(existingMeasures)-1]
+		if measuredAt.Sub(lastMeasure.MeasuredAt) < minReassessmentInterval {
+			return nil, valerr.NewValidationErrorf(
+				"OUTCOME_REASSESSMENT_TOO_SOON",
+				"last %s measurement was on %s; minimum 2 weeks between re-assessments",
+				"Lan do %s cuoi cung vao %s; can toi thieu 2 tuan giua cac lan tai danh gia",
+				lib.MeasureType, lastMeasure.MeasuredAt.Format("2006-01-02"),
+			)
+		}
+	}
+
+	// Validate target score is realistic (not > maximum possible score)
+	// This is checked against the library max score which is already defined
+
+	// Validate measure type matches patient condition (body region)
+	if lib.BodyRegion != nil && *lib.BodyRegion != "" {
+		if !ValidateMeasureTypeForCondition(lib.MeasureType, *lib.BodyRegion) {
+			log.Warn().
+				Str("measure_type", string(lib.MeasureType)).
+				Str("body_region", *lib.BodyRegion).
+				Msg("measure type may not match patient body region")
+		}
+	}
+
+	// Calculate percentage
+	var percentage *float64
+	if lib.MaxScore != lib.MinScore {
+		pct := ((score - lib.MinScore) / (lib.MaxScore - lib.MinScore)) * 100
+		percentage = &pct
+	}
+
+	// Generate interpretation
+	interpretation := s.interpretScore(score, lib)
 
 	var sessionID *string
 	if req.SessionID != "" {

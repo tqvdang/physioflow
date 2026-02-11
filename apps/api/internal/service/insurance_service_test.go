@@ -51,6 +51,11 @@ func (m *MockInsuranceRepository) ValidateCard(ctx context.Context, cardNumber s
 	return args.Get(0).(*model.BHYTValidationResult), args.Error(1)
 }
 
+func (m *MockInsuranceRepository) CheckDuplicateCard(ctx context.Context, cardNumber string, excludePatientID string) (bool, error) {
+	args := m.Called(ctx, cardNumber, excludePatientID)
+	return args.Bool(0), args.Error(1)
+}
+
 // MockAuditRepository is a mock implementation of AuditRepository
 type MockAuditRepository struct {
 	mock.Mock
@@ -444,6 +449,7 @@ func TestCreateInsurance(t *testing.T) {
 			service := NewInsuranceService(mockRepo, mockAudit)
 
 			if !tt.expectError {
+				mockRepo.On("CheckDuplicateCard", mock.Anything, tt.request.CardNumber, "patient-123").Return(false, nil)
 				mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*model.BHYTCard")).Return(nil)
 				mockAudit.On("LogAction", mock.Anything, mock.Anything).Return(nil)
 			}
@@ -571,12 +577,13 @@ func TestCreateInsuranceWithNewFields(t *testing.T) {
 		RegisteredFacilityName:   "Hospital B",
 		HospitalRegistrationCode: "79024",
 		ExpirationDate:           "2026-12-31",
-		ValidFrom:                "2024-01-01",
+		ValidFrom:                "2020-01-01",
 		ValidTo:                  "2026-12-31",
 		FiveYearContinuous:       true,
 		Notes:                    "Veteran card",
 	}
 
+	mockRepo.On("CheckDuplicateCard", mock.Anything, req.CardNumber, "patient-123").Return(false, nil)
 	mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*model.BHYTCard")).Return(nil)
 	mockAudit.On("LogAction", mock.Anything, mock.Anything).Return(nil)
 

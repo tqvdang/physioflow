@@ -214,6 +214,12 @@ func registerTestRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	api.POST("/medical-terms", h.MedicalTerms.CreateCustomTerm)
 	api.GET("/medical-terms/category/:category", h.MedicalTerms.GetTermsByCategory)
 	api.GET("/medical-terms/icd10/:code", h.MedicalTerms.GetTermByICD10)
+
+	// Re-evaluation assessment routes
+	reevaluation := api.Group("/assessments/reevaluation")
+	reevaluation.POST("", h.Reevaluation.CreateReevaluation)
+	reevaluation.GET("/patient/:patientId", h.Reevaluation.GetPatientReevaluations)
+	reevaluation.GET("/:id/comparison", h.Reevaluation.GetComparison)
 }
 
 // testAuthMiddleware provides mock authentication for tests.

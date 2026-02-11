@@ -753,6 +753,12 @@ export default function PatientDashboardPage() {
                       {t("progress.outcomeMeasures")}
                     </Button>
                   </Link>
+                  <Link href={`/${locale}/patients/${patientId}/assessment?tab=reevaluation`}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      {t("progress.reevaluation")}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </TabsContent>

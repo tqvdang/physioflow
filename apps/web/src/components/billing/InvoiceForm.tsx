@@ -109,10 +109,24 @@ export function InvoiceForm({
   const copay = subtotal - insuranceAmount;
   const total = copay;
 
+  const [validationError, setValidationError] = React.useState<string | null>(null);
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedServices.length === 0) return;
+    setValidationError(null);
+
+    if (selectedServices.length === 0) {
+      setValidationError(t("validation.noLineItems"));
+      return;
+    }
+
+    // Validate all quantities are positive
+    const invalidQty = selectedServices.find((s) => s.quantity < 1);
+    if (invalidQty) {
+      setValidationError(t("validation.invalidQuantity"));
+      return;
+    }
 
     const request: CreateInvoiceRequest = {
       patientId,
@@ -307,7 +321,12 @@ export function InvoiceForm({
         </Button>
       </div>
 
-      {/* Error message */}
+      {/* Validation error message */}
+      {validationError && (
+        <p className="text-sm text-destructive">{validationError}</p>
+      )}
+
+      {/* API error message */}
       {createInvoice.isError && (
         <p className="text-sm text-destructive">
           {createInvoice.error instanceof Error

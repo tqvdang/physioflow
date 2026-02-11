@@ -428,5 +428,46 @@ grep -c "\[ \]" /home/dang/dev/physioflow/IMPLEMENTATION_CHECKLIST.md
 
 ---
 
-**Last Updated:** 2026-02-11 - Sprint 1C Anatomy Visualization implemented
+**Last Updated:** 2026-02-11 - Sprint 2B Condition-Specific Assessment Templates implemented
 **Next Review:** After Sprint 1A completion (2026-02-17)
+
+---
+
+## Sprint 2B: Condition-Specific Assessment Templates (Completed)
+
+### Database
+- [x] Create migration `023_assessment_templates.sql`
+  - [x] `assessment_templates` table (id, name, name_vi, condition, category, checklist_items JSONB)
+  - [x] `patient_assessment_results` table (id, patient_id, template_id, results JSONB, therapist_id)
+  - [x] Seed 5 templates: Lower Back Pain (15), Shoulder Pain (12), Knee OA (10), Post-Stroke (12), Pediatric (15)
+
+### Go API
+- [x] `internal/model/assessment_template.go` - Model structs with JSONB handling
+- [x] `internal/repository/assessment_template_repository.go` - GetAll, GetByID, GetByCondition, GetByCategory, CreateResult, GetPatientResults
+- [x] `internal/service/assessment_template_service.go` - Templates, validation, save results
+- [x] `internal/handler/assessment_template.go` - 4 endpoints
+- [x] Wired into service.go, repository.go, handler.go, main.go routes
+
+### API Endpoints
+- [x] `GET /api/v1/assessment-templates` - List all templates (optionally ?category=)
+- [x] `GET /api/v1/assessment-templates/:id` - Get template details
+- [x] `POST /api/v1/assessment-templates/results` - Save assessment result
+- [x] `GET /api/v1/assessment-templates/results/patient/:patientId` - Get patient results
+
+### Shared Types
+- [x] `packages/shared-types/src/assessment-templates.ts` with Zod schemas
+
+### Web Frontend
+- [x] `hooks/use-assessment-templates.ts` - useTemplates, useTemplate, useSaveResult, usePatientAssessmentResults
+- [x] `components/assessment/TemplateSelector.tsx` - Category filter, template cards
+- [x] `components/assessment/TemplateForm.tsx` - Dynamic form renderer (select, radio, number, text, checkbox)
+- [x] `components/assessment/TemplateResults.tsx` - Display saved results
+- [x] i18n translations (en.json, vi.json) for assessmentTemplates
+
+### Mobile
+- [x] WatermelonDB schema v11 with assessment_templates + assessment_results tables
+
+### Tests
+- [x] `assessment_template_service_test.go` - Unit tests for validation, save, categories
+- [x] `hooks/__tests__/use-assessment-templates.test.ts` - Hook tests
+- [x] `tests/e2e/assessment-templates.spec.ts` - E2E tests

@@ -23,6 +23,10 @@ type Service struct {
 	mmt             MMTService
 	bhytClaim       BHYTClaimService
 	report          ReportService
+	reevaluation        ReevaluationService
+	assessmentTemplate  AssessmentTemplateService
+	financialReport     FinancialReportService
+	specialTest         SpecialTestService
 }
 
 // New creates a new Service instance.
@@ -44,6 +48,10 @@ func New(repo *repository.Repository) *Service {
 	svc.mmt = NewMMTService(repo.MMT())
 	svc.bhytClaim = NewBHYTClaimService(repo.BHYTClaim())
 	svc.report = NewReportService(repo.Report(), repo.Discharge(), repo.Billing(), repo.Patient())
+	svc.reevaluation = NewReevaluationService(repo.Reevaluation())
+	svc.assessmentTemplate = NewAssessmentTemplateService(repo.AssessmentTemplate())
+	svc.financialReport = NewFinancialReportService(repo.FinancialReport())
+	svc.specialTest = NewSpecialTestService(repo.SpecialTest())
 	return svc
 }
 
@@ -125,6 +133,26 @@ func (s *Service) BHYTClaim() BHYTClaimService {
 // Report returns the report generation service.
 func (s *Service) Report() ReportService {
 	return s.report
+}
+
+// Reevaluation returns the re-evaluation service.
+func (s *Service) Reevaluation() ReevaluationService {
+	return s.reevaluation
+}
+
+// AssessmentTemplate returns the assessment template service.
+func (s *Service) AssessmentTemplate() AssessmentTemplateService {
+	return s.assessmentTemplate
+}
+
+// FinancialReport returns the financial report service.
+func (s *Service) FinancialReport() FinancialReportService {
+	return s.financialReport
+}
+
+// SpecialTest returns the special test service.
+func (s *Service) SpecialTest() SpecialTestService {
+	return s.specialTest
 }
 
 // CheckDatabase verifies database connectivity.

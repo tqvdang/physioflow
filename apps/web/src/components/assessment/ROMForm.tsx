@@ -16,6 +16,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateROM } from "@/hooks/use-rom";
 import type { ROMJoint, ROMSide, ROMMovementType } from "@/hooks/use-rom";
+import {
+  ROM_JOINT_MAX_DEGREES,
+  ROM_NORMAL_RANGES,
+  type ROMJointKey,
+} from "@/lib/validations";
 
 const JOINTS: { value: ROMJoint; labelKey: string }[] = [
   { value: "shoulder", labelKey: "shoulder" },
@@ -40,18 +45,8 @@ const MOVEMENT_TYPES: { value: ROMMovementType; labelKey: string }[] = [
   { value: "passive", labelKey: "passive" },
 ];
 
-// Normal ROM ranges for reference display
-const NORMAL_RANGES: Record<ROMJoint, number> = {
-  shoulder: 180,
-  elbow: 150,
-  wrist: 80,
-  hip: 120,
-  knee: 135,
-  ankle: 50,
-  cervical_spine: 80,
-  thoracic_spine: 40,
-  lumbar_spine: 60,
-};
+// Use centralized validation constants (ROM_NORMAL_RANGES, ROM_JOINT_MAX_DEGREES)
+// imported from @/lib/validations
 
 interface ROMFormProps {
   patientId: string;
@@ -70,9 +65,13 @@ export function ROMForm({ patientId, visitId, onSuccess }: ROMFormProps) {
   const [degree, setDegree] = useState<string>("");
   const [notes, setNotes] = useState("");
 
-  const normalRange = joint ? NORMAL_RANGES[joint] : null;
+  const normalRange = joint ? ROM_NORMAL_RANGES[joint as ROMJointKey] : null;
+  const maxDegree = joint
+    ? ROM_JOINT_MAX_DEGREES[joint as ROMJointKey] ?? 360
+    : 360;
   const degreeNum = parseFloat(degree);
-  const isValidDegree = !isNaN(degreeNum) && degreeNum >= 0 && degreeNum <= 360;
+  const isValidDegree =
+    !isNaN(degreeNum) && degreeNum >= 0 && degreeNum <= maxDegree;
   const canSubmit = joint && side && movementType && isValidDegree;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,7 +177,7 @@ export function ROMForm({ patientId, visitId, onSuccess }: ROMFormProps) {
               <Input
                 type="number"
                 min={0}
-                max={360}
+                max={maxDegree}
                 step={0.5}
                 value={degree}
                 onChange={(e) => setDegree(e.target.value)}
@@ -190,7 +189,12 @@ export function ROMForm({ patientId, visitId, onSuccess }: ROMFormProps) {
               </span>
               {normalRange !== null && (
                 <span className="text-sm text-muted-foreground ml-2">
-                  ({t("normalRange")}: 0-{normalRange})
+                  ({t("normalRange")}: 0-{normalRange}, max: {maxDegree})
+                </span>
+              )}
+              {degree && !isValidDegree && (
+                <span className="text-sm text-destructive ml-2">
+                  0-{maxDegree}
                 </span>
               )}
             </div>

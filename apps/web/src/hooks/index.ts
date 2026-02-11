@@ -183,5 +183,86 @@ export type {
   ClaimListResponse,
 } from "./use-bhyt-claims";
 
+// Re-evaluation hooks
+export {
+  reevaluationKeys,
+  useCreateReevaluation,
+  useReevaluationHistory,
+  useComparison,
+} from "./use-reevaluation";
+
+export type {
+  AssessmentType,
+  InterpretationResult,
+  ReevaluationAssessment,
+  ReevaluationSummary,
+  CreateReevaluationItemRequest,
+  CreateReevaluationRequest,
+} from "./use-reevaluation";
+
+// Financial report hooks
+export {
+  reportKeys,
+  useRevenueReport,
+  useAgingReport,
+  useServicesReport,
+  useProductivityReport,
+  useExportReport,
+  useRefreshViews,
+  isReportApiError,
+} from "./use-reports";
+
+export type {
+  ReportPeriod,
+  AgingBucket,
+  ExportFormat,
+  FinancialReportType,
+  RevenueReport,
+  RevenueByPeriod,
+  AgingReport,
+  OutstandingPayment,
+  AgingBucketSummary,
+  ServiceReport,
+  ServiceRevenue,
+  ProductivityReport,
+  TherapistProductivity,
+  ReportFilters,
+} from "./use-reports";
+
+// Assessment template hooks
+export {
+  assessmentTemplateKeys,
+  useTemplates,
+  useTemplate,
+  useSaveResult,
+  usePatientAssessmentResults,
+} from "./use-assessment-templates";
+
+export type {
+  TemplateCategory,
+  ChecklistItemType,
+  ChecklistItem,
+  AssessmentTemplate,
+  AssessmentResult,
+  CreateAssessmentResultRequest,
+} from "./use-assessment-templates";
+
+// Special tests hooks
+export {
+  specialTestKeys,
+  useSpecialTests,
+  useSearchTests,
+  useRecordTestResult,
+  usePatientTestResults,
+} from "./use-special-tests";
+
+export type {
+  TestCategory,
+  TestResult,
+  SpecialTest,
+  SpecialTestResult,
+  CreateSpecialTestResultRequest,
+} from "./use-special-tests";
+
 // Common type guard for API errors
 export { ApiError } from "@/lib/api";
