@@ -959,8 +959,28 @@
       "cancel": "Cancel"
     }
   },
+  "outcomeMeasures": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "editMeasure": "Edit Measurement",
+    "deleteMeasure": "Delete Measurement",
+    "confirmDelete": "Are you sure you want to delete this measurement?",
+    "deleteWarning": "This action cannot be undone.",
+    "updated": "Measurement updated",
+    "deleted": "Measurement deleted"
+  },
   "anatomy": {
     "title": "Pain Locations",
+    "selectRegion": "Select region",
+    "frontView": "Front View",
+    "backView": "Back View",
+    "categories": {
+      "upper_limb": "Upper Limb",
+      "lower_limb": "Lower Limb",
+      "spine": "Spine",
+      "trunk": "Trunk",
+      "head_neck": "Head & Neck"
+    },
     "markPainLocations": "Mark Pain Locations",
     "editPainLocations": "Edit Pain Locations",
     "noPainMarked": "No pain locations marked",
@@ -976,8 +996,6 @@
     "updatePain": "Update Pain",
     "remove": "Remove",
     "savePainLocations": "Save Pain Locations",
-    "frontView": "Front View",
-    "backView": "Back View",
     "frontDiagram": "Front body diagram",
     "backDiagram": "Back body diagram",
     "severityLabels": {

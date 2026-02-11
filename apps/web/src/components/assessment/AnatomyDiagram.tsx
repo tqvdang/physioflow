@@ -6,8 +6,10 @@ import type {
   AnatomyRegionId,
   AnatomyView,
   AnatomyPainLocation,
+  AnatomyRegionMeta,
 } from "@physioflow/shared-types";
 import { getSeverityColor, ANATOMY_REGIONS } from "@physioflow/shared-types";
+import { useAnatomyRegions } from "@/hooks/use-anatomy-regions";
 
 interface AnatomyDiagramProps {
   /** Which view to display: front or back */
@@ -33,6 +35,19 @@ export function AnatomyDiagram({
   onRegionClick,
   className,
 }: AnatomyDiagramProps) {
+  // Fetch regions from API; fall back to hardcoded ANATOMY_REGIONS on error/loading
+  const { data: apiRegions } = useAnatomyRegions();
+
+  const regionsMeta: AnatomyRegionMeta[] = React.useMemo(() => {
+    if (!apiRegions || apiRegions.length === 0) return ANATOMY_REGIONS;
+    return apiRegions.map((r) => ({
+      id: r.id as AnatomyRegionId,
+      label: r.name,
+      labelVi: r.name_vi,
+      view: r.view as AnatomyView,
+    }));
+  }, [apiRegions]);
+
   const severityMap = React.useMemo(() => {
     const map = new Map<string, AnatomyPainLocation>();
     for (const region of selectedRegions) {
@@ -42,8 +57,8 @@ export function AnatomyDiagram({
   }, [selectedRegions]);
 
   const regionsForView = React.useMemo(
-    () => ANATOMY_REGIONS.filter((r) => r.view === view),
-    [view]
+    () => regionsMeta.filter((r) => r.view === view),
+    [regionsMeta, view]
   );
 
   const getRegionFill = (regionId: string): string => {
@@ -119,6 +134,7 @@ export function AnatomyDiagram({
               getRegionFill={getRegionFill}
               getRegionStroke={getRegionStroke}
               regionsForView={regionsForView}
+              regionsMeta={regionsMeta}
             />
           ) : (
             <BackRegions
@@ -126,6 +142,7 @@ export function AnatomyDiagram({
               getRegionFill={getRegionFill}
               getRegionStroke={getRegionStroke}
               regionsForView={regionsForView}
+              regionsMeta={regionsMeta}
             />
           )}
         </g>
@@ -134,7 +151,7 @@ export function AnatomyDiagram({
         <g className="severity-labels">
           {selectedRegions
             .filter((r) => {
-              const meta = ANATOMY_REGIONS.find((m) => m.id === r.id);
+              const meta = regionsMeta.find((m) => m.id === r.id);
               return meta && meta.view === view;
             })
             .map((r) => {
@@ -175,20 +192,23 @@ interface RegionGroupProps {
   getRegionFill: (regionId: string) => string;
   getRegionStroke: (regionId: string) => string;
   regionsForView: { id: AnatomyRegionId; label: string }[];
+  regionsMeta: AnatomyRegionMeta[];
 }
 
 function RegionShape({
   id,
   onRegionClick,
+  regionsMeta,
   children,
 }: {
   id: AnatomyRegionId;
   onRegionClick: (regionId: AnatomyRegionId) => void;
+  regionsMeta: AnatomyRegionMeta[];
   getRegionFill?: (regionId: string) => string;
   getRegionStroke?: (regionId: string) => string;
   children: React.ReactNode;
 }) {
-  const label = ANATOMY_REGIONS.find((r) => r.id === id)?.label ?? id;
+  const label = regionsMeta.find((r) => r.id === id)?.label ?? id;
   return (
     <g
       id={id}
@@ -210,8 +230,8 @@ function RegionShape({
   );
 }
 
-function FrontRegions({ onRegionClick, getRegionFill, getRegionStroke }: RegionGroupProps) {
-  const rp = { onRegionClick, getRegionFill, getRegionStroke };
+function FrontRegions({ onRegionClick, getRegionFill, getRegionStroke, regionsMeta }: RegionGroupProps) {
+  const rp = { onRegionClick, getRegionFill, getRegionStroke, regionsMeta };
   return (
     <>
       <RegionShape id="head" {...rp}>
@@ -308,8 +328,8 @@ function FrontRegions({ onRegionClick, getRegionFill, getRegionStroke }: RegionG
   );
 }
 
-function BackRegions({ onRegionClick, getRegionFill, getRegionStroke }: RegionGroupProps) {
-  const rp = { onRegionClick, getRegionFill, getRegionStroke };
+function BackRegions({ onRegionClick, getRegionFill, getRegionStroke, regionsMeta }: RegionGroupProps) {
+  const rp = { onRegionClick, getRegionFill, getRegionStroke, regionsMeta };
   return (
     <>
       <RegionShape id="neck_back" {...rp}>

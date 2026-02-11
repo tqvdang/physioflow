@@ -62,5 +62,8 @@ export * from './assessment-templates';
 // Special Tests Library types
 export * from './special-tests';
 
+// Anatomy Region types (API-driven)
+export * from './anatomy';
+
 // Financial Reporting types
 export * from './reports';

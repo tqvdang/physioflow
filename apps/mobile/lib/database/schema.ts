@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 11,
+  version: 12,
   tables: [
     tableSchema({
       name: 'patients',
@@ -88,6 +88,8 @@ export const schema = appSchema({
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'version', type: 'number' },
         { name: 'is_synced', type: 'boolean' },
+        { name: 'is_deleted', type: 'boolean' },
+        { name: 'deleted_at', type: 'number', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'synced_at', type: 'number', isOptional: true },

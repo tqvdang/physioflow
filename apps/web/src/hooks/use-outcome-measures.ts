@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type { UpdateOutcomeMeasureRequest } from "@physioflow/shared-types";
 
 /**
  * Measure type identifier
@@ -396,5 +397,69 @@ export function useTrending(patientId: string, measureType: MeasureType, enabled
       return rows;
     },
     enabled: enabled && !!patientId && !!measureType,
+  });
+}
+
+/**
+ * Hook to update an existing outcome measurement
+ */
+export function useUpdateOutcomeMeasure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      patientId,
+      measureId,
+      data,
+    }: {
+      patientId: string;
+      measureId: string;
+      data: UpdateOutcomeMeasureRequest;
+    }) => {
+      const response = await api.put<ApiOutcomeMeasurement>(
+        `/v1/patients/${patientId}/outcome-measures/${measureId}`,
+        {
+          current_score: data.currentScore,
+          target_score: data.targetScore,
+          measurement_date: data.measurementDate,
+          mcid_threshold: data.mcidThreshold,
+          phase: data.phase,
+          notes: data.notes,
+          notes_vi: data.notesVi,
+        }
+      );
+      return transformMeasurement(response.data);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: outcomeMeasureKeys.patient(variables.patientId),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to delete an outcome measurement
+ */
+export function useDeleteOutcomeMeasure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      patientId,
+      measureId,
+    }: {
+      patientId: string;
+      measureId: string;
+    }) => {
+      await api.delete(
+        `/v1/patients/${patientId}/outcome-measures/${measureId}`
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: outcomeMeasureKeys.patient(variables.patientId),
+      });
+    },
   });
 }

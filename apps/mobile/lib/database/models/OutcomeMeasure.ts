@@ -1,5 +1,5 @@
 import { Model, Relation } from '@nozbe/watermelondb';
-import { field, date, readonly, relation } from '@nozbe/watermelondb/decorators';
+import { field, date, readonly, relation, writer } from '@nozbe/watermelondb/decorators';
 import Patient from './Patient';
 
 export type MeasureType =
@@ -118,6 +118,8 @@ export default class OutcomeMeasure extends Model {
   @field('notes') notes?: string;
   @field('version') version!: number;
   @field('is_synced') isSynced!: boolean;
+  @field('is_deleted') isDeleted!: boolean;
+  @date('deleted_at') deletedAt!: Date | null;
   @readonly @date('created_at') createdAt!: Date;
   @readonly @date('updated_at') updatedAt!: Date;
   @date('synced_at') syncedAt!: Date | null;
@@ -148,5 +150,40 @@ export default class OutcomeMeasure extends Model {
 
   get changeFromBaseline(): number {
     return this.currentScore - this.baselineScore;
+  }
+
+  @writer async markAsSynced(): Promise<void> {
+    await this.update((m) => {
+      m.isSynced = true;
+      m.syncedAt = new Date();
+    });
+  }
+
+  @writer async markAsDeleted(): Promise<void> {
+    await this.update((m) => {
+      m.isDeleted = true;
+      m.deletedAt = new Date();
+      m.isSynced = false;
+    });
+  }
+
+  @writer async updateMeasure(updates: {
+    currentScore?: number;
+    targetScore?: number;
+    baselineScore?: number;
+    phase?: MeasurePhase;
+    notes?: string;
+    measurementDate?: Date;
+  }): Promise<void> {
+    await this.update((m) => {
+      if (updates.currentScore !== undefined) m.currentScore = updates.currentScore;
+      if (updates.targetScore !== undefined) m.targetScore = updates.targetScore;
+      if (updates.baselineScore !== undefined) m.baselineScore = updates.baselineScore;
+      if (updates.phase !== undefined) m.phase = updates.phase;
+      if (updates.notes !== undefined) m.notes = updates.notes || undefined;
+      if (updates.measurementDate !== undefined) m.measurementDate = updates.measurementDate;
+      m.version = m.version + 1;
+      m.isSynced = false;
+    });
   }
 }

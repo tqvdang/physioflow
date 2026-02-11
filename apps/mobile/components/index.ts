@@ -6,3 +6,4 @@ export { ProgressBar } from './protocols/ProgressBar';
 export { ExerciseCard } from './protocols/ExerciseCard';
 export { ServiceCodePicker } from './billing/ServiceCodePicker';
 export { PaymentForm } from './billing/PaymentForm';
+export { AnatomyRegionPicker } from './anatomy/AnatomyRegionPicker';

@@ -1,6 +1,7 @@
 import { database, OutcomeMeasure, SyncQueue } from '../database';
 import { Q } from '@nozbe/watermelondb';
 import { api } from '../api';
+import { outcomeMeasuresApi } from '@/src/services/api/outcomeMeasuresApi';
 import { isOnline } from '../offline';
 
 const MAX_RETRY_ATTEMPTS = 3;
@@ -54,6 +55,11 @@ export async function syncOutcomeMeasures(
     // Push local unsynced measures to server
     await pushLocalMeasures(patientId, result);
 
+    // Sync locally deleted measures to server
+    const deleteResult = await syncDeletedMeasures(patientId);
+    result.synced += deleteResult.deleted;
+    result.failed += deleteResult.failed;
+
     // Pull server measures and merge
     await pullServerMeasures(patientId, result);
 
@@ -97,25 +103,29 @@ async function pushLocalMeasures(
       try {
         switch (item.action) {
           case 'create':
-            await api.post('/outcome-measures', payload);
+            await api.post(
+              `/patients/${patientId}/outcome-measures`,
+              payload
+            );
             break;
           case 'update': {
-            // Check for conflicts using version
-            const serverVersion = await getServerVersion(item.entityId);
-            const localVersion = (payload.version as number) || 1;
-
-            if (serverVersion !== null && serverVersion > localVersion) {
-              // Server has newer version - conflict
-              await resolveConflict(item.entityId, payload, serverVersion);
-              result.conflicts++;
-            } else {
-              await api.put(`/outcome-measures/${item.entityId}`, payload);
-            }
+            const remoteId = (payload.remoteId as string) || item.entityId;
+            await outcomeMeasuresApi.update(
+              patientId,
+              remoteId,
+              {
+                responses: payload.responses as any,
+                notes: payload.notes as string | undefined,
+                measured_at: payload.measuredAt as string | undefined,
+              }
+            );
             break;
           }
-          case 'delete':
-            await api.delete(`/outcome-measures/${item.entityId}`);
+          case 'delete': {
+            const deleteRemoteId = (payload.remoteId as string) || item.entityId;
+            await outcomeMeasuresApi.delete(patientId, deleteRemoteId);
             break;
+          }
         }
 
         // Mark local record as synced
@@ -156,7 +166,7 @@ async function pullServerMeasures(
 ): Promise<void> {
   try {
     const serverMeasures = await api.get<ServerMeasure[]>(
-      `/outcome-measures?patientId=${patientId}`
+      `/patients/${patientId}/outcome-measures`
     );
 
     await database.write(async () => {
@@ -183,6 +193,7 @@ async function pullServerMeasures(
               m.notes = serverMeasure.notes;
               m.version = serverMeasure.version;
               m.isSynced = true;
+              m.isDeleted = false;
               m.syncedAt = new Date();
             });
           result.synced++;
@@ -213,54 +224,53 @@ async function pullServerMeasures(
   }
 }
 
-async function getServerVersion(entityId: string): Promise<number | null> {
+/**
+ * Sync locally soft-deleted measures to the server.
+ * After the server acknowledges the delete, permanently remove the local record.
+ */
+export async function syncDeletedMeasures(
+  patientId: string
+): Promise<{ deleted: number; failed: number }> {
+  const result = { deleted: 0, failed: 0 };
+
+  const online = await isOnline();
+  if (!online) return result;
+
   try {
-    const response = await api.get<{ version: number }>(
-      `/outcome-measures/${entityId}/version`
-    );
-    return response.version;
-  } catch {
-    return null;
-  }
-}
-
-async function resolveConflict(
-  entityId: string,
-  localPayload: Record<string, unknown>,
-  serverVersion: number
-): Promise<void> {
-  // Server-wins strategy: fetch server data and merge
-  // Local changes to notes are preserved, scores use server values
-  const serverData = await api.get<ServerMeasure>(
-    `/outcome-measures/${entityId}`
-  );
-
-  const merged = {
-    ...serverData,
-    notes: localPayload.notes || serverData.notes,
-    version: serverVersion + 1,
-  };
-
-  await api.put(`/outcome-measures/${entityId}`, merged);
-
-  // Update local record with merged data
-  await database.write(async () => {
-    const records = await database
+    const deletedMeasures = await database
       .get<OutcomeMeasure>('outcome_measures')
-      .query(Q.where('id', entityId))
+      .query(
+        Q.and(
+          Q.where('patient_id', patientId),
+          Q.where('is_deleted', true),
+          Q.where('is_synced', false)
+        )
+      )
       .fetch();
 
-    if (records.length > 0) {
-      await records[0].update((m) => {
-        m.currentScore = serverData.currentScore;
-        m.targetScore = serverData.targetScore;
-        m.notes = (merged.notes as string) || undefined;
-        m.version = serverVersion + 1;
-        m.isSynced = true;
-        m.syncedAt = new Date();
-      });
+    for (const measure of deletedMeasures) {
+      try {
+        if (measure.remoteId) {
+          await outcomeMeasuresApi.delete(patientId, measure.remoteId);
+        }
+        // Remove from local database after successful server delete
+        await database.write(async () => {
+          await measure.destroyPermanently();
+        });
+        result.deleted++;
+      } catch (error) {
+        console.error(
+          `Failed to sync delete for measure ${measure.id}:`,
+          error
+        );
+        result.failed++;
+      }
     }
-  });
+  } catch (error) {
+    console.error('Failed to sync deleted measures:', error);
+  }
+
+  return result;
 }
 
 async function markMeasureAsSynced(entityId: string): Promise<void> {

@@ -2,7 +2,7 @@ import { Model } from '@nozbe/watermelondb';
 import { field, date, readonly } from '@nozbe/watermelondb/decorators';
 
 export type SyncAction = 'create' | 'update' | 'delete';
-export type EntityType = 'patient' | 'session' | 'checklist_item' | 'insurance_card' | 'outcome_measure' | 'invoice' | 'payment' | 'discharge_plan' | 'discharge_summary';
+export type EntityType = 'patient' | 'session' | 'checklist_item' | 'insurance_card' | 'outcome_measure' | 'invoice' | 'payment' | 'discharge_plan' | 'discharge_summary' | 'anatomy_region';
 
 export default class SyncQueue extends Model {
   static table = 'sync_queue';

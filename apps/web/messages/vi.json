@@ -959,8 +959,28 @@
       "mcidNotMet": "Thay đổi so với ban đầu chưa đạt ngưỡng MCID"
     }
   },
+  "outcomeMeasures": {
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "editMeasure": "Chỉnh sửa phép đo",
+    "deleteMeasure": "Xóa phép đo",
+    "confirmDelete": "Bạn có chắc muốn xóa phép đo này?",
+    "deleteWarning": "Hành động này không thể hoàn tác.",
+    "updated": "Đã cập nhật phép đo",
+    "deleted": "Đã xóa phép đo"
+  },
   "anatomy": {
     "title": "Vị trí đau",
+    "selectRegion": "Chọn vùng",
+    "frontView": "Mặt trước",
+    "backView": "Mặt sau",
+    "categories": {
+      "upper_limb": "Chi trên",
+      "lower_limb": "Chi dưới",
+      "spine": "Cột sống",
+      "trunk": "Thân mình",
+      "head_neck": "Đầu và cổ"
+    },
     "markPainLocations": "Đánh dấu vị trí đau",
     "editPainLocations": "Sửa vị trí đau",
     "noPainMarked": "Chưa đánh dấu vị trí đau nào",
@@ -976,8 +996,6 @@
     "updatePain": "Cập nhật",
     "remove": "Xóa",
     "savePainLocations": "Lưu vị trí đau",
-    "frontView": "Mặt trước",
-    "backView": "Mặt sau",
     "frontDiagram": "Sơ đồ cơ thể mặt trước",
     "backDiagram": "Sơ đồ cơ thể mặt sau",
     "severityLabels": {

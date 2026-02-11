@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +20,7 @@ import {
   type MeasureType,
   type MeasureTypeConfig,
 } from '@/lib/database/models/OutcomeMeasure';
-import { isOnline } from '@/lib/offline';
+import { isOnline, queueForSync } from '@/lib/offline';
 import {
   syncOutcomeMeasures,
   getUnsyncedMeasureCount,
@@ -51,7 +52,10 @@ export default function OutcomeMeasuresScreen() {
       const measures = await database
         .get<OutcomeMeasure>('outcome_measures')
         .query(
-          Q.where('patient_id', patientId),
+          Q.and(
+            Q.where('patient_id', patientId),
+            Q.where('is_deleted', false)
+          ),
           Q.sortBy('measurement_date', Q.desc)
         )
         .fetch();
@@ -122,6 +126,58 @@ export default function OutcomeMeasuresScreen() {
     await loadMeasures();
     setSyncing(false);
   }, [patientId, syncing, loadMeasures]);
+
+  const handleEdit = useCallback(
+    (measureId: string) => {
+      router.push(
+        `/patient/outcome-measures/edit/${measureId}`
+      );
+    },
+    [router]
+  );
+
+  const handleDelete = useCallback(
+    (item: OutcomeMeasure) => {
+      Alert.alert(
+        'Delete Measure',
+        'Are you sure you want to delete this measurement? This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                // Soft-delete locally
+                await item.markAsDeleted();
+
+                // Queue delete for server sync
+                await queueForSync(
+                  'outcome_measure',
+                  item.id,
+                  'delete',
+                  {
+                    patientId: item.patientId,
+                    remoteId: item.remoteId,
+                  }
+                );
+
+                // Refresh list
+                await loadMeasures();
+              } catch (error) {
+                console.error('Failed to delete outcome measure:', error);
+                Alert.alert(
+                  'Error',
+                  'Failed to delete outcome measure. Please try again.'
+                );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [loadMeasures]
+  );
 
   const selectedGroup = measureGroups.find(
     (g) => g.measureType === selectedType
@@ -230,13 +286,39 @@ export default function OutcomeMeasuresScreen() {
               </Text>
             </View>
           </View>
-          {!item.isSynced && (
-            <Ionicons
-              name="cloud-offline-outline"
-              size={16}
-              color={Colors.light.warning}
-            />
-          )}
+          <View style={styles.measureActions}>
+            {!item.isSynced && (
+              <Ionicons
+                name="cloud-offline-outline"
+                size={16}
+                color={Colors.light.warning}
+              />
+            )}
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleEdit(item.id)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name="pencil-outline"
+                size={18}
+                color={Colors.light.tint}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleDelete(item)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name="trash-outline"
+                size={18}
+                color={Colors.light.error}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.scoreRow}>
@@ -608,6 +690,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  measureActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButton: {
+    padding: 4,
   },
   measureDateRow: {
     flexDirection: 'row',

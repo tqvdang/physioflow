@@ -133,6 +133,7 @@ export default function MeasureFormScreen() {
             m.notes = notes || undefined;
             m.version = 1;
             m.isSynced = false;
+            m.isDeleted = false;
             m.syncedAt = null;
           });
         newMeasureId = newMeasure.id;

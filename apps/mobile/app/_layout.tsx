@@ -89,6 +89,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="patient/outcome-measures/edit/[measureId]"
+          options={{
+            title: 'Edit Measure',
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
           name="billing/invoices"
           options={{
             title: 'Hoa don',

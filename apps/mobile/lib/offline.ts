@@ -19,7 +19,7 @@ export async function isOnline(): Promise<boolean> {
 }
 
 export async function queueForSync(
-  entityType: 'patient' | 'session' | 'checklist_item' | 'insurance_card' | 'outcome_measure' | 'invoice' | 'payment' | 'discharge_plan' | 'discharge_summary',
+  entityType: 'patient' | 'session' | 'checklist_item' | 'insurance_card' | 'outcome_measure' | 'invoice' | 'payment' | 'discharge_plan' | 'discharge_summary' | 'anatomy_region',
   entityId: string,
   action: 'create' | 'update' | 'delete',
   payload: unknown

@@ -82,6 +82,8 @@ export {
   useMeasureLibrary,
   usePatientMeasures,
   useRecordMeasure,
+  useUpdateOutcomeMeasure,
+  useDeleteOutcomeMeasure,
   useProgress,
   useTrending,
 } from "./use-outcome-measures";
@@ -96,6 +98,13 @@ export type {
   ProgressSummary,
   TrendingRow,
 } from "./use-outcome-measures";
+
+// Anatomy region hooks
+export {
+  anatomyRegionKeys,
+  useAnatomyRegions,
+  useAnatomyRegion,
+} from "./use-anatomy-regions";
 
 // Billing hooks
 export {
