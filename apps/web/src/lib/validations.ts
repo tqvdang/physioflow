@@ -127,7 +127,9 @@ export const MIN_TREATMENT_DURATION_WEEKS = 2;
 
 // --- Insurance constants ---
 
-export const BHYT_CARD_REGEX = /^[A-Z]{2}\d{13}$/;
+// BHYT card format: XX#-####-#####-##### (matches OpenEMR Vietnamese PT module)
+// Example: DN4-0123-45678-90123
+export const BHYT_CARD_REGEX = /^[A-Z]{2}\d-\d{4}-\d{5}-\d{5}$/;
 export const HOSPITAL_REG_CODE_LENGTH = 5;
 export const FIVE_YEAR_BONUS_THRESHOLD = 5;
 

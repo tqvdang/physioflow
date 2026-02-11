@@ -33,10 +33,11 @@ export const BHYT_PREFIX_CODES = [
 ] as const;
 
 /**
- * BHYT card number regex: 2 uppercase letters + 1 digit + 12 digits = 15 chars
- * Format: XX#XXXXXXXXXXXX (e.g., DN4012345678901)
+ * BHYT card number regex (matches OpenEMR Vietnamese PT module format)
+ * Format: XX#-####-#####-##### (18 chars with dashes)
+ * Example: DN4-0123-45678-90123
  */
-const BHYT_CARD_REGEX = /^[A-Z]{2}\d{13}$/;
+const BHYT_CARD_REGEX = /^[A-Z]{2}\d-\d{4}-\d{5}-\d{5}$/;
 
 /**
  * API Insurance type (snake_case from backend)

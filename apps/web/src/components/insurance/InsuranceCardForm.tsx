@@ -56,8 +56,9 @@ import {
   type Insurance,
 } from "@/hooks/use-insurance";
 
-// BHYT card number regex: 2 letters + 13 digits = 15 chars
-const BHYT_CARD_REGEX = /^[A-Z]{2}\d{13}$/;
+// BHYT card number regex (matches OpenEMR Vietnamese PT module format)
+// Format: XX#-####-#####-##### (18 chars with dashes)
+const BHYT_CARD_REGEX = /^[A-Z]{2}\d-\d{4}-\d{5}-\d{5}$/;
 
 // Form validation schema
 const insuranceFormSchema = z
@@ -69,7 +70,7 @@ const insuranceFormSchema = z
       .pipe(
         z
           .string()
-          .regex(BHYT_CARD_REGEX, "Dinh dang the khong dung (VD: DN4012345678901)")
+          .regex(BHYT_CARD_REGEX, "Định dạng thẻ không đúng (VD: DN4-0123-45678-90123)")
       ),
     prefix_code: z.string().min(1, "Vui long chon ma dau the"),
     hospital_registration_code: z
@@ -203,6 +204,25 @@ function formValuesToApi(data: InsuranceFormValues): InsuranceFormData {
   };
 }
 
+/**
+ * Format BHYT card number with dashes (XX#-####-#####-#####)
+ * Auto-inserts dashes at positions 3, 7, and 12
+ */
+function formatCardNumber(value: string): string {
+  // Remove all non-alphanumeric characters
+  const cleaned = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+
+  let formatted = '';
+  for (let i = 0; i < cleaned.length && i < 17; i++) {
+    if (i === 3 || i === 7 || i === 12) {
+      formatted += '-';
+    }
+    formatted += cleaned[i];
+  }
+
+  return formatted;
+}
+
 // Props
 interface InsuranceCardFormProps {
   mode: "create" | "edit";
@@ -324,12 +344,13 @@ export function InsuranceCardForm({
                   <div className="flex items-center gap-2">
                     <FormControl>
                       <Input
-                        placeholder="DN4012345678901"
+                        placeholder="DN4-0123-45678-90123"
                         {...field}
                         onChange={(e) => {
-                          field.onChange(e.target.value.toUpperCase());
+                          const formatted = formatCardNumber(e.target.value);
+                          field.onChange(formatted);
                         }}
-                        maxLength={15}
+                        maxLength={21}
                         className="font-mono"
                       />
                     </FormControl>

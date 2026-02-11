@@ -45,9 +45,16 @@ func NewInsuranceService(repo repository.InsuranceRepository, auditRepo reposito
 	}
 }
 
-// bhytCardRegex validates the BHYT card format:
-// 2 uppercase letters (prefix) + 1 digit (beneficiary type) + 2 digits (province) + 10 digits (ID)
-var bhytCardRegex = regexp.MustCompile(`^[A-Z]{2}[1-5]\d{2}\d{10}$`)
+// bhytCardRegex validates the BHYT card format (supports both formats):
+// Format 1 (OpenEMR): XX#-####-#####-##### (with dashes, 20 chars)
+// Format 2 (Legacy): XX############### (without dashes, 15 chars)
+// Structure: 2 letters (prefix) + 1 digit (beneficiary type) + 2 digits (province) + 10 digits (ID)
+var bhytCardRegex = regexp.MustCompile(`^[A-Z]{2}\d-\d{4}-\d{5}-\d{5}$|^[A-Z]{2}[1-5]\d{2}\d{10}$`)
+
+// normalizeBHYTCard strips dashes from card number for parsing
+func normalizeBHYTCard(cardNumber string) string {
+	return strings.ReplaceAll(cardNumber, "-", "")
+}
 
 // validPrefixes is a lookup set for valid BHYT prefix codes.
 var validPrefixes = func() map[string]bool {
@@ -75,10 +82,11 @@ func (s *insuranceService) CreateInsurance(ctx context.Context, patientID, clini
 		return nil, fmt.Errorf("%w: invalid BHYT card number format", repository.ErrInvalidInput)
 	}
 
-	// Parse the card number components
-	prefix := req.CardNumber[:2]
-	benefType := model.BHYTBeneficiaryType(int(req.CardNumber[2] - '0'))
-	provinceCode := req.CardNumber[3:5]
+	// Parse the card number components (strip dashes for position-based parsing)
+	normalized := normalizeBHYTCard(req.CardNumber)
+	prefix := normalized[:2]
+	benefType := model.BHYTBeneficiaryType(int(normalized[2] - '0'))
+	provinceCode := normalized[3:5]
 
 	// Validate prefix
 	if !validPrefixes[prefix] {
@@ -226,15 +234,17 @@ func (s *insuranceService) UpdateInsurance(ctx context.Context, id, userID strin
 			metrics.RecordValidationError("invalid_format")
 			return nil, fmt.Errorf("%w: invalid BHYT card number format", repository.ErrInvalidInput)
 		}
-		prefix := cn[:2]
+		// Normalize for position-based parsing
+		normalized := normalizeBHYTCard(cn)
+		prefix := normalized[:2]
 		if !validPrefixes[prefix] {
 			metrics.RecordValidationError("invalid_prefix")
 			return nil, fmt.Errorf("%w: unrecognized BHYT prefix code: %s", repository.ErrInvalidInput, prefix)
 		}
-		card.CardNumber = cn
+		card.CardNumber = cn // Store with original format (with dashes)
 		card.Prefix = prefix
-		card.BeneficiaryType = model.BHYTBeneficiaryType(int(cn[2] - '0'))
-		card.ProvinceCode = cn[3:5]
+		card.BeneficiaryType = model.BHYTBeneficiaryType(int(normalized[2] - '0'))
+		card.ProvinceCode = normalized[3:5]
 		// Re-set verification to pending when card number changes
 		card.Verification = model.InsuranceVerificationPending
 	}
@@ -321,7 +331,7 @@ func (s *insuranceService) ValidateBHYTCard(ctx context.Context, cardNumber stri
 			CardNumber:   cardNumber,
 			IsValid:      false,
 			Verification: model.InsuranceVerificationInvalid,
-			Errors:       []string{"card number does not match expected format (2 letters + 1 digit type + 2 digit province + 10 digit ID)"},
+			Errors:       []string{"card number does not match expected format (XX#-####-#####-##### or XX###############)"},
 			ValidatedAt:  time.Now(),
 		}
 
@@ -337,10 +347,11 @@ func (s *insuranceService) ValidateBHYTCard(ctx context.Context, cardNumber stri
 		return result, nil
 	}
 
-	// Parse components
-	prefix := cardNumber[:2]
-	benefType := model.BHYTBeneficiaryType(int(cardNumber[2] - '0'))
-	provinceCode := cardNumber[3:5]
+	// Parse components (normalize first to handle dashes)
+	normalized := normalizeBHYTCard(cardNumber)
+	prefix := normalized[:2]
+	benefType := model.BHYTBeneficiaryType(int(normalized[2] - '0'))
+	provinceCode := normalized[3:5]
 
 	// Validate prefix code
 	if !validPrefixes[prefix] {
