@@ -1,0 +1,57 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'physioflow-dev'
+    environment: 'development'
+
+# Alertmanager configuration (optional, for local development)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # PhysioFlow API metrics
+  - job_name: 'physioflow-api'
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+    params:
+      format: ['prometheus']
+    static_configs:
+      - targets: ['host.docker.internal:7011']
+        labels:
+          app: 'physioflow-api'
+          service: 'api'
+
+  # PostgreSQL metrics (requires postgres_exporter)
+  - job_name: 'postgresql'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          app: 'physioflow'
+          service: 'postgresql'
+
+  # Redis metrics (requires redis_exporter)
+  - job_name: 'redis'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          app: 'physioflow'
+          service: 'redis'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          app: 'prometheus'

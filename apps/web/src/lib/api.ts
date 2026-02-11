@@ -165,4 +165,60 @@ export const api = {
   },
 };
 
+/**
+ * Download a PDF file from the API.
+ * Opens the PDF in a new tab or triggers download.
+ */
+export async function downloadPDF(
+  endpoint: string,
+  filename?: string,
+  params?: Record<string, string | number | boolean | undefined>
+): Promise<void> {
+  let token: string | null = null;
+  if (typeof window !== "undefined") {
+    token = await ensureValidToken();
+  }
+
+  const headers: HeadersInit = {
+    Accept: "application/pdf",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const url = buildUrl(endpoint, params);
+  const response = await fetch(url, { method: "GET", headers });
+
+  if (!response.ok) {
+    let errorMessage = "Failed to download PDF";
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.message ?? errorMessage;
+    } catch {
+      // Response body is not JSON
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+
+  // Determine filename from Content-Disposition header or use provided filename
+  const contentDisposition = response.headers.get("Content-Disposition");
+  let downloadFilename = filename ?? "report.pdf";
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (match?.[1]) {
+      downloadFilename = match[1];
+    }
+  }
+
+  // Trigger download
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = downloadFilename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 export default api;

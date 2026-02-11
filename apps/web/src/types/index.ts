@@ -68,5 +68,14 @@ export * from "./exercise";
 // Re-export appointment types
 export * from "./appointment";
 
+// Re-export billing types
+export * from "./billing";
+
+// Re-export protocol types
+export * from "./protocol";
+
+// Re-export discharge types
+export * from "./discharge";
+
 // Re-export API types (snake_case types matching backend)
 export * from "./api";

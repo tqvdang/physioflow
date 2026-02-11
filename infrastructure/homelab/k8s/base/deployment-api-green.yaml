@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: physioflow-api-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physioflow
+      component: api
+      version: green
+  template:
+    metadata:
+      labels:
+        app: physioflow
+        component: api
+        version: green
+    spec:
+      containers:
+        - name: api
+          image: registry.trancloud.work/physioflow-api:latest
+          ports:
+            - containerPort: 7011
+          envFrom:
+            - configMapRef:
+                name: physioflow-config
+            - secretRef:
+                name: physioflow-secrets
+          env:
+            - name: DEPLOYMENT_VERSION
+              value: "green"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 7011
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 7011
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3

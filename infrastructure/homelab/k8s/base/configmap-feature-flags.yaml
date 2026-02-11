@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags
+data:
+  BHYT_INSURANCE_ENABLED: "true"
+  OUTCOME_MEASURES_ENABLED: "true"
+  BILLING_ENABLED: "true"
+  CLINICAL_PROTOCOLS_ENABLED: "true"
+  DISCHARGE_PLANNING_ENABLED: "true"
+  MEDICAL_TERMS_ENABLED: "true"

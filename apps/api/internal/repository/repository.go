@@ -27,6 +27,18 @@ type Repository struct {
 	quickActions      QuickActionsRepository
 	appointment       AppointmentRepository
 	exercise          ExerciseRepository
+	outcomeMeasures   OutcomeMeasuresRepository
+	insurance         InsuranceRepository
+	audit             AuditRepository
+	billing           BillingRepository
+	medicalTerms      MedicalTermsRepository
+	protocol          ProtocolRepository
+	discharge         DischargeRepository
+	painLocation      PainLocationRepository
+	rom               ROMRepository
+	mmt               MMTRepository
+	bhytClaim         BHYTClaimRepository
+	report            ReportRepository
 }
 
 // New creates a new Repository instance without database connection.
@@ -42,6 +54,18 @@ func New(cfg *config.Config) *Repository {
 		quickActions:      &mockQuickActionsRepo{},
 		appointment:       &mockAppointmentRepo{},
 		exercise:          NewMockExerciseRepository(),
+		outcomeMeasures:   NewMockOutcomeMeasuresRepository(),
+		insurance:         &mockInsuranceRepo{},
+		audit:             &mockAuditRepo{},
+		billing:           NewMockBillingRepository(),
+		medicalTerms:      NewMockMedicalTermsRepository(),
+		protocol:          NewMockProtocolRepository(),
+		discharge:         NewMockDischargeRepository(),
+		painLocation:      NewMockPainLocationRepository(),
+		rom:               NewMockROMRepository(),
+		mmt:               NewMockMMTRepository(),
+		bhytClaim:         NewMockBHYTClaimRepository(),
+		report:            NewMockReportRepository(),
 	}
 }
 
@@ -58,6 +82,18 @@ func NewWithDB(cfg *config.Config, db *DB) *Repository {
 		quickActions:      newQuickActionsRepo(cfg, db),
 		appointment:       NewAppointmentRepository(db),
 		exercise:          NewExerciseRepository(db),
+		outcomeMeasures:   NewOutcomeMeasuresRepository(db),
+		insurance:         NewInsuranceRepository(db),
+		audit:             NewAuditRepository(db),
+		billing:           NewBillingRepository(db),
+		medicalTerms:      NewMedicalTermsRepository(db),
+		protocol:          NewProtocolRepository(db),
+		discharge:         NewDischargeRepository(db),
+		painLocation:      NewPainLocationRepository(db),
+		rom:               NewROMRepository(db),
+		mmt:               NewMMTRepository(db),
+		bhytClaim:         NewBHYTClaimRepository(db),
+		report:            NewReportRepository(db),
 	}
 }
 
@@ -104,6 +140,66 @@ func (r *Repository) Appointment() AppointmentRepository {
 // Exercise returns the exercise repository.
 func (r *Repository) Exercise() ExerciseRepository {
 	return r.exercise
+}
+
+// OutcomeMeasures returns the outcome measures repository.
+func (r *Repository) OutcomeMeasures() OutcomeMeasuresRepository {
+	return r.outcomeMeasures
+}
+
+// Insurance returns the insurance repository.
+func (r *Repository) Insurance() InsuranceRepository {
+	return r.insurance
+}
+
+// Audit returns the audit repository.
+func (r *Repository) Audit() AuditRepository {
+	return r.audit
+}
+
+// Billing returns the billing repository.
+func (r *Repository) Billing() BillingRepository {
+	return r.billing
+}
+
+// MedicalTerms returns the medical terms repository.
+func (r *Repository) MedicalTerms() MedicalTermsRepository {
+	return r.medicalTerms
+}
+
+// Protocol returns the clinical protocol repository.
+func (r *Repository) Protocol() ProtocolRepository {
+	return r.protocol
+}
+
+// Discharge returns the discharge repository.
+func (r *Repository) Discharge() DischargeRepository {
+	return r.discharge
+}
+
+// PainLocation returns the pain location repository.
+func (r *Repository) PainLocation() PainLocationRepository {
+	return r.painLocation
+}
+
+// ROM returns the ROM assessment repository.
+func (r *Repository) ROM() ROMRepository {
+	return r.rom
+}
+
+// MMT returns the MMT assessment repository.
+func (r *Repository) MMT() MMTRepository {
+	return r.mmt
+}
+
+// BHYTClaim returns the BHYT claim repository.
+func (r *Repository) BHYTClaim() BHYTClaimRepository {
+	return r.bhytClaim
+}
+
+// Report returns the report repository.
+func (r *Repository) Report() ReportRepository {
+	return r.report
 }
 
 // CheckDatabase verifies database connectivity.

@@ -6,6 +6,7 @@ spec:
   selector:
     app: physioflow
     component: api
+    version: blue
   ports:
     - port: 7011
       targetPort: 7011

@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-protocols
+data:
+  protocols.json: |
+    [
+      {
+        "protocolName": "Post-Surgical Knee Rehabilitation",
+        "protocolNameVi": "Phục hồi chức năng sau phẫu thuật đầu gối",
+        "goals": [
+          "Reduce pain and swelling",
+          "Restore range of motion",
+          "Improve muscle strength",
+          "Return to functional activities"
+        ],
+        "exercises": [
+          "Ankle pumps",
+          "Quad sets",
+          "Straight leg raises",
+          "Knee flexion/extension",
+          "Mini squats",
+          "Balance training"
+        ],
+        "frequency": "3x/week",
+        "durationWeeks": 12
+      },
+      {
+        "protocolName": "Rotator Cuff Tendinopathy",
+        "protocolNameVi": "Viêm gân chóp xoay",
+        "goals": [
+          "Reduce shoulder pain",
+          "Improve rotator cuff strength",
+          "Restore shoulder mobility",
+          "Prevent recurrence"
+        ],
+        "exercises": [
+          "Pendulum exercises",
+          "Internal/external rotation",
+          "Scapular stabilization",
+          "Resistance band exercises",
+          "Overhead reaching"
+        ],
+        "frequency": "2-3x/week",
+        "durationWeeks": 8
+      },
+      {
+        "protocolName": "Chronic Low Back Pain",
+        "protocolNameVi": "Đau thắt lưng mãn tính",
+        "goals": [
+          "Reduce pain intensity",
+          "Improve core stability",
+          "Enhance flexibility",
+          "Return to work/daily activities"
+        ],
+        "exercises": [
+          "Pelvic tilts",
+          "Bird dog",
+          "Dead bug",
+          "Bridges",
+          "Cat-cow stretches",
+          "Lumbar stabilization"
+        ],
+        "frequency": "3-4x/week",
+        "durationWeeks": 10
+      },
+      {
+        "protocolName": "Ankle Sprain Recovery",
+        "protocolNameVi": "Phục hồi bong gân mắt cá chân",
+        "goals": [
+          "Restore ankle range of motion",
+          "Improve proprioception",
+          "Strengthen ankle muscles",
+          "Prevent re-injury"
+        ],
+        "exercises": [
+          "Alphabet exercises",
+          "Calf raises",
+          "Balance board training",
+          "Resistance band exercises",
+          "Hopping progression"
+        ],
+        "frequency": "Daily",
+        "durationWeeks": 6
+      },
+      {
+        "protocolName": "Stroke Rehabilitation",
+        "protocolNameVi": "Phục hồi chức năng sau đột quỵ",
+        "goals": [
+          "Improve motor function",
+          "Enhance balance and coordination",
+          "Increase independence in ADLs",
+          "Prevent secondary complications"
+        ],
+        "exercises": [
+          "Range of motion exercises",
+          "Task-specific training",
+          "Gait training with assistive devices",
+          "Upper limb strengthening",
+          "Sitting/standing balance"
+        ],
+        "frequency": "5x/week",
+        "durationWeeks": 24
+      }
+    ]

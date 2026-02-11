@@ -34,11 +34,15 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates tzdata
+# Install ca-certificates, wkhtmltopdf for PDF generation, and fonts for Vietnamese
+RUN apk --no-cache add ca-certificates tzdata wkhtmltopdf \
+    font-noto font-noto-cjk font-noto-extra ttf-dejavu
 
 # Copy binary from builder
 COPY --from=builder /api .
+
+# Copy HTML templates for PDF report generation
+COPY --from=builder /app/templates ./templates
 
 # Expose port
 EXPOSE 8080

@@ -1,4 +1,4 @@
-import { database, SyncQueue, Patient, Session, ChecklistItem } from './database';
+import { database, SyncQueue, Patient, Session, ChecklistItem, InsuranceCard } from './database';
 import { Q } from '@nozbe/watermelondb';
 import { api } from './api';
 import NetInfo from '@react-native-community/netinfo';
@@ -19,7 +19,7 @@ export async function isOnline(): Promise<boolean> {
 }
 
 export async function queueForSync(
-  entityType: 'patient' | 'session' | 'checklist_item',
+  entityType: 'patient' | 'session' | 'checklist_item' | 'insurance_card' | 'outcome_measure' | 'invoice' | 'payment' | 'discharge_plan' | 'discharge_summary',
   entityId: string,
   action: 'create' | 'update' | 'delete',
   payload: unknown
@@ -83,6 +83,18 @@ function getEndpointForEntity(entityType: string): string {
       return '/sessions';
     case 'checklist_item':
       return '/checklist-items';
+    case 'insurance_card':
+      return '/insurance-cards';
+    case 'outcome_measure':
+      return '/outcome-measures';
+    case 'invoice':
+      return '/invoices';
+    case 'payment':
+      return '/payments';
+    case 'discharge_plan':
+      return '/discharge-plans';
+    case 'discharge_summary':
+      return '/discharge-summaries';
     default:
       throw new Error(`Unknown entity type: ${entityType}`);
   }
@@ -116,6 +128,18 @@ function getTableForEntity(entityType: string): string {
       return 'sessions';
     case 'checklist_item':
       return 'checklist_items';
+    case 'insurance_card':
+      return 'insurance_cards';
+    case 'outcome_measure':
+      return 'outcome_measures';
+    case 'invoice':
+      return 'invoices';
+    case 'payment':
+      return 'payments';
+    case 'discharge_plan':
+      return 'discharge_plans';
+    case 'discharge_summary':
+      return 'discharge_summaries';
     default:
       throw new Error(`Unknown entity type: ${entityType}`);
   }

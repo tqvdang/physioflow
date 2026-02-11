@@ -105,6 +105,34 @@ export default function PatientDetailScreen() {
           size="small"
         />
         <QuickActionButton
+          icon="card-outline"
+          label="Insurance"
+          onPress={() => router.push(`/patient/${id}/insurance`)}
+          variant="secondary"
+          size="small"
+        />
+        <QuickActionButton
+          icon="analytics-outline"
+          label="Measures"
+          onPress={() => router.push(`/patient/outcome-measures/${id}`)}
+          variant="secondary"
+          size="small"
+        />
+        <QuickActionButton
+          icon="receipt-outline"
+          label="Billing"
+          onPress={() => router.push(`/billing/invoices?patientId=${id}`)}
+          variant="secondary"
+          size="small"
+        />
+        <QuickActionButton
+          icon="exit-outline"
+          label="Discharge"
+          onPress={() => router.push(`/patient/discharge/${id}`)}
+          variant="secondary"
+          size="small"
+        />
+        <QuickActionButton
           icon="create-outline"
           label="Edit"
           onPress={() => {}}
@@ -217,8 +245,10 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-around',
     padding: 16,
+    gap: 8,
     backgroundColor: Colors.light.background,
     borderTopWidth: 1,
     borderTopColor: Colors.light.border,

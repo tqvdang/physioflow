@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: migration-version
+data:
+  current_version: "015"
+  last_backup: ""
+  last_migration_date: ""
+  rollback_version: ""

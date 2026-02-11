@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 800" width="400" height="800">
+  <defs>
+    <style>
+      .body-outline { fill: #f5f5f5; stroke: #999; stroke-width: 1; }
+      .region { fill: transparent; stroke: transparent; cursor: pointer; }
+      .region:hover { fill: rgba(59, 130, 246, 0.2); stroke: rgba(59, 130, 246, 0.5); stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <!-- Body silhouette outline -->
+  <g class="body-silhouette">
+    <!-- Head -->
+    <ellipse cx="200" cy="52" rx="35" ry="42" class="body-outline"/>
+    <!-- Neck -->
+    <rect x="185" y="90" width="30" height="25" class="body-outline"/>
+    <!-- Torso -->
+    <path d="M 140 115 L 140 300 Q 140 320 160 320 L 240 320 Q 260 320 260 300 L 260 115 Q 260 110 240 110 L 160 110 Q 140 110 140 115 Z" class="body-outline"/>
+    <!-- Left Arm -->
+    <path d="M 140 120 L 100 130 L 85 200 L 80 260 L 75 300 L 65 340 Q 60 355 70 355 L 80 355 L 95 300 L 100 260 L 110 200 L 125 150 L 140 135" class="body-outline"/>
+    <!-- Right Arm -->
+    <path d="M 260 120 L 300 130 L 315 200 L 320 260 L 325 300 L 335 340 Q 340 355 330 355 L 320 355 L 305 300 L 300 260 L 290 200 L 275 150 L 260 135" class="body-outline"/>
+    <!-- Left Leg -->
+    <path d="M 160 320 L 150 420 L 145 520 L 140 620 L 135 700 Q 130 740 145 740 L 175 740 Q 180 740 180 730 L 175 700 L 175 620 L 180 520 L 185 420 L 195 320" class="body-outline"/>
+    <!-- Right Leg -->
+    <path d="M 205 320 L 215 420 L 220 520 L 225 620 L 225 700 Q 220 740 225 740 L 255 740 Q 270 740 265 700 L 260 620 L 255 520 L 250 420 L 240 320" class="body-outline"/>
+  </g>
+
+  <!-- Clickable Regions -->
+  <g class="regions">
+    <!-- Head -->
+    <ellipse id="head" cx="200" cy="52" rx="33" ry="40" class="region" data-label="Head" data-label-vi="Dau"/>
+
+    <!-- Neck Front -->
+    <rect id="neck_front" x="186" y="91" width="28" height="22" class="region" data-label="Neck (Front)" data-label-vi="Co (truoc)"/>
+
+    <!-- Left Shoulder -->
+    <ellipse id="shoulder_left" cx="130" cy="125" rx="20" ry="18" class="region" data-label="Left Shoulder" data-label-vi="Vai trai"/>
+
+    <!-- Right Shoulder -->
+    <ellipse id="shoulder_right" cx="270" cy="125" rx="20" ry="18" class="region" data-label="Right Shoulder" data-label-vi="Vai phai"/>
+
+    <!-- Left Upper Arm Front -->
+    <rect id="upper_arm_left_front" x="85" y="148" width="30" height="55" rx="10" class="region" data-label="Left Upper Arm" data-label-vi="Canh tay trai"/>
+
+    <!-- Right Upper Arm Front -->
+    <rect id="upper_arm_right_front" x="285" y="148" width="30" height="55" rx="10" class="region" data-label="Right Upper Arm" data-label-vi="Canh tay phai"/>
+
+    <!-- Left Elbow -->
+    <ellipse id="elbow_left" cx="90" cy="215" rx="15" ry="15" class="region" data-label="Left Elbow" data-label-vi="Khuyu tay trai"/>
+
+    <!-- Right Elbow -->
+    <ellipse id="elbow_right" cx="310" cy="215" rx="15" ry="15" class="region" data-label="Right Elbow" data-label-vi="Khuyu tay phai"/>
+
+    <!-- Left Forearm -->
+    <rect id="forearm_left" x="75" y="235" width="25" height="55" rx="8" class="region" data-label="Left Forearm" data-label-vi="Cang tay trai"/>
+
+    <!-- Right Forearm -->
+    <rect id="forearm_right" x="300" y="235" width="25" height="55" rx="8" class="region" data-label="Right Forearm" data-label-vi="Cang tay phai"/>
+
+    <!-- Left Wrist/Hand -->
+    <ellipse id="wrist_hand_left" cx="72" cy="340" rx="15" ry="25" class="region" data-label="Left Wrist/Hand" data-label-vi="Co tay/Ban tay trai"/>
+
+    <!-- Right Wrist/Hand -->
+    <ellipse id="wrist_hand_right" cx="328" cy="340" rx="15" ry="25" class="region" data-label="Right Wrist/Hand" data-label-vi="Co tay/Ban tay phai"/>
+
+    <!-- Left Chest -->
+    <rect id="chest_left" x="142" y="118" width="55" height="60" rx="5" class="region" data-label="Left Chest" data-label-vi="Nguc trai"/>
+
+    <!-- Right Chest -->
+    <rect id="chest_right" x="203" y="118" width="55" height="60" rx="5" class="region" data-label="Right Chest" data-label-vi="Nguc phai"/>
+
+    <!-- Upper Abdomen -->
+    <rect id="abdomen_upper" x="148" y="185" width="105" height="55" rx="5" class="region" data-label="Upper Abdomen" data-label-vi="Bung tren"/>
+
+    <!-- Lower Abdomen -->
+    <rect id="abdomen_lower" x="148" y="245" width="105" height="50" rx="5" class="region" data-label="Lower Abdomen" data-label-vi="Bung duoi"/>
+
+    <!-- Left Hip -->
+    <ellipse id="hip_left" cx="165" cy="310" rx="22" ry="18" class="region" data-label="Left Hip" data-label-vi="Hong trai"/>
+
+    <!-- Right Hip -->
+    <ellipse id="hip_right" cx="235" cy="310" rx="22" ry="18" class="region" data-label="Right Hip" data-label-vi="Hong phai"/>
+
+    <!-- Left Groin -->
+    <ellipse id="groin_left" cx="175" cy="340" rx="18" ry="15" class="region" data-label="Left Groin" data-label-vi="Ben trai"/>
+
+    <!-- Right Groin -->
+    <ellipse id="groin_right" cx="225" cy="340" rx="18" ry="15" class="region" data-label="Right Groin" data-label-vi="Ben phai"/>
+
+    <!-- Left Thigh Front -->
+    <rect id="thigh_left_front" x="148" y="360" width="40" height="85" rx="12" class="region" data-label="Left Thigh (Front)" data-label-vi="Dui trai (truoc)"/>
+
+    <!-- Right Thigh Front -->
+    <rect id="thigh_right_front" x="212" y="360" width="40" height="85" rx="12" class="region" data-label="Right Thigh (Front)" data-label-vi="Dui phai (truoc)"/>
+
+    <!-- Left Knee -->
+    <ellipse id="knee_left" cx="165" cy="465" rx="18" ry="22" class="region" data-label="Left Knee" data-label-vi="Goi trai"/>
+
+    <!-- Right Knee -->
+    <ellipse id="knee_right" cx="235" cy="465" rx="18" ry="22" class="region" data-label="Right Knee" data-label-vi="Goi phai"/>
+
+    <!-- Left Shin -->
+    <rect id="lower_leg_left_front" x="143" y="492" width="35" height="90" rx="10" class="region" data-label="Left Shin" data-label-vi="Cang chan trai"/>
+
+    <!-- Right Shin -->
+    <rect id="lower_leg_right_front" x="222" y="492" width="35" height="90" rx="10" class="region" data-label="Right Shin" data-label-vi="Cang chan phai"/>
+
+    <!-- Left Ankle -->
+    <ellipse id="ankle_left" cx="158" cy="600" rx="15" ry="18" class="region" data-label="Left Ankle" data-label-vi="Co chan trai"/>
+
+    <!-- Right Ankle -->
+    <ellipse id="ankle_right" cx="242" cy="600" rx="15" ry="18" class="region" data-label="Right Ankle" data-label-vi="Co chan phai"/>
+
+    <!-- Left Foot -->
+    <ellipse id="foot_left" cx="158" cy="640" rx="20" ry="25" class="region" data-label="Left Foot" data-label-vi="Ban chan trai"/>
+
+    <!-- Right Foot -->
+    <ellipse id="foot_right" cx="242" cy="640" rx="20" ry="25" class="region" data-label="Right Foot" data-label-vi="Ban chan phai"/>
+  </g>
+</svg>

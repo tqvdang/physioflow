@@ -14,6 +14,15 @@ spec:
         app: physioflow
         component: api
     spec:
+      initContainers:
+        - name: db-migrate
+          image: registry.trancloud.work/physioflow-api:latest
+          command: ["sh", "-c", "echo 'Migration placeholder - implement migrate command'; exit 0"]
+          envFrom:
+            - configMapRef:
+                name: physioflow-config
+            - secretRef:
+                name: physioflow-secrets
       containers:
         - name: api
           image: registry.trancloud.work/physioflow-api:latest
@@ -22,24 +31,53 @@ spec:
           envFrom:
             - configMapRef:
                 name: physioflow-config
+            - configMapRef:
+                name: feature-flags
             - secretRef:
                 name: physioflow-secrets
+          volumeMounts:
+            - name: service-codes
+              mountPath: /app/config/service-codes.json
+              subPath: service-codes.json
+              readOnly: true
+            - name: clinical-protocols
+              mountPath: /app/config/protocols.json
+              subPath: protocols.json
+              readOnly: true
+            - name: outcome-measures
+              mountPath: /app/config/measures.json
+              subPath: measures.json
+              readOnly: true
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
-            limits:
               memory: "256Mi"
               cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 7011
             initialDelaySeconds: 5
-            periodSeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
               port: 7011
-            initialDelaySeconds: 15
-            periodSeconds: 30
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: service-codes
+          configMap:
+            name: pt-service-codes
+        - name: clinical-protocols
+          configMap:
+            name: clinical-protocols
+        - name: outcome-measures
+          configMap:
+            name: outcome-measures-library

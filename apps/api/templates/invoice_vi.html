@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hoa don - {{.InvoiceNumber}}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #1f2937;
+      max-width: 180mm;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 20px;
+      color: #1e40af;
+      margin-bottom: 2px;
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .clinic-info {
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 13px;
+      color: #1e40af;
+      border-bottom: 1px solid #dbeafe;
+      padding-bottom: 4px;
+      margin: 16px 0 8px 0;
+    }
+    .invoice-meta {
+      display: table;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .invoice-meta-row {
+      display: table-row;
+    }
+    .invoice-meta-cell {
+      display: table-cell;
+      padding: 3px 8px;
+      width: 50%;
+    }
+    .invoice-meta-cell .label {
+      color: #6b7280;
+      font-size: 10px;
+    }
+    .invoice-meta-cell .value {
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .invoice-number {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e40af;
+      font-family: monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    th {
+      padding: 8px;
+      text-align: left;
+      background: #eff6ff;
+      border-bottom: 2px solid #bfdbfe;
+      font-size: 10px;
+      color: #1e40af;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .amount { font-family: monospace; font-weight: 600; }
+    .totals-table {
+      width: 50%;
+      margin-left: auto;
+      margin-top: 12px;
+    }
+    .totals-table td {
+      padding: 4px 8px;
+    }
+    .totals-table .total-row {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      border-top: 2px solid #2563eb;
+    }
+    .totals-table .insurance-row {
+      color: #16a34a;
+    }
+    .totals-table .balance-row {
+      color: #dc2626;
+      font-weight: 700;
+    }
+    .bhyt-info {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    .bhyt-info .label {
+      color: #16a34a;
+      font-weight: 600;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .status-paid { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-partial { background: #fed7aa; color: #9a3412; }
+    .status-overdue { background: #fee2e2; color: #991b1b; }
+    .notes {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    .footer {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 9px;
+      margin-top: 24px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+    .payment-notice {
+      text-align: center;
+      margin-top: 16px;
+      padding: 12px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  {{if .ClinicName}}
+  <div class="clinic-info">
+    <strong>{{.ClinicNameVi}}</strong><br/>
+    {{if .ClinicAddress}}{{.ClinicAddress}}<br/>{{end}}
+    {{if .ClinicPhone}}DT: {{.ClinicPhone}}{{end}}
+  </div>
+  {{end}}
+
+  <div class="header">
+    <h1>HOA DON DICH VU</h1>
+    <p class="subtitle">Service Invoice</p>
+  </div>
+
+  <div class="invoice-meta">
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">So hoa don:</span><br/>
+        <span class="invoice-number">{{.InvoiceNumber}}</span>
+      </div>
+      <div class="invoice-meta-cell" style="text-align: right;">
+        <span class="label">Ngay lap:</span>
+        <span class="value">{{.InvoiceDate}}</span><br/>
+        {{if .DueDate}}
+        <span class="label">Han thanh toan:</span>
+        <span class="value">{{.DueDate}}</span>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <h2>Thong tin benh nhan / Patient Information</h2>
+  <div class="invoice-meta">
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">Ho ten:</span>
+        <span class="value">{{.PatientNameVi}}</span>
+        {{if and .PatientName (ne .PatientName .PatientNameVi)}}
+          <span style="color: #6b7280;">({{.PatientName}})</span>
+        {{end}}
+      </div>
+      <div class="invoice-meta-cell">
+        <span class="label">MRN:</span>
+        <span class="value">{{.PatientMRN}}</span>
+      </div>
+    </div>
+    {{if .PatientPhone}}
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">So dien thoai:</span>
+        <span class="value">{{.PatientPhone}}</span>
+      </div>
+      <div class="invoice-meta-cell"></div>
+    </div>
+    {{end}}
+  </div>
+
+  {{if .HasBHYT}}
+  <div class="bhyt-info">
+    <span class="label">Bao hiem y te (BHYT):</span> {{.BHYTCardNumber}}
+    {{if .CoverageRate}} | <span class="label">Ty le chi tra:</span> {{.CoverageRate}}{{end}}
+  </div>
+  {{end}}
+
+  <h2>Chi tiet dich vu / Service Details</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 30px;">#</th>
+        <th>Dich vu / Service</th>
+        <th class="text-center">SL</th>
+        <th class="text-right">Don gia</th>
+        <th class="text-right">Thanh tien</th>
+        {{if .HasBHYT}}<th class="text-right">BHYT</th>{{end}}
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Items}}
+      <tr>
+        <td class="text-center">{{.Index}}</td>
+        <td>
+          {{.DescriptionVi}}
+          {{if and .Description (ne .Description .DescriptionVi)}}
+          <br/><span style="font-size: 9px; color: #6b7280;">{{.Description}}</span>
+          {{end}}
+        </td>
+        <td class="text-center">{{.Quantity}}</td>
+        <td class="text-right amount">{{.UnitPrice}}</td>
+        <td class="text-right amount">{{.TotalPrice}}</td>
+        {{if $.HasBHYT}}
+        <td class="text-right">
+          {{if .BHYTCoverable}}<span class="amount" style="color: #16a34a;">{{.BHYTAmount}}</span>{{else}}-{{end}}
+        </td>
+        {{end}}
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  <table class="totals-table">
+    <tbody>
+      <tr>
+        <td class="text-right"><span class="label">Tam tinh:</span></td>
+        <td class="text-right amount">{{.Subtotal}}</td>
+      </tr>
+      {{if gt .TaxAmountRaw 0}}
+      <tr>
+        <td class="text-right"><span class="label">Thue ({{printf "%.0f" .TaxRate}}%):</span></td>
+        <td class="text-right amount">{{.TaxAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .DiscountAmount}}
+      <tr>
+        <td class="text-right"><span class="label">Giam gia{{if .DiscountReason}} ({{.DiscountReason}}){{end}}:</span></td>
+        <td class="text-right amount" style="color: #dc2626;">-{{.DiscountAmount}}</td>
+      </tr>
+      {{end}}
+      <tr class="total-row">
+        <td class="text-right">Tong cong:</td>
+        <td class="text-right amount">{{.TotalAmount}}</td>
+      </tr>
+      {{if .HasBHYT}}
+      <tr class="insurance-row">
+        <td class="text-right"><span class="label">BHYT chi tra:</span></td>
+        <td class="text-right amount">-{{.InsuranceAmount}}</td>
+      </tr>
+      <tr>
+        <td class="text-right"><span class="label">Benh nhan tra:</span></td>
+        <td class="text-right amount">{{.PatientAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .PaidAmount}}
+      <tr>
+        <td class="text-right"><span class="label">Da thanh toan:</span></td>
+        <td class="text-right amount" style="color: #16a34a;">-{{.PaidAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .BalanceDue}}
+      <tr class="balance-row">
+        <td class="text-right">Con lai:</td>
+        <td class="text-right amount">{{.BalanceDue}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  {{if or .Notes .NotesVi}}
+  <div class="notes">
+    <strong>Ghi chu:</strong><br/>
+    {{if .NotesVi}}{{.NotesVi}}{{end}}
+    {{if and .Notes (ne .Notes .NotesVi)}}
+    <br/><span style="color: #6b7280;">{{.Notes}}</span>
+    {{end}}
+  </div>
+  {{end}}
+
+  <div class="payment-notice">
+    <strong>Phuong thuc thanh toan:</strong> Tien mat, Chuyen khoan ngan hang, MoMo, ZaloPay, VNPay<br/>
+    <strong>Payment methods:</strong> Cash, Bank Transfer, MoMo, ZaloPay, VNPay
+  </div>
+
+  <div class="footer">
+    <p>Hoa don duoc tao tu dong boi PhysioFlow EMR</p>
+    <p>Invoice generated by PhysioFlow EMR - {{.GeneratedAt}}</p>
+  </div>
+</body>
+</html>

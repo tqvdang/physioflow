@@ -1,0 +1,286 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    app: grafana
+data:
+  physioflow-pt-features.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [
+            {
+              "expr": "rate(bhyt_validations_total[5m])",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "title": "BHYT Validation Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 500},
+                  {"color": "red", "value": 1000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [
+            {"expr": "bhyt_coverage_p50_duration_ms", "legendFormat": "p50"},
+            {"expr": "bhyt_coverage_p95_duration_ms", "legendFormat": "p95"},
+            {"expr": "bhyt_coverage_p99_duration_ms", "legendFormat": "p99"}
+          ],
+          "title": "BHYT Coverage Calculation Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+          "id": 3,
+          "targets": [
+            {
+              "expr": "sum by (measure_type) (outcome_measures_recorded_total)",
+              "legendFormat": "{{measure_type}}"
+            }
+          ],
+          "title": "Outcome Measures by Type",
+          "type": "piechart"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+          "id": 4,
+          "targets": [
+            {
+              "expr": "rate(billing_invoices_created_total[5m])",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "title": "Billing Invoice Creation Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+          "id": 5,
+          "targets": [
+            {
+              "expr": "rate(protocols_assigned_total[5m])",
+              "legendFormat": "{{protocol_id}}"
+            }
+          ],
+          "title": "Protocol Assignment Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 3000},
+                  {"color": "red", "value": 5000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "id": 6,
+          "targets": [
+            {"expr": "discharge_pdf_avg_duration_ms", "legendFormat": "Average"},
+            {"expr": "discharge_pdf_p95_duration_ms", "legendFormat": "p95"}
+          ],
+          "title": "Discharge Summary Generation Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 16},
+          "id": 7,
+          "targets": [
+            {
+              "expr": "rate(medical_terms_search_total[5m])",
+              "legendFormat": "Search Rate"
+            }
+          ],
+          "title": "Medical Term Search Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 300},
+                  {"color": "red", "value": 500}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 6, "x": 18, "y": 16},
+          "id": 8,
+          "targets": [
+            {"expr": "medical_terms_search_avg_duration_ms"}
+          ],
+          "title": "Medical Term Search Latency (avg)",
+          "type": "gauge"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 0.05}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+          "id": 9,
+          "targets": [
+            {
+              "expr": "rate(api_requests_total{status=~\"4xx|5xx\"}[5m]) / rate(api_requests_total[5m])",
+              "legendFormat": "{{endpoint}} {{method}}"
+            }
+          ],
+          "title": "API Error Rates by Endpoint",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": ["physioflow", "pt-features"],
+      "time": {"from": "now-1h", "to": "now"},
+      "title": "PhysioFlow PT Features",
+      "uid": "physioflow-pt-features",
+      "version": 1
+    }
+
+  physioflow-database.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ms"}},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [
+            {
+              "expr": "rate(pg_stat_statements_mean_exec_time_seconds[5m]) * 1000",
+              "legendFormat": "{{datname}}.{{queryid}}"
+            }
+          ],
+          "title": "Query Execution Time by Table",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [
+            {
+              "expr": "pg_stat_activity_count",
+              "legendFormat": "Active"
+            },
+            {
+              "expr": "pg_settings_max_connections",
+              "legendFormat": "Max"
+            }
+          ],
+          "title": "Connection Pool Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "targets": [
+            {
+              "expr": "rate(pg_stat_statements_calls{queryid=~\".*\"}[5m]) > 0.1",
+              "legendFormat": "{{datname}}"
+            }
+          ],
+          "title": "Slow Query Count",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "targets": [
+            {
+              "expr": "pg_stat_user_tables_n_tup_ins + pg_stat_user_tables_n_tup_upd + pg_stat_user_tables_n_tup_del",
+              "legendFormat": "{{relname}}"
+            }
+          ],
+          "title": "Table Activity",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": ["physioflow", "database"],
+      "time": {"from": "now-1h", "to": "now"},
+      "title": "PhysioFlow Database",
+      "uid": "physioflow-database",
+      "version": 1
+    }

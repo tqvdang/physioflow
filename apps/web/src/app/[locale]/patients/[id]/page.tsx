@@ -735,15 +735,24 @@ export default function PatientDashboardPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="progress" className="mt-4">
+            <TabsContent value="progress" className="mt-4 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle>{t("progress.title")}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-center py-8">
-                    {t("progress.empty")}
-                  </p>
+                <CardContent className="space-y-3">
+                  <Link href={`/${locale}/patients/${patientId}/assessment`}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Activity className="mr-2 h-4 w-4" />
+                      {t("progress.romMmt")}
+                    </Button>
+                  </Link>
+                  <Link href={`/${locale}/patients/${patientId}/outcomes`}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      {t("progress.outcomeMeasures")}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </TabsContent>

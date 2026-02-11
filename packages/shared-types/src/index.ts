@@ -11,9 +11,6 @@ export * from './patient';
 // User and authentication types
 export * from './user';
 
-// Auth types (Keycloak/OIDC)
-export * from './auth';
-
 // Clinical types
 export * from './clinical';
 
@@ -25,3 +22,33 @@ export * from './scheduling';
 
 // API response types
 export * from './api';
+
+// BHYT Insurance types
+export * from './insurance';
+
+// Outcome Measures types
+export * from './outcome-measures';
+
+// Billing types
+export * from './billing';
+
+// Clinical Protocols types
+export * from './protocols';
+
+// Discharge Planning types
+export * from './discharge';
+
+// Medical Terms types
+export * from './medical-terms';
+
+// Pain Location / Anatomy types
+export * from './pain-location';
+
+// ROM Assessment types
+export * from './rom';
+
+// MMT Assessment types
+export * from './mmt';
+
+// BHYT Claim Submission types
+export * from './bhyt-claim';

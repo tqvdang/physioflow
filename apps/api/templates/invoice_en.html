@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice - {{.InvoiceNumber}}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #1f2937;
+      max-width: 180mm;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 20px;
+      color: #1e40af;
+      margin-bottom: 2px;
+    }
+    .clinic-info {
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 13px;
+      color: #1e40af;
+      border-bottom: 1px solid #dbeafe;
+      padding-bottom: 4px;
+      margin: 16px 0 8px 0;
+    }
+    .invoice-meta {
+      display: table;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .invoice-meta-row {
+      display: table-row;
+    }
+    .invoice-meta-cell {
+      display: table-cell;
+      padding: 3px 8px;
+      width: 50%;
+    }
+    .invoice-meta-cell .label {
+      color: #6b7280;
+      font-size: 10px;
+    }
+    .invoice-meta-cell .value {
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .invoice-number {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e40af;
+      font-family: monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    th {
+      padding: 8px;
+      text-align: left;
+      background: #eff6ff;
+      border-bottom: 2px solid #bfdbfe;
+      font-size: 10px;
+      color: #1e40af;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .amount { font-family: monospace; font-weight: 600; }
+    .totals-table {
+      width: 50%;
+      margin-left: auto;
+      margin-top: 12px;
+    }
+    .totals-table td {
+      padding: 4px 8px;
+    }
+    .totals-table .total-row {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      border-top: 2px solid #2563eb;
+    }
+    .totals-table .insurance-row {
+      color: #16a34a;
+    }
+    .totals-table .balance-row {
+      color: #dc2626;
+      font-weight: 700;
+    }
+    .bhyt-info {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    .bhyt-info .label {
+      color: #16a34a;
+      font-weight: 600;
+    }
+    .notes {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    .footer {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 9px;
+      margin-top: 24px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+    .payment-notice {
+      text-align: center;
+      margin-top: 16px;
+      padding: 12px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  {{if .ClinicName}}
+  <div class="clinic-info">
+    <strong>{{.ClinicName}}</strong><br/>
+    {{if .ClinicAddress}}{{.ClinicAddress}}<br/>{{end}}
+    {{if .ClinicPhone}}Tel: {{.ClinicPhone}}{{end}}
+  </div>
+  {{end}}
+
+  <div class="header">
+    <h1>SERVICE INVOICE</h1>
+  </div>
+
+  <div class="invoice-meta">
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">Invoice Number:</span><br/>
+        <span class="invoice-number">{{.InvoiceNumber}}</span>
+      </div>
+      <div class="invoice-meta-cell" style="text-align: right;">
+        <span class="label">Invoice Date:</span>
+        <span class="value">{{.InvoiceDate}}</span><br/>
+        {{if .DueDate}}
+        <span class="label">Due Date:</span>
+        <span class="value">{{.DueDate}}</span>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <h2>Patient Information</h2>
+  <div class="invoice-meta">
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">Name:</span>
+        <span class="value">{{.PatientName}}</span>
+      </div>
+      <div class="invoice-meta-cell">
+        <span class="label">MRN:</span>
+        <span class="value">{{.PatientMRN}}</span>
+      </div>
+    </div>
+    {{if .PatientPhone}}
+    <div class="invoice-meta-row">
+      <div class="invoice-meta-cell">
+        <span class="label">Phone:</span>
+        <span class="value">{{.PatientPhone}}</span>
+      </div>
+      <div class="invoice-meta-cell"></div>
+    </div>
+    {{end}}
+  </div>
+
+  {{if .HasBHYT}}
+  <div class="bhyt-info">
+    <span class="label">BHYT Insurance Card:</span> {{.BHYTCardNumber}}
+    {{if .CoverageRate}} | <span class="label">Coverage Rate:</span> {{.CoverageRate}}{{end}}
+  </div>
+  {{end}}
+
+  <h2>Service Details</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 30px;">#</th>
+        <th>Service</th>
+        <th class="text-center">Qty</th>
+        <th class="text-right">Unit Price</th>
+        <th class="text-right">Total</th>
+        {{if .HasBHYT}}<th class="text-right">BHYT Covered</th>{{end}}
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Items}}
+      <tr>
+        <td class="text-center">{{.Index}}</td>
+        <td>{{.Description}}</td>
+        <td class="text-center">{{.Quantity}}</td>
+        <td class="text-right amount">{{.UnitPrice}}</td>
+        <td class="text-right amount">{{.TotalPrice}}</td>
+        {{if $.HasBHYT}}
+        <td class="text-right">
+          {{if .BHYTCoverable}}<span class="amount" style="color: #16a34a;">{{.BHYTAmount}}</span>{{else}}-{{end}}
+        </td>
+        {{end}}
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  <table class="totals-table">
+    <tbody>
+      <tr>
+        <td class="text-right"><span class="label">Subtotal:</span></td>
+        <td class="text-right amount">{{.Subtotal}}</td>
+      </tr>
+      {{if gt .TaxAmountRaw 0}}
+      <tr>
+        <td class="text-right"><span class="label">Tax ({{printf "%.0f" .TaxRate}}%):</span></td>
+        <td class="text-right amount">{{.TaxAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .DiscountAmount}}
+      <tr>
+        <td class="text-right"><span class="label">Discount{{if .DiscountReason}} ({{.DiscountReason}}){{end}}:</span></td>
+        <td class="text-right amount" style="color: #dc2626;">-{{.DiscountAmount}}</td>
+      </tr>
+      {{end}}
+      <tr class="total-row">
+        <td class="text-right">Total:</td>
+        <td class="text-right amount">{{.TotalAmount}}</td>
+      </tr>
+      {{if .HasBHYT}}
+      <tr class="insurance-row">
+        <td class="text-right"><span class="label">BHYT Covered:</span></td>
+        <td class="text-right amount">-{{.InsuranceAmount}}</td>
+      </tr>
+      <tr>
+        <td class="text-right"><span class="label">Patient Responsibility:</span></td>
+        <td class="text-right amount">{{.PatientAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .PaidAmount}}
+      <tr>
+        <td class="text-right"><span class="label">Amount Paid:</span></td>
+        <td class="text-right amount" style="color: #16a34a;">-{{.PaidAmount}}</td>
+      </tr>
+      {{end}}
+      {{if .BalanceDue}}
+      <tr class="balance-row">
+        <td class="text-right">Balance Due:</td>
+        <td class="text-right amount">{{.BalanceDue}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  {{if .Notes}}
+  <div class="notes">
+    <strong>Notes:</strong><br/>
+    {{.Notes}}
+  </div>
+  {{end}}
+
+  <div class="payment-notice">
+    <strong>Payment Methods:</strong> Cash, Bank Transfer, MoMo, ZaloPay, VNPay
+  </div>
+
+  <div class="footer">
+    <p>Invoice generated by PhysioFlow EMR - {{.GeneratedAt}}</p>
+  </div>
+</body>
+</html>

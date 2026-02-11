@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tom tat xuat vien - {{.PatientNameVi}}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #1f2937;
+      max-width: 180mm;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 18px;
+      color: #1e40af;
+      margin-bottom: 2px;
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .clinic-info {
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 13px;
+      color: #1e40af;
+      border-bottom: 1px solid #dbeafe;
+      padding-bottom: 4px;
+      margin: 16px 0 8px 0;
+    }
+    .info-grid {
+      display: table;
+      width: 100%;
+    }
+    .info-row {
+      display: table-row;
+    }
+    .info-cell {
+      display: table-cell;
+      padding: 3px 8px;
+      width: 50%;
+    }
+    .info-cell .label {
+      color: #6b7280;
+      font-size: 10px;
+    }
+    .info-cell .value {
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    th {
+      padding: 6px 8px;
+      text-align: left;
+      background: #eff6ff;
+      border-bottom: 2px solid #bfdbfe;
+      font-size: 10px;
+      color: #1e40af;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    td {
+      padding: 5px 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .improved { color: #16a34a; font-weight: 600; }
+    .declined { color: #dc2626; font-weight: 600; }
+    .neutral { color: #6b7280; }
+    .mcid-met { color: #16a34a; font-weight: 700; }
+    .section-content {
+      padding: 4px 0;
+      white-space: pre-wrap;
+    }
+    .bilingual {
+      color: #6b7280;
+      font-style: italic;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+    .exercise-list {
+      margin: 4px 0;
+    }
+    .recommendation-item {
+      margin: 4px 0;
+      padding-left: 12px;
+    }
+    .recommendation-item::before {
+      content: "\2022 ";
+      color: #2563eb;
+      font-weight: bold;
+    }
+    .priority-high { color: #dc2626; }
+    .priority-medium { color: #d97706; }
+    .priority-low { color: #16a34a; }
+    .signature-area {
+      display: table;
+      width: 100%;
+      margin-top: 40px;
+    }
+    .signature-cell {
+      display: table-cell;
+      width: 50%;
+      text-align: center;
+      vertical-align: top;
+      padding: 0 20px;
+    }
+    .signature-line {
+      border-top: 1px dashed #9ca3af;
+      margin-top: 50px;
+      padding-top: 8px;
+    }
+    .footer {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 9px;
+      margin-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  {{if .ClinicName}}
+  <div class="clinic-info">
+    <strong>{{.ClinicNameVi}}</strong><br/>
+    {{if .ClinicAddress}}{{.ClinicAddress}}<br/>{{end}}
+    {{if .ClinicPhone}}DT: {{.ClinicPhone}}{{end}}
+  </div>
+  {{end}}
+
+  <div class="header">
+    <h1>TOM TAT XUAT VIEN</h1>
+    <p class="subtitle">Discharge Summary</p>
+  </div>
+
+  <h2>Thong tin benh nhan / Patient Information</h2>
+  <div class="info-grid">
+    <div class="info-row">
+      <div class="info-cell">
+        <span class="label">Ho ten:</span>
+        <span class="value">{{.PatientNameVi}}</span>
+        {{if and .PatientName (ne .PatientName .PatientNameVi)}}
+          <span class="bilingual">({{.PatientName}})</span>
+        {{end}}
+      </div>
+      <div class="info-cell">
+        <span class="label">Ma benh nhan (MRN):</span>
+        <span class="value">{{.PatientMRN}}</span>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-cell">
+        <span class="label">Ngay sinh:</span>
+        <span class="value">{{.PatientDOB}}</span>
+      </div>
+      <div class="info-cell">
+        <span class="label">Thoi gian dieu tri:</span>
+        <span class="value">{{.DateRange}}</span>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-cell">
+        <span class="label">Tong so buoi:</span>
+        <span class="value">{{.TotalSessions}} buoi</span>
+      </div>
+      <div class="info-cell">
+        <span class="label">Chuyen vien tri lieu:</span>
+        <span class="value">{{.TherapistName}}</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Chan doan va tom tat dieu tri / Diagnosis & Treatment</h2>
+  <p><strong>Chan doan:</strong></p>
+  <div class="section-content">{{.DiagnosisVi}}</div>
+  {{if and .Diagnosis (ne .Diagnosis .DiagnosisVi)}}
+  <div class="bilingual">{{.Diagnosis}}</div>
+  {{end}}
+
+  <p style="margin-top: 8px;"><strong>Tom tat dieu tri:</strong></p>
+  <div class="section-content">{{.TreatmentSummaryVi}}</div>
+  {{if and .TreatmentSummary (ne .TreatmentSummary .TreatmentSummaryVi)}}
+  <div class="bilingual">{{.TreatmentSummary}}</div>
+  {{end}}
+
+  {{if .BaselineComparisons}}
+  <h2>Ket qua do luong / Outcome Measures</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Chi so / Measure</th>
+        <th class="text-center">Ban dau</th>
+        <th class="text-center">Xuat vien</th>
+        <th class="text-center">Thay doi</th>
+        <th class="text-center">MCID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .BaselineComparisons}}
+      <tr>
+        <td>
+          {{.MeasureNameVi}}
+          {{if and .MeasureName (ne .MeasureName .MeasureNameVi)}}
+          <br/><span class="bilingual">{{.MeasureName}}</span>
+          {{end}}
+        </td>
+        <td class="text-center">{{printf "%.1f" .BaselineValue}}</td>
+        <td class="text-center" style="font-weight: 600;">{{printf "%.1f" .FinalValue}}</td>
+        <td class="text-center {{if gt .Change 0.0}}improved{{else if lt .Change 0.0}}declined{{else}}neutral{{end}}">
+          {{if gt .Change 0.0}}+{{end}}{{printf "%.1f" .Change}}
+          ({{if gt .ChangePercent 0.0}}+{{end}}{{printf "%.1f" .ChangePercent}}%)
+        </td>
+        <td class="text-center">
+          {{if .MeetsMCID}}<span class="mcid-met">Dat</span>{{else}}-{{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+
+  <h2>Tinh trang chuc nang / Functional Status</h2>
+  <div class="section-content">{{.FunctionalStatusVi}}</div>
+  {{if and .FunctionalStatus (ne .FunctionalStatus .FunctionalStatusVi)}}
+  <div class="bilingual">{{.FunctionalStatus}}</div>
+  {{end}}
+
+  {{if .HomeProgram}}
+  <h2>Chuong trinh tap tai nha / Home Exercise Program</h2>
+  {{if .HomeProgram.Exercises}}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Bai tap / Exercise</th>
+        <th class="text-center">Hiep</th>
+        <th class="text-center">Lan</th>
+        <th class="text-center">Giu (giay)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range $i, $e := .HomeProgram.Exercises}}
+      <tr>
+        <td>{{inc $i}}</td>
+        <td>
+          {{$e.NameVi}}
+          {{if and $e.Name (ne $e.Name $e.NameVi)}}
+          <br/><span class="bilingual">{{$e.Name}}</span>
+          {{end}}
+          {{if $e.InstructionsVi}}
+          <br/><span style="font-size: 9px; color: #6b7280;">{{$e.InstructionsVi}}</span>
+          {{end}}
+        </td>
+        <td class="text-center">{{$e.Sets}}</td>
+        <td class="text-center">{{$e.Reps}}</td>
+        <td class="text-center">{{if gt $e.HoldSeconds 0}}{{$e.HoldSeconds}}{{else}}-{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  <p style="font-size: 10px; margin-top: 4px;">
+    <strong>Tan suat:</strong> {{.HomeProgram.FrequencyVi}} |
+    <strong>Thoi gian:</strong> {{.HomeProgram.DurationVi}}
+  </p>
+  {{if .HomeProgram.InstructionsVi}}
+  <p style="font-size: 10px; margin-top: 4px;">
+    <strong>Huong dan:</strong> {{.HomeProgram.InstructionsVi}}
+  </p>
+  {{end}}
+  {{end}}
+  {{end}}
+
+  {{if .Recommendations}}
+  <h2>Khuyen nghi / Recommendations</h2>
+  {{range .Recommendations}}
+  <div class="recommendation-item">
+    <span class="priority-{{.Priority}}">[{{.Priority}}]</span>
+    {{.DescriptionVi}}
+    {{if and .Description (ne .Description .DescriptionVi)}}
+    <span class="bilingual">{{.Description}}</span>
+    {{end}}
+  </div>
+  {{end}}
+  {{end}}
+
+  {{if .FollowUp}}
+  {{if .FollowUp.IsNeeded}}
+  <h2>Ke hoach theo doi / Follow-up Plan</h2>
+  <div class="info-grid">
+    {{if gt .FollowUp.IntervalWeeks 0}}
+    <div class="info-row">
+      <div class="info-cell">
+        <span class="label">Khoang cach:</span>
+        <span class="value">Moi {{.FollowUp.IntervalWeeks}} tuan</span>
+      </div>
+      {{if gt .FollowUp.TotalVisits 0}}
+      <div class="info-cell">
+        <span class="label">Tong so lan:</span>
+        <span class="value">{{.FollowUp.TotalVisits}} lan</span>
+      </div>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+  {{if .FollowUp.ReasonVi}}
+  <p style="margin-top: 4px;"><strong>Ly do:</strong> {{.FollowUp.ReasonVi}}</p>
+  {{end}}
+  {{if .FollowUp.ReferralToVi}}
+  <p style="margin-top: 4px;"><strong>Chuyen den:</strong> {{.FollowUp.ReferralToVi}}</p>
+  {{end}}
+  {{end}}
+  {{end}}
+
+  <h2>Tien luong / Prognosis</h2>
+  <div class="section-content">{{.PrognosisVi}}</div>
+  {{if and .Prognosis (ne .Prognosis .PrognosisVi)}}
+  <div class="bilingual">{{.Prognosis}}</div>
+  {{end}}
+
+  <div class="signature-area">
+    <div class="signature-cell">
+      <p style="color: #6b7280; font-size: 10px;">Ngay: _______________</p>
+      <div class="signature-line">
+        <p><strong>Benh nhan / Patient</strong></p>
+      </div>
+    </div>
+    <div class="signature-cell">
+      <p style="color: #6b7280; font-size: 10px;">Ngay: _______________</p>
+      <div class="signature-line">
+        <p><strong>{{.TherapistName}}</strong></p>
+        <p style="color: #6b7280; font-size: 10px;">Chuyen vien tri lieu / Therapist</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Tai lieu nay duoc tao tu dong boi PhysioFlow EMR</p>
+    <p>This document was auto-generated by PhysioFlow EMR - {{.GeneratedAt}}</p>
+  </div>
+</body>
+</html>

@@ -192,6 +192,41 @@ test-api: ## Run Go API integration tests
 test-all: test test-e2e ## Run all tests (unit + e2e)
 	@echo "$(GREEN)All tests completed$(RESET)"
 
+test-load: ## Run K6 load tests for all critical endpoints
+	@echo "$(GREEN)Running load tests...$(RESET)"
+	@cd apps/api/tests/load && ./run-all-load-tests.sh
+
+test-load-bhyt: ## Run BHYT validation load test (p95 < 100ms)
+	@echo "$(GREEN)Running BHYT validation load test...$(RESET)"
+	@cd apps/api/tests/load && k6 run bhyt-validation.js
+
+test-load-outcome: ## Run outcome measures load test (p95 < 500ms)
+	@echo "$(GREEN)Running outcome measures load test...$(RESET)"
+	@cd apps/api/tests/load && k6 run outcome-measures.js
+
+test-load-search: ## Run medical term search load test (p95 < 200ms)
+	@echo "$(GREEN)Running medical term search load test...$(RESET)"
+	@cd apps/api/tests/load && k6 run medical-term-search.js
+
+test-load-discharge: ## Run discharge PDF load test (p95 < 3s)
+	@echo "$(GREEN)Running discharge PDF load test...$(RESET)"
+	@cd apps/api/tests/load && k6 run discharge-pdf.js
+
+test-load-billing: ## Run billing calculation load test (p95 < 200ms)
+	@echo "$(GREEN)Running billing calculation load test...$(RESET)"
+	@cd apps/api/tests/load && k6 run billing-calculation.js
+
+test-db-performance: ## Run database query performance tests
+	@echo "$(GREEN)Running database performance tests...$(RESET)"
+	@docker compose exec postgres psql -U emr -d physioflow -f /docker-entrypoint-initdb.d/tests/database-queries.sql
+
+test-n-plus-one: ## Run N+1 query detection tests
+	@echo "$(GREEN)Running N+1 query detection tests...$(RESET)"
+	@cd apps/api && go test -v ./tests/performance -run TestNoNPlusOne
+
+test-performance: test-db-performance test-n-plus-one test-load ## Run all performance tests
+	@echo "$(GREEN)All performance tests completed$(RESET)"
+
 lint: ## Run linters
 	@echo "$(GREEN)Running linters...$(RESET)"
 	cd apps/web && pnpm lint

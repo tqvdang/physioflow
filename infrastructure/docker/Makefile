@@ -15,6 +15,7 @@
 # Default compose files
 COMPOSE_FILE := docker-compose.yml
 COMPOSE_DEV_FILE := docker-compose.dev.yml
+COMPOSE_MONITORING_FILE := docker-compose.monitoring.yml
 DOCKER_COMPOSE := docker compose
 
 # Colors for terminal output
@@ -256,3 +257,44 @@ init: env up ## Initialize environment (create .env and start services)
 	@echo "$(GREEN)EMR Development Environment Ready!$(RESET)"
 	@echo ""
 	@make status
+
+# =============================================================================
+# Monitoring Stack
+# =============================================================================
+
+up-monitoring: ## Start monitoring stack (Prometheus, Grafana, Loki)
+	@echo "$(GREEN)Starting monitoring stack...$(RESET)"
+	$(DOCKER_COMPOSE) -f $(COMPOSE_MONITORING_FILE) up -d
+	@echo "$(GREEN)Monitoring stack started successfully$(RESET)"
+	@echo ""
+	@echo "$(CYAN)Monitoring Services:$(RESET)"
+	@echo "  Prometheus:  http://localhost:9090"
+	@echo "  Grafana:     http://localhost:3000 (admin/admin)"
+	@echo "  Loki:        http://localhost:3100"
+	@echo ""
+
+down-monitoring: ## Stop monitoring stack
+	@echo "$(YELLOW)Stopping monitoring stack...$(RESET)"
+	$(DOCKER_COMPOSE) -f $(COMPOSE_MONITORING_FILE) down
+	@echo "$(GREEN)Monitoring stack stopped$(RESET)"
+
+restart-monitoring: down-monitoring up-monitoring ## Restart monitoring stack
+
+logs-monitoring: ## View monitoring stack logs
+	$(DOCKER_COMPOSE) -f $(COMPOSE_MONITORING_FILE) logs -f
+
+status-monitoring: ## Show monitoring stack status
+	@echo "$(CYAN)Monitoring Stack Status:$(RESET)"
+	$(DOCKER_COMPOSE) -f $(COMPOSE_MONITORING_FILE) ps
+
+metrics: ## View API metrics (JSON format)
+	@echo "$(CYAN)PhysioFlow API Metrics:$(RESET)"
+	@curl -s http://localhost:7011/metrics | jq .
+
+metrics-prometheus: ## View API metrics (Prometheus format)
+	@echo "$(CYAN)PhysioFlow API Metrics (Prometheus format):$(RESET)"
+	@curl -s http://localhost:7011/metrics?format=prometheus
+
+up-all: up up-monitoring ## Start all services including monitoring
+
+down-all: down-monitoring down ## Stop all services including monitoring

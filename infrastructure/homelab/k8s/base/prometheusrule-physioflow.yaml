@@ -1,0 +1,171 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: physioflow-alerts
+  labels:
+    app: physioflow
+    prometheus: main
+spec:
+  groups:
+    - name: physioflow.bhyt
+      interval: 30s
+      rules:
+        - alert: BHYTHighErrorRate
+          expr: |
+            (
+              sum(rate(bhyt_validation_errors_total[5m]))
+              /
+              sum(rate(bhyt_validations_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            component: bhyt
+            feature: insurance
+          annotations:
+            summary: "High BHYT validation error rate"
+            description: "BHYT validation error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/bhyt-high-error-rate"
+
+        - alert: BHYTCoverageCalculationSlow
+          expr: bhyt_coverage_p95_duration_ms > 1000
+          for: 5m
+          labels:
+            severity: warning
+            component: bhyt
+            feature: insurance
+          annotations:
+            summary: "BHYT coverage calculation is slow"
+            description: "BHYT coverage calculation p95 latency is {{ $value }}ms (threshold: 1000ms)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/bhyt-slow-calculation"
+
+    - name: physioflow.outcome_measures
+      interval: 30s
+      rules:
+        - alert: OutcomeMeasuresSlowCalculation
+          expr: outcome_progress_p95_duration_ms > 1000
+          for: 5m
+          labels:
+            severity: warning
+            component: outcome-measures
+            feature: clinical
+          annotations:
+            summary: "Outcome measures calculation is slow"
+            description: "Outcome progress calculation p95 latency is {{ $value }}ms (threshold: 1000ms)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/outcome-measures-slow"
+
+    - name: physioflow.billing
+      interval: 30s
+      rules:
+        - alert: BillingCalculationErrors
+          expr: |
+            (
+              rate(billing_calculation_errors_total[5m])
+              /
+              rate(billing_invoices_created_total[5m])
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+            component: billing
+            feature: billing
+          annotations:
+            summary: "High billing calculation error rate"
+            description: "Billing calculation error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/billing-errors"
+
+    - name: physioflow.discharge
+      interval: 30s
+      rules:
+        - alert: DischargePDFGenerationSlow
+          expr: discharge_pdf_p95_duration_ms > 5000
+          for: 5m
+          labels:
+            severity: warning
+            component: discharge
+            feature: clinical
+          annotations:
+            summary: "Discharge PDF generation is slow"
+            description: "Discharge PDF generation p95 latency is {{ $value }}ms (threshold: 5000ms)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/discharge-pdf-slow"
+
+    - name: physioflow.medical_terms
+      interval: 30s
+      rules:
+        - alert: MedicalTermSearchSlow
+          expr: medical_terms_search_p95_duration_ms > 500
+          for: 5m
+          labels:
+            severity: warning
+            component: medical-terms
+            feature: clinical
+          annotations:
+            summary: "Medical term search is slow"
+            description: "Medical term search p95 latency is {{ $value }}ms (threshold: 500ms)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/medical-terms-slow"
+
+    - name: physioflow.api
+      interval: 30s
+      rules:
+        - alert: APIHighErrorRate
+          expr: |
+            (
+              sum(rate(api_requests_total{status=~"5xx"}[5m]))
+              /
+              sum(rate(api_requests_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            component: api
+          annotations:
+            summary: "High API error rate"
+            description: "API 5xx error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/api-high-error-rate"
+
+        - alert: APIHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(api_request_duration_seconds_bucket[5m])) by (le, endpoint)
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+            component: api
+          annotations:
+            summary: "High API latency on {{ $labels.endpoint }}"
+            description: "API p95 latency is {{ $value }}s (threshold: 2s)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/api-high-latency"
+
+    - name: physioflow.database
+      interval: 30s
+      rules:
+        - alert: DatabaseConnectionPoolExhausted
+          expr: |
+            (
+              pg_stat_activity_count
+              /
+              pg_settings_max_connections
+            ) > 0.9
+          for: 5m
+          labels:
+            severity: critical
+            component: database
+          annotations:
+            summary: "Database connection pool near exhaustion"
+            description: "Database connection usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/db-connection-pool"
+
+        - alert: DatabaseSlowQueries
+          expr: |
+            rate(pg_stat_statements_calls{queryid=~".*"}[5m]) > 1
+            and
+            pg_stat_statements_mean_exec_time_seconds > 1
+          for: 10m
+          labels:
+            severity: warning
+            component: database
+          annotations:
+            summary: "Database has slow queries"
+            description: "Query {{ $labels.queryid }} average execution time is {{ $value }}s"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/db-slow-queries"

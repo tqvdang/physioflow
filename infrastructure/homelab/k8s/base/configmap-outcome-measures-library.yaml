@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: outcome-measures-library
+data:
+  measures.json: |
+    [
+      {
+        "measureType": "VAS",
+        "description": "Visual Analog Scale for pain intensity",
+        "scoreRange": "0-10",
+        "mcidThreshold": 2.0
+      },
+      {
+        "measureType": "NPRS",
+        "description": "Numeric Pain Rating Scale",
+        "scoreRange": "0-10",
+        "mcidThreshold": 2.0
+      },
+      {
+        "measureType": "LEFS",
+        "description": "Lower Extremity Functional Scale",
+        "scoreRange": "0-80",
+        "mcidThreshold": 9.0
+      },
+      {
+        "measureType": "DASH",
+        "description": "Disabilities of the Arm, Shoulder and Hand",
+        "scoreRange": "0-100",
+        "mcidThreshold": 10.0
+      },
+      {
+        "measureType": "ODI",
+        "description": "Oswestry Disability Index",
+        "scoreRange": "0-100",
+        "mcidThreshold": 10.0
+      },
+      {
+        "measureType": "6MWT",
+        "description": "6-Minute Walk Test",
+        "scoreRange": "0-600m",
+        "mcidThreshold": 50.0
+      },
+      {
+        "measureType": "TUG",
+        "description": "Timed Up and Go test",
+        "scoreRange": "seconds",
+        "mcidThreshold": 2.3
+      },
+      {
+        "measureType": "FIM",
+        "description": "Functional Independence Measure",
+        "scoreRange": "18-126",
+        "mcidThreshold": 22.0
+      }
+    ]

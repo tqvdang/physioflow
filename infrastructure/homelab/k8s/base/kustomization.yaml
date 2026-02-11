@@ -5,9 +5,22 @@ resources:
   - postgres.yaml
   - deployment-web.yaml
   - deployment-api.yaml
+  - deployment-api-blue.yaml
+  - deployment-api-green.yaml
   - service-web.yaml
   - service-api.yaml
   - configmap.yaml
+  - configmap-migration-version.yaml
+  - configmap-pt-service-codes.yaml
+  - configmap-clinical-protocols.yaml
+  - configmap-outcome-measures-library.yaml
+  - configmap-feature-flags.yaml
+  - configmap-grafana-dashboards.yaml
+  - configmap-loki-config.yaml
+  - prometheusrule-physioflow.yaml
+  - hpa-api.yaml
+  - networkpolicy-api.yaml
+  - poddisruptionbudget-api.yaml
 
 commonLabels:
   app: physioflow

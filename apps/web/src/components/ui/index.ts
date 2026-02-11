@@ -99,6 +99,7 @@ export {
   CommandShortcut,
   CommandSeparator,
 } from "./command";
+export { Popover, PopoverTrigger, PopoverContent } from "./popover";
 export { ScrollArea, ScrollBar } from "./scroll-area";
 export { Separator } from "./separator";
 export {

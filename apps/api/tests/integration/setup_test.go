@@ -171,6 +171,49 @@ func registerTestRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	exercises.DELETE("/:id", h.Exercise.Delete)
 	exercises.POST("/:id/prescribe", h.Exercise.PrescribeExercise)
 	exercises.GET("/search", h.Exercise.Search)
+
+	// Insurance routes
+	patients.POST("/:patientId/insurance", h.Insurance.CreateInsurance)
+	patients.GET("/:patientId/insurance", h.Insurance.GetPatientInsurance)
+	patients.PUT("/:patientId/insurance/:id", h.Insurance.UpdateInsurance)
+	patients.POST("/:patientId/insurance/validate", h.Insurance.ValidateBHYTCard)
+	patients.POST("/:patientId/insurance/calculate-coverage", h.Insurance.CalculateCoverage)
+
+	// Outcome measures routes
+	patients.POST("/:patientId/outcome-measures", h.OutcomeMeasures.RecordMeasure)
+	patients.GET("/:patientId/outcome-measures", h.OutcomeMeasures.GetPatientMeasures)
+	patients.GET("/:patientId/outcome-measures/progress", h.OutcomeMeasures.CalculateProgress)
+	patients.GET("/:patientId/outcome-measures/trending", h.OutcomeMeasures.GetTrending)
+	api.GET("/outcome-measures/library", h.OutcomeMeasures.GetMeasureLibrary)
+
+	// Billing routes
+	patients.POST("/:patientId/billing/invoice", h.Billing.CreateInvoice)
+	patients.GET("/:patientId/billing/invoice/:id", h.Billing.GetInvoice)
+	patients.POST("/:patientId/billing/calculate", h.Billing.CalculateBilling)
+	patients.POST("/:patientId/billing/payment", h.Billing.RecordPayment)
+	patients.GET("/:patientId/billing/history", h.Billing.GetPaymentHistory)
+	api.GET("/billing/service-codes", h.Billing.GetServiceCodes)
+
+	// Protocol routes
+	api.GET("/protocols", h.Protocol.GetProtocols)
+	api.GET("/protocols/:id", h.Protocol.GetProtocolByID)
+	patients.POST("/:patientId/protocols/assign", h.Protocol.AssignProtocol)
+	patients.GET("/:patientId/protocols", h.Protocol.GetPatientProtocols)
+	patients.PUT("/:patientId/protocols/:id/progress", h.Protocol.UpdateProtocolProgress)
+
+	// Discharge routes
+	patients.POST("/:patientId/discharge/plan", h.Discharge.CreateDischargePlan)
+	patients.GET("/:patientId/discharge/plan", h.Discharge.GetDischargePlan)
+	patients.POST("/:patientId/discharge/summary", h.Discharge.GenerateDischargeSummary)
+	patients.POST("/:patientId/discharge/complete", h.Discharge.CompleteDischarge)
+	api.GET("/discharge/summary/:id", h.Discharge.GetDischargeSummary)
+
+	// Medical terms routes
+	api.GET("/medical-terms/search", h.MedicalTerms.SearchTerms)
+	api.GET("/medical-terms/:id", h.MedicalTerms.GetTermByID)
+	api.POST("/medical-terms", h.MedicalTerms.CreateCustomTerm)
+	api.GET("/medical-terms/category/:category", h.MedicalTerms.GetTermsByCategory)
+	api.GET("/medical-terms/icd10/:code", h.MedicalTerms.GetTermByICD10)
 }
 
 // testAuthMiddleware provides mock authentication for tests.

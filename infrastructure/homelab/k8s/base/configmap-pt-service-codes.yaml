@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pt-service-codes
+data:
+  service-codes.json: |
+    [
+      {
+        "code": "PT-001",
+        "serviceName": "Initial Evaluation",
+        "serviceNameVi": "Đánh giá ban đầu",
+        "unitPrice": 500000,
+        "durationMinutes": 60
+      },
+      {
+        "code": "PT-002",
+        "serviceName": "Therapeutic Exercise",
+        "serviceNameVi": "Tập vận động trị liệu",
+        "unitPrice": 300000,
+        "durationMinutes": 45
+      },
+      {
+        "code": "PT-003",
+        "serviceName": "Manual Therapy",
+        "serviceNameVi": "Thủ thuật trị liệu",
+        "unitPrice": 400000,
+        "durationMinutes": 30
+      },
+      {
+        "code": "PT-004",
+        "serviceName": "Electrical Stimulation",
+        "serviceNameVi": "Điện trị liệu",
+        "unitPrice": 200000,
+        "durationMinutes": 30
+      },
+      {
+        "code": "PT-005",
+        "serviceName": "Ultrasound Therapy",
+        "serviceNameVi": "Siêu âm trị liệu",
+        "unitPrice": 150000,
+        "durationMinutes": 20
+      },
+      {
+        "code": "PT-006",
+        "serviceName": "Heat/Cold Therapy",
+        "serviceNameVi": "Nhiệt trị / Lạnh trị",
+        "unitPrice": 100000,
+        "durationMinutes": 20
+      },
+      {
+        "code": "PT-007",
+        "serviceName": "Gait Training",
+        "serviceNameVi": "Tập đi lại",
+        "unitPrice": 350000,
+        "durationMinutes": 45
+      },
+      {
+        "code": "PT-008",
+        "serviceName": "Re-evaluation",
+        "serviceNameVi": "Đánh giá lại",
+        "unitPrice": 300000,
+        "durationMinutes": 45
+      }
+    ]

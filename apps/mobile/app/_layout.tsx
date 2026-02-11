@@ -59,6 +59,70 @@ export default function RootLayout() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="patient/[id]/insurance"
+          options={{
+            title: 'Insurance',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="patient/[id]/insurance-form"
+          options={{
+            title: 'Insurance Card',
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="patient/outcome-measures/[patientId]"
+          options={{
+            title: 'Outcome Measures',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="patient/outcome-measures/record/[patientId]"
+          options={{
+            title: 'Record Measure',
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="billing/invoices"
+          options={{
+            title: 'Hoa don',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="billing/[invoiceId]"
+          options={{
+            title: 'Chi tiet hoa don',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="patient/protocol/[protocolId]"
+          options={{
+            title: 'Protocol',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="protocols/index"
+          options={{
+            title: 'Protocol Library',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="patient/discharge/[patientId]"
+          options={{
+            title: 'Discharge Planning',
+            presentation: 'card',
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

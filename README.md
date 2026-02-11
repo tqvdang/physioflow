@@ -498,6 +498,48 @@ Common clinic workflows optimized to 1-2 clicks:
 - **Generate note**: AI-assisted SOAP note from checklist
 - **Patient handoff**: Transfer to another therapist with context
 
+## Vietnamese PT Features
+
+PhysioFlow includes comprehensive Vietnamese healthcare integrations:
+
+### BHYT Insurance
+- **18 prefix codes** across 8 beneficiary categories (HC, DN, TE, CB, XK, NN, TN, TX)
+- Automatic card validation with format checking
+- Real-time coverage calculation (80-100% insurance, 0-20% copay)
+- Integration with billing for automatic copay calculation
+
+### Outcome Measures
+- **8 standardized measures**: VAS, NDI, ODI, LEFS, DASH, QuickDASH, PSFS, FIM
+- MCID (Minimal Clinically Important Difference) tracking
+- Progress trending with baseline comparison
+- Visual charts for patient education
+
+### Billing System
+- **8 PT service codes** with bilingual names (Vietnamese + English)
+- VND currency handling with proper formatting
+- BHYT integration for insurance coverage
+- Multiple payment methods (cash, card, bank transfer, MoMo, ZaloPay, VNPay)
+
+### Clinical Protocols
+- **5 evidence-based protocols**: Lower Back Pain, Shoulder Pain, Knee OA, Post-Stroke, Pediatric
+- Bilingual goals and exercise instructions
+- Phase-based progression tracking
+- Automatic outcome measurement scheduling
+
+### Discharge Planning
+- Baseline vs discharge comparison
+- Home Exercise Program (HEP) export
+- Bilingual discharge summaries (PDF generation)
+- Follow-up instructions and referrals
+
+### Medical Terminology
+- **56 Vietnamese medical terms** across 5 categories
+- Trigram-based autocomplete search
+- ICD-10 code mapping
+- Bilingual definitions and synonyms
+
+**Documentation**: See [Vietnamese PT Features](docs/features/README.md) for complete documentation.
+
 ## Test Users
 
 Keycloak is pre-configured with test users for development:
@@ -573,9 +615,25 @@ Keycloak is pre-configured with test users for development:
 
 Comprehensive documentation is available in the `docs/` directory:
 
+### Core Documentation
 - **[docs/DESIGN.md](docs/DESIGN.md)**: Complete product design, wireframes, user flows, database schema, API design, implementation roadmap
 - **[docs/TECH_STACK.md](docs/TECH_STACK.md)**: Technical specifications, framework comparisons, component mappings, infrastructure specs
 - **[docs/README.md](docs/README.md)**: Documentation overview and quick links
+
+### Vietnamese PT Features
+- **[docs/features/](docs/features/)**: Vietnamese healthcare features documentation
+  - [BHYT Insurance](docs/features/BHYT_INSURANCE.md) - Insurance card validation and coverage calculation
+  - [Outcome Measures](docs/features/OUTCOME_MEASURES.md) - 8 standardized PT assessment tools
+  - [Billing](docs/features/BILLING.md) - VND billing with BHYT integration
+  - [Clinical Protocols](docs/features/CLINICAL_PROTOCOLS.md) - Evidence-based treatment protocols
+  - [Discharge Planning](docs/features/DISCHARGE_PLANNING.md) - Bilingual discharge summaries
+  - [Medical Terminology](docs/features/MEDICAL_TERMINOLOGY.md) - Vietnamese medical terms dictionary
+
+### API & Deployment
+- **[docs/api/](docs/api/)**: API endpoint documentation
+- **[docs/deployment/](docs/deployment/)**: Database migrations and performance benchmarks
+- **[docs/user-guides/](docs/user-guides/)**: End-user documentation (Vietnamese + English)
+- **[docs/admin-guides/](docs/admin-guides/)**: Administrator configuration guides
 
 ## Roadmap
 
