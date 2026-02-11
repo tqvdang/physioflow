@@ -27,7 +27,8 @@ type DatabaseConfig struct {
 	URL             string
 	MaxOpenConns    int
 	MaxIdleConns    int
-	ConnMaxLifetime int
+	ConnMaxLifetime int // seconds
+	ConnMaxIdleTime int // seconds
 }
 
 // RedisConfig holds Redis connection settings.
@@ -66,6 +67,7 @@ func Load() (*Config, error) {
 			MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
 			MaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: getEnvAsInt("DB_CONN_MAX_LIFETIME", 300),
+			ConnMaxIdleTime: getEnvAsInt("DB_CONN_MAX_IDLE_TIME", 600),
 		},
 		Redis: RedisConfig{
 			URL:      getEnv("REDIS_URL", "localhost:7013"),

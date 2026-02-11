@@ -8,7 +8,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
 } from "@/hooks/use-outcome-measures";
 import { MeasureEditDialog } from "./MeasureEditDialog";
 import { MeasureDeleteButton } from "./MeasureDeleteButton";
+import { MeasureListSkeleton } from "@/components/skeletons/MeasureListSkeleton";
 
 interface MeasureListProps {
   /** Patient ID to fetch measurements for */
@@ -53,13 +54,7 @@ export function MeasureList({ patientId }: MeasureListProps) {
     React.useState<OutcomeMeasurement | null>(null);
 
   if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <MeasureListSkeleton />;
   }
 
   if (error) {

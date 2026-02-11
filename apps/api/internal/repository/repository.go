@@ -10,9 +10,10 @@ import (
 
 // Common errors
 var (
-	ErrNotFound      = errors.New("record not found")
-	ErrAlreadyExists = errors.New("record already exists")
-	ErrInvalidInput  = errors.New("invalid input")
+	ErrNotFound        = errors.New("record not found")
+	ErrAlreadyExists   = errors.New("record already exists")
+	ErrInvalidInput    = errors.New("invalid input")
+	ErrVersionConflict = errors.New("version conflict: record was modified by another request")
 )
 
 // Repository provides access to the data store.

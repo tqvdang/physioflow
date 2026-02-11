@@ -1,11 +1,48 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { Colors } from '@/constants/Colors';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+function OfflineBanner() {
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(state.isConnected === true && state.isInternetReachable !== false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (isOnline) return null;
+
+  return (
+    <View style={bannerStyles.container}>
+      <Text style={bannerStyles.text}>
+        You are offline. Some features may not work.
+      </Text>
+    </View>
+  );
+}
+
+const bannerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: Colors.light.error,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  text: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+});
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -26,8 +63,10 @@ export default function RootLayout() {
   }
 
   return (
+    <ErrorBoundary>
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="auto" />
+      <OfflineBanner />
       <Stack
         screenOptions={{
           headerStyle: {
@@ -132,6 +171,7 @@ export default function RootLayout() {
         />
       </Stack>
     </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 

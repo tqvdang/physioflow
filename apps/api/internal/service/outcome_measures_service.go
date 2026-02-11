@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -247,6 +248,8 @@ func (s *outcomeMeasuresService) RecordMeasure(ctx context.Context, clinicID, th
 }
 
 // UpdateMeasure updates an existing outcome measure.
+// Uses optimistic locking: the request must include the current version number.
+// If another request modified the record concurrently, a version conflict error is returned.
 func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, therapistID string, req *model.UpdateOutcomeMeasureRequest) (*model.OutcomeMeasure, error) {
 	// Get existing measure
 	measure, err := s.repo.GetByID(ctx, req.MeasureID)
@@ -264,12 +267,18 @@ func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, th
 		return nil, fmt.Errorf("measure does not belong to clinic")
 	}
 
+	// Set version from request for optimistic locking.
+	// The repository will check this version matches the DB version.
+	if req.Version > 0 {
+		measure.Version = req.Version
+	}
+
 	// Update fields if provided
 	if req.Responses != nil {
 		// Recalculate score with new responses
-		lib, err := s.repo.GetLibraryByID(ctx, measure.LibraryID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get library entry: %w", err)
+		lib, libErr := s.repo.GetLibraryByID(ctx, measure.LibraryID)
+		if libErr != nil {
+			return nil, fmt.Errorf("failed to get library entry: %w", libErr)
 		}
 
 		score := s.calculateScore(*req.Responses, lib)
@@ -291,9 +300,9 @@ func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, th
 	}
 
 	if req.MeasuredAt != nil {
-		measuredAt, err := time.Parse(time.RFC3339, *req.MeasuredAt)
-		if err != nil {
-			return nil, fmt.Errorf("invalid measured_at format: %w", err)
+		measuredAt, parseErr := time.Parse(time.RFC3339, *req.MeasuredAt)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid measured_at format: %w", parseErr)
 		}
 		measure.MeasuredAt = measuredAt
 	}
@@ -301,6 +310,13 @@ func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, th
 	measure.UpdatedBy = &therapistID
 
 	if err := s.repo.Update(ctx, measure); err != nil {
+		if errors.Is(err, repository.ErrVersionConflict) {
+			log.Warn().
+				Str("measure_id", measure.ID).
+				Str("patient_id", measure.PatientID).
+				Int("requested_version", req.Version).
+				Msg("version conflict on outcome measure update")
+		}
 		return nil, err
 	}
 
@@ -312,6 +328,7 @@ func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, th
 		Str("measure_id", measure.ID).
 		Str("patient_id", measure.PatientID).
 		Str("updated_by", therapistID).
+		Int("new_version", measure.Version).
 		Msg("outcome measure updated")
 
 	return measure, nil

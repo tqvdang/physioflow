@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { type ReactNode } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Supported locales
 const locales = ["vi", "en"] as const;
@@ -29,7 +30,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <NextIntlClientProvider messages={messages}>
-      {children}
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
     </NextIntlClientProvider>
   );
 }

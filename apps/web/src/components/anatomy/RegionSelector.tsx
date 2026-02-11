@@ -8,7 +8,6 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2 } from "lucide-react";
 
 import {
   Select,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAnatomyRegions } from "@/hooks/use-anatomy-regions";
+import { RegionSelectorSkeleton } from "@/components/skeletons/RegionSelectorSkeleton";
 import type { AnatomyCategory, AnatomyViewType } from "@physioflow/shared-types";
 
 interface RegionSelectorProps {
@@ -78,16 +78,7 @@ export function RegionSelector({
   };
 
   if (isLoading) {
-    return (
-      <Select disabled>
-        <SelectTrigger>
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-muted-foreground">{t("selectRegion")}</span>
-          </div>
-        </SelectTrigger>
-      </Select>
-    );
+    return <RegionSelectorSkeleton />;
   }
 
   return (

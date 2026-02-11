@@ -77,13 +77,13 @@ describe('RegionSelector', () => {
       () => new Promise(() => {}) // Never resolves
     );
 
-    render(<RegionSelector value="" onChange={vi.fn()} view="all" />, {
+    const { container } = render(<RegionSelector value="" onChange={vi.fn()} view="all" />, {
       wrapper: createWrapper(queryClient),
     });
 
-    // Check for loading indicator in select trigger
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByRole('combobox')).toBeDisabled();
+    // Check for skeleton loading indicator (no combobox when loading)
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
   it('renders regions after loading', async () => {

@@ -58,6 +58,7 @@ export function useAnatomyRegions() {
       return regions.map(transformRegion);
     },
     staleTime: 1000 * 60 * 60, // 1 hour (static reference data)
+    gcTime: 1000 * 60 * 60 * 2, // 2 hours (keep in cache longer than staleTime)
   });
 }
 
@@ -74,6 +75,7 @@ export function useAnatomyRegion(id: string) {
       return transformRegion(response.data);
     },
     enabled: !!id,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 2, // 2 hours
   });
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
+	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 )
 
 // MockOutcomeMeasuresRepository is a mock implementation
@@ -586,6 +588,7 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 			req: &model.UpdateOutcomeMeasureRequest{
 				MeasureID: measureID,
 				PatientID: patientID,
+				Version:   1,
 				Responses: &[]model.MeasureResponse{
 					{QuestionID: "q1", Value: 8.0},
 				},
@@ -598,6 +601,7 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 					TherapistID: therapistID,
 					LibraryID:   libraryID,
 					Score:       5.0,
+					Version:     1,
 					Responses:   []model.MeasureResponse{{QuestionID: "q1", Value: 5.0}},
 					MeasuredAt:  now,
 				}
@@ -612,6 +616,7 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 			req: &model.UpdateOutcomeMeasureRequest{
 				MeasureID: measureID,
 				PatientID: patientID,
+				Version:   1,
 				Notes:     stringPtr("Updated notes"),
 			},
 			setup: func(m *MockOutcomeMeasuresRepository) {
@@ -622,6 +627,7 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 					TherapistID: therapistID,
 					LibraryID:   libraryID,
 					Score:       5.0,
+					Version:     1,
 					Responses:   []model.MeasureResponse{{QuestionID: "q1", Value: 5.0}},
 					Notes:       "Original notes",
 					MeasuredAt:  now,
@@ -634,8 +640,9 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 		{
 			name: "update measured_at only",
 			req: &model.UpdateOutcomeMeasureRequest{
-				MeasureID: measureID,
-				PatientID: patientID,
+				MeasureID:  measureID,
+				PatientID:  patientID,
+				Version:    1,
 				MeasuredAt: stringPtr(now.Add(24 * time.Hour).Format(time.RFC3339)),
 			},
 			setup: func(m *MockOutcomeMeasuresRepository) {
@@ -646,12 +653,39 @@ func TestOutcomeMeasuresService_UpdateMeasure(t *testing.T) {
 					TherapistID: therapistID,
 					LibraryID:   libraryID,
 					Score:       5.0,
+					Version:     1,
 					MeasuredAt:  now,
 				}
 				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
 				m.On("Update", mock.Anything, mock.AnythingOfType("*model.OutcomeMeasure")).Return(nil)
 			},
 			wantErr: false,
+		},
+		{
+			name: "version conflict on concurrent update",
+			req: &model.UpdateOutcomeMeasureRequest{
+				MeasureID: measureID,
+				PatientID: patientID,
+				Version:   1,
+				Notes:     stringPtr("Stale update"),
+			},
+			setup: func(m *MockOutcomeMeasuresRepository) {
+				existingMeasure := &model.OutcomeMeasure{
+					ID:          measureID,
+					PatientID:   patientID,
+					ClinicID:    clinicID,
+					TherapistID: therapistID,
+					LibraryID:   libraryID,
+					Score:       5.0,
+					Version:     2, // DB version is 2, request sends version 1
+					MeasuredAt:  now,
+				}
+				m.On("GetByID", mock.Anything, measureID).Return(existingMeasure, nil)
+				m.On("Update", mock.Anything, mock.AnythingOfType("*model.OutcomeMeasure")).
+					Return(repository.ErrVersionConflict)
+			},
+			wantErr: true,
+			errMsg:  "version conflict",
 		},
 		{
 			name: "patient mismatch",

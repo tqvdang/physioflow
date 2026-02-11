@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import {
   usePatientMeasures,
   useRecordMeasure,
@@ -854,6 +854,124 @@ describe('use-outcome-measures hooks', () => {
         })
       ).rejects.toThrow('Internal Server Error');
     });
+
+    it('optimistically updates cache before API call resolves', async () => {
+      // Seed the cache with existing measures
+      const existingMeasures = [
+        {
+          id: 'measure-123',
+          patientId: 'patient-123',
+          measureType: 'VAS' as MeasureType,
+          score: 7,
+          date: '2024-01-01',
+          phase: 'baseline' as const,
+          notes: 'Original notes',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ];
+      queryClient.setQueryData(
+        ['outcome-measures', 'patient', 'patient-123', 'measures'],
+        existingMeasures
+      );
+
+      // Make the API call hang so we can inspect the optimistic update
+      let resolveApi!: (value: unknown) => void;
+      const apiPromise = new Promise((resolve) => { resolveApi = resolve; });
+      vi.spyOn(apiLib.api, 'put').mockReturnValue(apiPromise as any);
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      // Start the mutation inside act() so onMutate runs and flushes
+      await act(async () => {
+        result.current.mutate({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+          data: {
+            currentScore: 85,
+            measurementDate: '2024-01-15',
+            phase: 'interim',
+            notes: 'Updated notes',
+          },
+        });
+      });
+
+      // The cache should be optimistically updated while API is pending
+      const cached = queryClient.getQueryData<any[]>([
+        'outcome-measures', 'patient', 'patient-123', 'measures',
+      ]);
+      expect(cached?.[0]?.score).toBe(85);
+      expect(cached?.[0]?.notes).toBe('Updated notes');
+
+      // Resolve the API call to clean up
+      resolveApi(mockApiResponse({
+        id: 'measure-123',
+        patient_id: 'patient-123',
+        measure_type: 'VAS',
+        score: 85,
+        date: '2024-01-15',
+        phase: 'interim',
+        notes: 'Updated notes',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-15T00:00:00Z',
+      }));
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+    });
+
+    it('rolls back optimistic update on error', async () => {
+      // Seed the cache with existing measures
+      const existingMeasures = [
+        {
+          id: 'measure-123',
+          patientId: 'patient-123',
+          measureType: 'VAS' as MeasureType,
+          score: 7,
+          date: '2024-01-01',
+          phase: 'baseline' as const,
+          notes: 'Original notes',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ];
+      queryClient.setQueryData(
+        ['outcome-measures', 'patient', 'patient-123', 'measures'],
+        existingMeasures
+      );
+
+      vi.spyOn(apiLib.api, 'put').mockRejectedValue(
+        mockApiError(500, 'Internal Server Error')
+      );
+
+      const { result } = renderHook(() => useUpdateOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-123',
+          data: {
+            currentScore: 85,
+            measurementDate: '2024-01-15',
+            phase: 'interim',
+          },
+        })
+      ).rejects.toThrow('Internal Server Error');
+
+      // Cache should be rolled back to original
+      await waitFor(() => {
+        const cached = queryClient.getQueryData<any[]>([
+          'outcome-measures', 'patient', 'patient-123', 'measures',
+        ]);
+        expect(cached?.[0]?.score).toBe(7);
+        expect(cached?.[0]?.notes).toBe('Original notes');
+      });
+    });
   });
 
   describe('useDeleteOutcomeMeasure', () => {
@@ -963,6 +1081,111 @@ describe('use-outcome-measures hooks', () => {
           measureId: 'measure-123',
         })
       ).rejects.toThrow('Network request failed');
+    });
+
+    it('optimistically removes item from cache', async () => {
+      // Seed the cache with existing measures
+      const existingMeasures = [
+        {
+          id: 'measure-1',
+          patientId: 'patient-123',
+          measureType: 'VAS' as MeasureType,
+          score: 7,
+          date: '2024-01-01',
+          phase: 'baseline' as const,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+        {
+          id: 'measure-2',
+          patientId: 'patient-123',
+          measureType: 'NDI' as MeasureType,
+          score: 50,
+          date: '2024-01-15',
+          phase: 'interim' as const,
+          createdAt: '2024-01-15T00:00:00Z',
+          updatedAt: '2024-01-15T00:00:00Z',
+        },
+      ];
+      queryClient.setQueryData(
+        ['outcome-measures', 'patient', 'patient-123', 'measures'],
+        existingMeasures
+      );
+
+      // Make the API call hang
+      let resolveApi!: (value: unknown) => void;
+      const apiPromise = new Promise((resolve) => { resolveApi = resolve; });
+      vi.spyOn(apiLib.api, 'delete').mockReturnValue(apiPromise as any);
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      // Start the mutation inside act() so onMutate runs and flushes
+      await act(async () => {
+        result.current.mutate({
+          patientId: 'patient-123',
+          measureId: 'measure-1',
+        });
+      });
+
+      // Cache should be optimistically updated (item removed)
+      const cached = queryClient.getQueryData<any[]>([
+        'outcome-measures', 'patient', 'patient-123', 'measures',
+      ]);
+      expect(cached).toHaveLength(1);
+      expect(cached?.[0]?.id).toBe('measure-2');
+
+      // Resolve the API call to clean up
+      resolveApi(mockApiResponse(null));
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+    });
+
+    it('rolls back optimistic delete on error', async () => {
+      // Seed the cache
+      const existingMeasures = [
+        {
+          id: 'measure-1',
+          patientId: 'patient-123',
+          measureType: 'VAS' as MeasureType,
+          score: 7,
+          date: '2024-01-01',
+          phase: 'baseline' as const,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ];
+      queryClient.setQueryData(
+        ['outcome-measures', 'patient', 'patient-123', 'measures'],
+        existingMeasures
+      );
+
+      vi.spyOn(apiLib.api, 'delete').mockRejectedValue(
+        mockApiError(500, 'Internal Server Error')
+      );
+
+      const { result } = renderHook(() => useDeleteOutcomeMeasure(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await expect(
+        result.current.mutateAsync({
+          patientId: 'patient-123',
+          measureId: 'measure-1',
+        })
+      ).rejects.toThrow('Internal Server Error');
+
+      // Cache should be rolled back (item restored)
+      await waitFor(() => {
+        const cached = queryClient.getQueryData<any[]>([
+          'outcome-measures', 'patient', 'patient-123', 'measures',
+        ]);
+        expect(cached).toHaveLength(1);
+        expect(cached?.[0]?.id).toBe('measure-1');
+      });
     });
   });
 });

@@ -3,14 +3,20 @@ package middleware
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 
 	"github.com/tqvdang/physioflow/apps/api/internal/metrics"
 )
 
+// slowRequestThreshold defines the duration above which a request is logged as slow.
+const slowRequestThreshold = 500 * time.Millisecond
+
 // Logger returns a middleware that logs HTTP requests using zerolog
-// and records metrics for observability.
+// and records metrics for observability. It generates a request ID if
+// one is not already present and adds structured fields for user context,
+// patient context, and slow request detection.
 func Logger() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -18,6 +24,15 @@ func Logger() echo.MiddlewareFunc {
 
 			req := c.Request()
 			res := c.Response()
+
+			// Generate or retrieve request ID.
+			requestID := req.Header.Get(echo.HeaderXRequestID)
+			if requestID == "" {
+				requestID = uuid.New().String()
+			}
+			// Set request ID on the response header and context so downstream can use it.
+			res.Header().Set(echo.HeaderXRequestID, requestID)
+			c.Set("request_id", requestID)
 
 			// Process request
 			err := next(c)
@@ -28,15 +43,11 @@ func Logger() echo.MiddlewareFunc {
 			// Calculate latency
 			latency := time.Since(start)
 
-			// Get request ID
-			requestID := req.Header.Get(echo.HeaderXRequestID)
-			if requestID == "" {
-				requestID = res.Header().Get(echo.HeaderXRequestID)
-			}
-
 			// Extract user context (if available)
 			userID := ""
-			if claims, ok := c.Get("user").(map[string]interface{}); ok {
+			if u := GetUser(c); u != nil {
+				userID = u.UserID
+			} else if claims, ok := c.Get("user").(map[string]interface{}); ok {
 				if sub, ok := claims["sub"].(string); ok {
 					userID = sub
 				}
@@ -48,7 +59,10 @@ func Logger() echo.MiddlewareFunc {
 				patientID = c.Param("pid")
 			}
 
-			// Build log event
+			// Determine operation name from the Echo route path.
+			operation := c.Path()
+
+			// Build log event based on status code.
 			event := log.Info()
 			if res.Status >= 500 {
 				event = log.Error()
@@ -56,12 +70,12 @@ func Logger() echo.MiddlewareFunc {
 				event = log.Warn()
 			}
 
-			// Log the request with structured fields
+			// Log the request with structured fields.
 			logEvent := event.
 				Str("request_id", requestID).
 				Str("method", req.Method).
 				Str("uri", req.RequestURI).
-				Str("path", c.Path()).
+				Str("path", operation).
 				Str("remote_addr", c.RealIP()).
 				Int("status", res.Status).
 				Int64("size", res.Size).
@@ -69,30 +83,38 @@ func Logger() echo.MiddlewareFunc {
 				Float64("latency_ms", float64(latency.Milliseconds())).
 				Str("user_agent", req.UserAgent())
 
-			// Add user context if available
+			// Add user context if available.
 			if userID != "" {
 				logEvent = logEvent.Str("user_id", userID)
 			}
 
-			// Add patient context if available (for PHI audit)
+			// Add patient context if available (for PHI audit).
 			if patientID != "" {
 				logEvent = logEvent.Str("patient_id", patientID)
 			}
 
-			// Add error details if present
+			// Add operation field for easier filtering.
+			logEvent = logEvent.Str("operation", req.Method+" "+operation)
+
+			// Flag slow requests.
+			if latency > slowRequestThreshold {
+				logEvent = logEvent.Bool("slow_request", true)
+			}
+
+			// Add error details if present.
 			if err != nil {
 				logEvent = logEvent.Err(err)
 			}
 
-			// Log Vietnamese PT-specific endpoints at INFO level
-			if isVietnamesePTEndpoint(c.Path()) {
+			// Log Vietnamese PT-specific endpoints at INFO level.
+			if isVietnamesePTEndpoint(operation) {
 				logEvent = logEvent.Str("feature", "vietnamese_pt")
 			}
 
 			logEvent.Msg("http request")
 
-			// Record metrics
-			endpoint := normalizePath(c.Path())
+			// Record metrics.
+			endpoint := normalizePath(operation)
 			metrics.RecordAPIRequest(endpoint, req.Method, res.Status, latency)
 
 			return nil

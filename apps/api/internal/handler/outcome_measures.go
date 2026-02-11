@@ -8,12 +8,26 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 
+	"github.com/tqvdang/physioflow/apps/api/internal/circuitbreaker"
 	"github.com/tqvdang/physioflow/apps/api/internal/middleware"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
 	"github.com/tqvdang/physioflow/apps/api/internal/service"
 	"github.com/tqvdang/physioflow/apps/api/pkg/validator"
 )
+
+// isCircuitBreakerOpen checks if the error is due to an open circuit breaker
+// and returns a 503 Service Unavailable response if so.
+func isCircuitBreakerOpen(c echo.Context, err error) bool {
+	if errors.Is(err, circuitbreaker.ErrCircuitOpen) {
+		_ = c.JSON(http.StatusServiceUnavailable, ErrorResponse{
+			Error:   "service_unavailable",
+			Message: "The service is temporarily unavailable. Please try again shortly.",
+		})
+		return true
+	}
+	return false
+}
 
 // OutcomeMeasuresHandler handles outcome measure-related HTTP requests.
 type OutcomeMeasuresHandler struct {
@@ -43,6 +57,7 @@ type OutcomeMeasureResponse struct {
 	MeasuredAt     string                        `json:"measured_at"`
 	CreatedAt      string                        `json:"created_at"`
 	UpdatedAt      string                        `json:"updated_at"`
+	Version        int                           `json:"version"`
 	Library        *OutcomeMeasureLibraryResponse `json:"library,omitempty"`
 }
 
@@ -165,6 +180,9 @@ func (h *OutcomeMeasuresHandler) RecordMeasure(c echo.Context) error {
 
 	measure, err := h.svc.OutcomeMeasures().RecordMeasure(c.Request().Context(), user.ClinicID, user.UserID, &req)
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{
 				Error:   "not_found",
@@ -212,6 +230,9 @@ func (h *OutcomeMeasuresHandler) GetPatientMeasures(c echo.Context) error {
 
 	measures, err := h.svc.OutcomeMeasures().GetPatientMeasures(c.Request().Context(), patientID)
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		log.Error().Err(err).Str("patient_id", patientID).Msg("failed to get patient outcome measures")
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "internal_error",
@@ -268,6 +289,9 @@ func (h *OutcomeMeasuresHandler) CalculateProgress(c echo.Context) error {
 
 	progress, err := h.svc.OutcomeMeasures().CalculateProgress(c.Request().Context(), patientID, model.MeasureType(measureType))
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{
 				Error:   "not_found",
@@ -328,6 +352,9 @@ func (h *OutcomeMeasuresHandler) GetTrending(c echo.Context) error {
 
 	trending, err := h.svc.OutcomeMeasures().GetTrending(c.Request().Context(), patientID, model.MeasureType(measureType))
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{
 				Error:   "not_found",
@@ -369,6 +396,9 @@ func (h *OutcomeMeasuresHandler) GetMeasureLibrary(c echo.Context) error {
 
 	library, err := h.svc.OutcomeMeasures().GetMeasureLibrary(c.Request().Context())
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		log.Error().Err(err).Msg("failed to get outcome measure library")
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "internal_error",
@@ -403,6 +433,7 @@ func toOutcomeMeasureResponse(m *model.OutcomeMeasure) OutcomeMeasureResponse {
 		MeasuredAt:     m.MeasuredAt.Format(time.RFC3339),
 		CreatedAt:      m.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      m.UpdatedAt.Format(time.RFC3339),
+		Version:        m.Version,
 	}
 
 	if m.Library != nil {
@@ -523,10 +554,19 @@ func (h *OutcomeMeasuresHandler) UpdateMeasure(c echo.Context) error {
 
 	measure, err := h.svc.OutcomeMeasures().UpdateMeasure(c.Request().Context(), user.ClinicID, user.UserID, &req)
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{
 				Error:   "not_found",
 				Message: "Outcome measure not found",
+			})
+		}
+		if errors.Is(err, repository.ErrVersionConflict) {
+			return c.JSON(http.StatusConflict, ErrorResponse{
+				Error:   "version_conflict",
+				Message: "This record was modified by another request. Please reload and try again.",
 			})
 		}
 		log.Error().Err(err).Str("measure_id", measureID).Msg("failed to update outcome measure")
@@ -579,6 +619,9 @@ func (h *OutcomeMeasuresHandler) DeleteMeasure(c echo.Context) error {
 
 	err := h.svc.OutcomeMeasures().DeleteMeasure(c.Request().Context(), patientID, measureID, user.UserID)
 	if err != nil {
+		if isCircuitBreakerOpen(c, err) {
+			return nil
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{
 				Error:   "not_found",

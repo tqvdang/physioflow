@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/tqvdang/physioflow/apps/api/internal/circuitbreaker"
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 )
 
@@ -34,11 +36,29 @@ type OutcomeMeasuresRepository interface {
 // postgresOutcomeMeasuresRepo implements OutcomeMeasuresRepository with PostgreSQL.
 type postgresOutcomeMeasuresRepo struct {
 	db *DB
+	cb *circuitbreaker.CircuitBreaker
 }
 
 // NewOutcomeMeasuresRepository creates a new PostgreSQL outcome measures repository.
 func NewOutcomeMeasuresRepository(db *DB) OutcomeMeasuresRepository {
-	return &postgresOutcomeMeasuresRepo{db: db}
+	return &postgresOutcomeMeasuresRepo{
+		db: db,
+		cb: circuitbreaker.New(circuitbreaker.DefaultConfig("outcome_measures_db")),
+	}
+}
+
+// slowQueryThreshold is the duration above which queries are logged as slow.
+const slowQueryThreshold = 500 * time.Millisecond
+
+// logSlowQuery logs a warning if the query took longer than the threshold.
+func logSlowQuery(operation string, start time.Time) {
+	elapsed := time.Since(start)
+	if elapsed > slowQueryThreshold {
+		log.Warn().
+			Str("operation", operation).
+			Dur("duration", elapsed).
+			Msg("slow query detected")
+	}
 }
 
 // Create inserts a new outcome measure record.
@@ -56,44 +76,54 @@ func (r *postgresOutcomeMeasuresRepo) Create(ctx context.Context, measure *model
 		}
 	}
 
+	// Ensure version starts at 1 for new records.
+	measure.Version = 1
+
 	query := `
 		INSERT INTO outcome_measures (
 			id, patient_id, clinic_id, therapist_id, library_id,
 			measure_type, session_id, score, max_possible, percentage,
-			responses, interpretation, notes, measured_at, created_by, updated_by
+			responses, interpretation, notes, measured_at, created_by, updated_by, version
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-			$11, $12, $13, $14, $15, $16
+			$11, $12, $13, $14, $15, $16, $17
 		)
 		RETURNING created_at, updated_at`
 
-	err = r.db.QueryRowContext(ctx, query,
-		measure.ID,
-		measure.PatientID,
-		measure.ClinicID,
-		measure.TherapistID,
-		measure.LibraryID,
-		measure.MeasureType,
-		NullableString(measure.SessionID),
-		measure.Score,
-		measure.MaxPossible,
-		measure.Percentage,
-		responsesJSON,
-		interpretJSON,
-		NullableStringValue(measure.Notes),
-		measure.MeasuredAt,
-		NullableString(measure.CreatedBy),
-		NullableString(measure.UpdatedBy),
-	).Scan(&measure.CreatedAt, &measure.UpdatedAt)
+	return r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.Create", start)
 
-	if err != nil {
-		return fmt.Errorf("failed to create outcome measure: %w", err)
-	}
+		scanErr := r.db.QueryRowContext(ctx, query,
+			measure.ID,
+			measure.PatientID,
+			measure.ClinicID,
+			measure.TherapistID,
+			measure.LibraryID,
+			measure.MeasureType,
+			NullableString(measure.SessionID),
+			measure.Score,
+			measure.MaxPossible,
+			measure.Percentage,
+			responsesJSON,
+			interpretJSON,
+			NullableStringValue(measure.Notes),
+			measure.MeasuredAt,
+			NullableString(measure.CreatedBy),
+			NullableString(measure.UpdatedBy),
+			measure.Version,
+		).Scan(&measure.CreatedAt, &measure.UpdatedAt)
 
-	return nil
+		if scanErr != nil {
+			return fmt.Errorf("failed to create outcome measure: %w", scanErr)
+		}
+		return nil
+	})
 }
 
-// Update updates an existing outcome measure record.
+// Update updates an existing outcome measure record with optimistic locking.
+// The version field is checked to ensure no concurrent modification occurred.
+// On success, the version is incremented and the new version is returned.
 func (r *postgresOutcomeMeasuresRepo) Update(ctx context.Context, measure *model.OutcomeMeasure) error {
 	responsesJSON, err := json.Marshal(measure.Responses)
 	if err != nil {
@@ -118,51 +148,69 @@ func (r *postgresOutcomeMeasuresRepo) Update(ctx context.Context, measure *model
 			notes = $6,
 			measured_at = $7,
 			updated_by = $8,
-			updated_at = NOW()
-		WHERE id = $9
-		RETURNING updated_at`
+			updated_at = NOW(),
+			version = version + 1
+		WHERE id = $9 AND version = $10
+		RETURNING updated_at, version`
 
-	err = r.db.QueryRowContext(ctx, query,
-		measure.Score,
-		measure.MaxPossible,
-		measure.Percentage,
-		responsesJSON,
-		interpretJSON,
-		NullableStringValue(measure.Notes),
-		measure.MeasuredAt,
-		NullableString(measure.UpdatedBy),
-		measure.ID,
-	).Scan(&measure.UpdatedAt)
+	return r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.Update", start)
 
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrNotFound
+		scanErr := r.db.QueryRowContext(ctx, query,
+			measure.Score,
+			measure.MaxPossible,
+			measure.Percentage,
+			responsesJSON,
+			interpretJSON,
+			NullableStringValue(measure.Notes),
+			measure.MeasuredAt,
+			NullableString(measure.UpdatedBy),
+			measure.ID,
+			measure.Version,
+		).Scan(&measure.UpdatedAt, &measure.Version)
+
+		if scanErr != nil {
+			if errors.Is(scanErr, sql.ErrNoRows) {
+				// Either the record was deleted or the version changed (concurrent update).
+				// Check if the record still exists to distinguish the two cases.
+				var exists bool
+				_ = r.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM outcome_measures WHERE id = $1)", measure.ID).Scan(&exists)
+				if exists {
+					return ErrVersionConflict
+				}
+				return ErrNotFound
+			}
+			return fmt.Errorf("failed to update outcome measure: %w", scanErr)
 		}
-		return fmt.Errorf("failed to update outcome measure: %w", err)
-	}
-
-	return nil
+		return nil
+	})
 }
 
 // Delete removes an outcome measure record.
 func (r *postgresOutcomeMeasuresRepo) Delete(ctx context.Context, id string) error {
 	query := `DELETE FROM outcome_measures WHERE id = $1`
 
-	result, err := r.db.ExecContext(ctx, query, id)
-	if err != nil {
-		return fmt.Errorf("failed to delete outcome measure: %w", err)
-	}
+	return r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.Delete", start)
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
-	}
+		result, execErr := r.db.ExecContext(ctx, query, id)
+		if execErr != nil {
+			return fmt.Errorf("failed to delete outcome measure: %w", execErr)
+		}
 
-	if rows == 0 {
-		return ErrNotFound
-	}
+		rows, execErr := result.RowsAffected()
+		if execErr != nil {
+			return fmt.Errorf("failed to get rows affected: %w", execErr)
+		}
 
-	return nil
+		if rows == 0 {
+			return ErrNotFound
+		}
+
+		return nil
+	})
 }
 
 // GetByID retrieves an outcome measure by ID.
@@ -172,14 +220,23 @@ func (r *postgresOutcomeMeasuresRepo) GetByID(ctx context.Context, id string) (*
 			om.id, om.patient_id, om.clinic_id, om.therapist_id, om.library_id,
 			om.measure_type, om.session_id, om.score, om.max_possible, om.percentage,
 			om.responses, om.interpretation, om.notes, om.measured_at,
-			om.created_at, om.updated_at, om.created_by, om.updated_by,
+			om.created_at, om.updated_at, om.created_by, om.updated_by, om.version,
 			oml.id, oml.code, oml.name, oml.name_vi, oml.min_score, oml.max_score,
 			oml.higher_is_better, oml.mcid
 		FROM outcome_measures om
 		LEFT JOIN outcome_measure_library oml ON oml.id = om.library_id
 		WHERE om.id = $1`
 
-	return r.scanMeasure(r.db.QueryRowContext(ctx, query, id))
+	var result *model.OutcomeMeasure
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetByID", start)
+
+		var scanErr error
+		result, scanErr = r.scanMeasure(r.db.QueryRowContext(ctx, query, id))
+		return scanErr
+	})
+	return result, err
 }
 
 // scanMeasure scans a single outcome measure row.
@@ -213,6 +270,7 @@ func (r *postgresOutcomeMeasuresRepo) scanMeasure(row *sql.Row) (*model.OutcomeM
 		&m.UpdatedAt,
 		&createdBy,
 		&updatedBy,
+		&m.Version,
 		&libID,
 		&libCode,
 		&libName,
@@ -284,7 +342,7 @@ func (r *postgresOutcomeMeasuresRepo) GetByPatientID(ctx context.Context, patien
 			om.id, om.patient_id, om.clinic_id, om.therapist_id, om.library_id,
 			om.measure_type, om.session_id, om.score, om.max_possible, om.percentage,
 			om.responses, om.interpretation, om.notes, om.measured_at,
-			om.created_at, om.updated_at, om.created_by, om.updated_by,
+			om.created_at, om.updated_at, om.created_by, om.updated_by, om.version,
 			oml.id, oml.code, oml.name, oml.name_vi, oml.min_score, oml.max_score,
 			oml.higher_is_better, oml.mcid
 		FROM outcome_measures om
@@ -292,7 +350,16 @@ func (r *postgresOutcomeMeasuresRepo) GetByPatientID(ctx context.Context, patien
 		WHERE om.patient_id = $1
 		ORDER BY om.measured_at DESC`
 
-	return r.scanMeasures(ctx, query, patientID)
+	var result []*model.OutcomeMeasure
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetByPatientID", start)
+
+		var scanErr error
+		result, scanErr = r.scanMeasures(ctx, query, patientID)
+		return scanErr
+	})
+	return result, err
 }
 
 // GetByPatientAndType retrieves outcome measures for a patient filtered by type.
@@ -302,7 +369,7 @@ func (r *postgresOutcomeMeasuresRepo) GetByPatientAndType(ctx context.Context, p
 			om.id, om.patient_id, om.clinic_id, om.therapist_id, om.library_id,
 			om.measure_type, om.session_id, om.score, om.max_possible, om.percentage,
 			om.responses, om.interpretation, om.notes, om.measured_at,
-			om.created_at, om.updated_at, om.created_by, om.updated_by,
+			om.created_at, om.updated_at, om.created_by, om.updated_by, om.version,
 			oml.id, oml.code, oml.name, oml.name_vi, oml.min_score, oml.max_score,
 			oml.higher_is_better, oml.mcid
 		FROM outcome_measures om
@@ -310,7 +377,16 @@ func (r *postgresOutcomeMeasuresRepo) GetByPatientAndType(ctx context.Context, p
 		WHERE om.patient_id = $1 AND om.measure_type = $2
 		ORDER BY om.measured_at ASC`
 
-	return r.scanMeasures(ctx, query, patientID, measureType)
+	var result []*model.OutcomeMeasure
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetByPatientAndType", start)
+
+		var scanErr error
+		result, scanErr = r.scanMeasures(ctx, query, patientID, measureType)
+		return scanErr
+	})
+	return result, err
 }
 
 // scanMeasures scans multiple outcome measure rows.
@@ -352,6 +428,7 @@ func (r *postgresOutcomeMeasuresRepo) scanMeasures(ctx context.Context, query st
 			&m.UpdatedAt,
 			&createdBy,
 			&updatedBy,
+			&m.Version,
 			&libID,
 			&libCode,
 			&libName,
@@ -518,26 +595,34 @@ func (r *postgresOutcomeMeasuresRepo) GetLibrary(ctx context.Context) ([]*model.
 		WHERE is_active = true
 		ORDER BY category, name`
 
-	rows, err := r.db.QueryContext(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query outcome measure library: %w", err)
-	}
-	defer rows.Close()
+	var result []*model.OutcomeMeasureLibrary
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetLibrary", start)
 
-	libraries := make([]*model.OutcomeMeasureLibrary, 0)
-	for rows.Next() {
-		lib, err := r.scanLibraryRow(rows)
-		if err != nil {
-			return nil, err
+		rows, queryErr := r.db.QueryContext(ctx, query)
+		if queryErr != nil {
+			return fmt.Errorf("failed to query outcome measure library: %w", queryErr)
 		}
-		libraries = append(libraries, lib)
-	}
+		defer rows.Close()
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating outcome measure library: %w", err)
-	}
+		libraries := make([]*model.OutcomeMeasureLibrary, 0)
+		for rows.Next() {
+			lib, scanErr := r.scanLibraryRow(rows)
+			if scanErr != nil {
+				return scanErr
+			}
+			libraries = append(libraries, lib)
+		}
 
-	return libraries, nil
+		if rowsErr := rows.Err(); rowsErr != nil {
+			return fmt.Errorf("error iterating outcome measure library: %w", rowsErr)
+		}
+
+		result = libraries
+		return nil
+	})
+	return result, err
 }
 
 // GetLibraryByType retrieves an outcome measure library entry by type.
@@ -555,17 +640,26 @@ func (r *postgresOutcomeMeasuresRepo) GetLibraryByType(ctx context.Context, meas
 		WHERE measure_type = $1 AND is_active = true
 		LIMIT 1`
 
-	rows, err := r.db.QueryContext(ctx, query, measureType)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query outcome measure library by type: %w", err)
-	}
-	defer rows.Close()
+	var result *model.OutcomeMeasureLibrary
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetLibraryByType", start)
 
-	if !rows.Next() {
-		return nil, ErrNotFound
-	}
+		rows, queryErr := r.db.QueryContext(ctx, query, measureType)
+		if queryErr != nil {
+			return fmt.Errorf("failed to query outcome measure library by type: %w", queryErr)
+		}
+		defer rows.Close()
 
-	return r.scanLibraryRow(rows)
+		if !rows.Next() {
+			return ErrNotFound
+		}
+
+		var scanErr error
+		result, scanErr = r.scanLibraryRow(rows)
+		return scanErr
+	})
+	return result, err
 }
 
 // GetLibraryByID retrieves an outcome measure library entry by ID.
@@ -582,17 +676,26 @@ func (r *postgresOutcomeMeasuresRepo) GetLibraryByID(ctx context.Context, id str
 		FROM outcome_measure_library
 		WHERE id = $1`
 
-	rows, err := r.db.QueryContext(ctx, query, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query outcome measure library by ID: %w", err)
-	}
-	defer rows.Close()
+	var result *model.OutcomeMeasureLibrary
+	err := r.cb.Execute(func() error {
+		start := time.Now()
+		defer logSlowQuery("outcome_measures.GetLibraryByID", start)
 
-	if !rows.Next() {
-		return nil, ErrNotFound
-	}
+		rows, queryErr := r.db.QueryContext(ctx, query, id)
+		if queryErr != nil {
+			return fmt.Errorf("failed to query outcome measure library by ID: %w", queryErr)
+		}
+		defer rows.Close()
 
-	return r.scanLibraryRow(rows)
+		if !rows.Next() {
+			return ErrNotFound
+		}
+
+		var scanErr error
+		result, scanErr = r.scanLibraryRow(rows)
+		return scanErr
+	})
+	return result, err
 }
 
 // scanLibraryRow scans a single outcome measure library row from sql.Rows.

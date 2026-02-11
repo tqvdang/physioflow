@@ -5,7 +5,9 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { showMutationError } from "@/lib/error-handling";
 import type { UpdateOutcomeMeasureRequest } from "@physioflow/shared-types";
 
 /**
@@ -401,7 +403,9 @@ export function useTrending(patientId: string, measureType: MeasureType, enabled
 }
 
 /**
- * Hook to update an existing outcome measurement
+ * Hook to update an existing outcome measurement.
+ * Uses optimistic updates to immediately reflect changes in the UI,
+ * rolling back on error.
  */
 export function useUpdateOutcomeMeasure() {
   const queryClient = useQueryClient();
@@ -430,16 +434,61 @@ export function useUpdateOutcomeMeasure() {
       );
       return transformMeasurement(response.data);
     },
-    onSuccess: (_, variables) => {
+    onMutate: async (variables) => {
+      const queryKey = outcomeMeasureKeys.patientMeasures(variables.patientId);
+
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot the previous value
+      const previousMeasures = queryClient.getQueryData<OutcomeMeasurement[]>(queryKey);
+
+      // Optimistically update the cache
+      if (previousMeasures) {
+        queryClient.setQueryData<OutcomeMeasurement[]>(queryKey, (old) =>
+          old?.map((m) =>
+            m.id === variables.measureId
+              ? {
+                  ...m,
+                  score: variables.data.currentScore ?? m.score,
+                  date: variables.data.measurementDate ?? m.date,
+                  phase: (variables.data.phase as MeasurePhase) ?? m.phase,
+                  notes: variables.data.notes ?? m.notes,
+                  updatedAt: new Date().toISOString(),
+                }
+              : m
+          )
+        );
+      }
+
+      return { previousMeasures };
+    },
+    onError: (error, variables, context) => {
+      // Rollback to the previous value on error
+      if (context?.previousMeasures) {
+        queryClient.setQueryData(
+          outcomeMeasureKeys.patientMeasures(variables.patientId),
+          context.previousMeasures
+        );
+      }
+      showMutationError(error);
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after error or success to ensure cache is in sync
       queryClient.invalidateQueries({
         queryKey: outcomeMeasureKeys.patient(variables.patientId),
       });
+    },
+    onSuccess: () => {
+      toast.success("Measurement updated successfully.");
     },
   });
 }
 
 /**
- * Hook to delete an outcome measurement
+ * Hook to delete an outcome measurement.
+ * Uses optimistic updates to immediately remove the item from the UI,
+ * rolling back on error.
  */
 export function useDeleteOutcomeMeasure() {
   const queryClient = useQueryClient();
@@ -456,10 +505,42 @@ export function useDeleteOutcomeMeasure() {
         `/v1/patients/${patientId}/outcome-measures/${measureId}`
       );
     },
-    onSuccess: (_, variables) => {
+    onMutate: async (variables) => {
+      const queryKey = outcomeMeasureKeys.patientMeasures(variables.patientId);
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot the previous value
+      const previousMeasures = queryClient.getQueryData<OutcomeMeasurement[]>(queryKey);
+
+      // Optimistically remove the item from cache
+      if (previousMeasures) {
+        queryClient.setQueryData<OutcomeMeasurement[]>(queryKey, (old) =>
+          old?.filter((m) => m.id !== variables.measureId)
+        );
+      }
+
+      return { previousMeasures };
+    },
+    onError: (error, variables, context) => {
+      // Rollback to the previous value on error
+      if (context?.previousMeasures) {
+        queryClient.setQueryData(
+          outcomeMeasureKeys.patientMeasures(variables.patientId),
+          context.previousMeasures
+        );
+      }
+      showMutationError(error);
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after error or success to ensure cache is in sync
       queryClient.invalidateQueries({
         queryKey: outcomeMeasureKeys.patient(variables.patientId),
       });
+    },
+    onSuccess: () => {
+      toast.success("Measurement deleted successfully.");
     },
   });
 }

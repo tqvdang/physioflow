@@ -4,8 +4,11 @@ import { api } from '../api';
 import { outcomeMeasuresApi } from '@/src/services/api/outcomeMeasuresApi';
 import { isOnline } from '../offline';
 
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 5;
 const SYNC_BATCH_SIZE = 25;
+const BASE_RETRY_DELAY_MS = 1000;
+const MAX_SYNC_ERROR_LOG_SIZE = 100;
+const SYNC_ERROR_LOG_KEY = 'physioflow_sync_errors';
 
 interface SyncResult {
   success: boolean;
@@ -13,6 +16,14 @@ interface SyncResult {
   failed: number;
   conflicts: number;
   errors: string[];
+}
+
+interface SyncErrorLogEntry {
+  timestamp: string;
+  entityId: string;
+  action: string;
+  error: string;
+  attempt: number;
 }
 
 interface ServerMeasure {
@@ -29,6 +40,72 @@ interface ServerMeasure {
   version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Exponential backoff delay: BASE * 2^attempt, capped at 30s
+ */
+function getRetryDelay(attempt: number): number {
+  return Math.min(BASE_RETRY_DELAY_MS * 2 ** attempt, 30000);
+}
+
+/**
+ * Sleep for a given number of milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check if an error is a version conflict (HTTP 409)
+ */
+function isConflictError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'status' in error) {
+    return (error as { status: number }).status === 409;
+  }
+  return false;
+}
+
+/**
+ * Log sync errors for debugging.
+ * Stores recent errors in a circular buffer to avoid unbounded growth.
+ */
+async function logSyncError(entry: SyncErrorLogEntry): Promise<void> {
+  try {
+    // Use a simple in-memory approach since AsyncStorage is not available.
+    // In production, replace with a persistent store (e.g. SecureStore or a DB table).
+    const existingRaw = (globalThis as Record<string, unknown>)[
+      SYNC_ERROR_LOG_KEY
+    ] as string | undefined;
+    const existing: SyncErrorLogEntry[] = existingRaw
+      ? JSON.parse(existingRaw)
+      : [];
+
+    existing.push(entry);
+
+    // Keep only the most recent entries
+    const trimmed = existing.slice(-MAX_SYNC_ERROR_LOG_SIZE);
+
+    (globalThis as Record<string, unknown>)[SYNC_ERROR_LOG_KEY] =
+      JSON.stringify(trimmed);
+  } catch {
+    // Logging should never crash the sync
+    console.warn('[SyncErrorLog] Failed to persist sync error log entry');
+  }
+}
+
+/**
+ * Retrieve the sync error log for debugging.
+ */
+export function getSyncErrorLog(): SyncErrorLogEntry[] {
+  try {
+    const raw = (globalThis as Record<string, unknown>)[
+      SYNC_ERROR_LOG_KEY
+    ] as string | undefined;
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function syncOutcomeMeasures(
@@ -139,20 +216,50 @@ async function pushLocalMeasures(
         success = true;
         result.synced++;
       } catch (error) {
-        if (attempt >= MAX_RETRY_ATTEMPTS) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+
+        // Log every failed attempt for debugging
+        await logSyncError({
+          timestamp: new Date().toISOString(),
+          entityId: item.entityId,
+          action: item.action,
+          error: errorMessage,
+          attempt,
+        });
+
+        // Handle version conflicts: mark as conflict, do not retry
+        if (isConflictError(error)) {
+          result.conflicts++;
+          result.errors.push(
+            `Version conflict for measure ${item.entityId}. Please refresh to get the latest data.`
+          );
+
+          await database.write(async () => {
+            await item.update((i) => {
+              i.attempts = MAX_RETRY_ATTEMPTS; // Prevent further retries
+              i.lastAttemptAt = new Date();
+              i.error = 'Version conflict - refresh required';
+            });
+          });
+
+          break; // Stop retrying on conflict
+        }
+
+        if (attempt < MAX_RETRY_ATTEMPTS) {
+          // Wait with exponential backoff before next retry
+          await sleep(getRetryDelay(attempt));
+        } else {
           await database.write(async () => {
             await item.update((i) => {
               i.attempts = attempt;
               i.lastAttemptAt = new Date();
-              i.error =
-                error instanceof Error ? error.message : 'Unknown error';
+              i.error = errorMessage;
             });
           });
           result.failed++;
           result.errors.push(
-            `Failed to sync measure ${item.entityId}: ${
-              error instanceof Error ? error.message : 'Unknown error'
-            }`
+            `Failed to sync measure ${item.entityId}: ${errorMessage}`
           );
         }
       }
@@ -201,6 +308,17 @@ async function pullServerMeasures(
           const local = existing[0];
           // Update only if server version is newer
           if (serverMeasure.version > local.version) {
+            // If local has unsynced changes, log the conflict
+            if (!local.isSynced) {
+              result.conflicts = (result.conflicts ?? 0) + 1;
+              await logSyncError({
+                timestamp: new Date().toISOString(),
+                entityId: local.id,
+                action: 'pull_conflict',
+                error: `Server version ${serverMeasure.version} overwriting local version ${local.version}`,
+                attempt: 0,
+              });
+            }
             await local.update((m) => {
               m.currentScore = serverMeasure.currentScore;
               m.targetScore = serverMeasure.targetScore;
@@ -249,21 +367,40 @@ export async function syncDeletedMeasures(
       .fetch();
 
     for (const measure of deletedMeasures) {
-      try {
-        if (measure.remoteId) {
-          await outcomeMeasuresApi.delete(patientId, measure.remoteId);
+      let deleted = false;
+      for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS && !deleted; attempt++) {
+        try {
+          if (measure.remoteId) {
+            await outcomeMeasuresApi.delete(patientId, measure.remoteId);
+          }
+          // Remove from local database after successful server delete
+          await database.write(async () => {
+            await measure.destroyPermanently();
+          });
+          result.deleted++;
+          deleted = true;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+
+          await logSyncError({
+            timestamp: new Date().toISOString(),
+            entityId: measure.id,
+            action: 'delete',
+            error: errorMessage,
+            attempt,
+          });
+
+          if (attempt < MAX_RETRY_ATTEMPTS) {
+            await sleep(getRetryDelay(attempt));
+          } else {
+            console.error(
+              `Failed to sync delete for measure ${measure.id} after ${MAX_RETRY_ATTEMPTS} attempts:`,
+              error
+            );
+            result.failed++;
+          }
         }
-        // Remove from local database after successful server delete
-        await database.write(async () => {
-          await measure.destroyPermanently();
-        });
-        result.deleted++;
-      } catch (error) {
-        console.error(
-          `Failed to sync delete for measure ${measure.id}:`,
-          error
-        );
-        result.failed++;
       }
     }
   } catch (error) {

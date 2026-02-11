@@ -13,11 +13,13 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/tqvdang/physioflow/apps/api/internal/cache"
 	"github.com/tqvdang/physioflow/apps/api/internal/config"
 	"github.com/tqvdang/physioflow/apps/api/internal/handler"
 	"github.com/tqvdang/physioflow/apps/api/internal/metrics"
 	"github.com/tqvdang/physioflow/apps/api/internal/middleware"
 	"github.com/tqvdang/physioflow/apps/api/internal/repository"
+	"github.com/tqvdang/physioflow/apps/api/internal/retry"
 	"github.com/tqvdang/physioflow/apps/api/internal/service"
 )
 
@@ -34,16 +36,25 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to load configuration")
 	}
 
-	// Initialize database connection
+	// Initialize database connection with retry
 	var repo *repository.Repository
 	if cfg.Database.URL != "" {
-		db, err := repository.NewDB(&cfg.Database)
-		if err != nil {
+		var db *repository.DB
+		retryCtx, retryCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer retryCancel()
+
+		retryErr := retry.Do(retryCtx, retry.DefaultConfig(), "database_connect", func() error {
+			var connErr error
+			db, connErr = repository.NewDB(&cfg.Database)
+			return connErr
+		})
+
+		if retryErr != nil {
 			if cfg.IsDevelopment() {
-				log.Warn().Err(err).Msg("failed to connect to database, running in mock mode")
+				log.Warn().Err(retryErr).Msg("failed to connect to database after retries, running in mock mode")
 				repo = repository.New(cfg)
 			} else {
-				log.Fatal().Err(err).Msg("failed to connect to database")
+				log.Fatal().Err(retryErr).Msg("failed to connect to database after retries")
 			}
 		} else {
 			repo = repository.NewWithDB(cfg, db)
@@ -58,6 +69,9 @@ func main() {
 		repo = repository.New(cfg)
 	}
 
+	// Initialize Redis cache (graceful degradation: failure is non-fatal)
+	redisCache := cache.NewRedisCache(&cfg.Redis)
+
 	// Initialize Echo
 	e := echo.New()
 	e.HideBanner = true
@@ -71,6 +85,10 @@ func main() {
 	// Initialize layers
 	svc := service.New(repo)
 	h := handler.New(svc)
+
+	// Make cache available for health checks (unused directly by handlers for now,
+	// but wired here so it is ready when caching is fully integrated).
+	_ = redisCache
 
 	// Register routes
 	registerRoutes(e, h, cfg)

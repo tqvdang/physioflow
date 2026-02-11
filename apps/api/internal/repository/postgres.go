@@ -29,6 +29,7 @@ func NewDB(cfg *config.DatabaseConfig) (*DB, error) {
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetConnMaxLifetime(time.Duration(cfg.ConnMaxLifetime) * time.Second)
+	db.SetConnMaxIdleTime(time.Duration(cfg.ConnMaxIdleTime) * time.Second)
 
 	// Verify connection
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -41,6 +42,8 @@ func NewDB(cfg *config.DatabaseConfig) (*DB, error) {
 	log.Info().
 		Int("max_open_conns", cfg.MaxOpenConns).
 		Int("max_idle_conns", cfg.MaxIdleConns).
+		Int("conn_max_lifetime_s", cfg.ConnMaxLifetime).
+		Int("conn_max_idle_time_s", cfg.ConnMaxIdleTime).
 		Msg("database connection established")
 
 	return &DB{DB: db, cfg: cfg}, nil

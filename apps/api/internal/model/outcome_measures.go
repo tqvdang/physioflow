@@ -122,6 +122,7 @@ type OutcomeMeasure struct {
 	UpdatedAt     time.Time       `json:"updated_at" db:"updated_at"`
 	CreatedBy     *string         `json:"created_by,omitempty" db:"created_by"`
 	UpdatedBy     *string         `json:"updated_by,omitempty" db:"updated_by"`
+	Version       int             `json:"version" db:"version"`
 
 	// Joined fields
 	Library *OutcomeMeasureLibrary `json:"library,omitempty" db:"-"`
@@ -198,6 +199,7 @@ type UpdateOutcomeMeasureRequest struct {
 	Responses   *[]MeasureResponse `json:"responses" validate:"omitempty,min=1"`
 	Notes       *string            `json:"notes" validate:"omitempty,max=2000"`
 	MeasuredAt  *string            `json:"measured_at" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Version     int                `json:"version" validate:"required,min=1"`
 }
 
 // OutcomeMeasureSearchParams represents search and filter parameters for outcome measures.

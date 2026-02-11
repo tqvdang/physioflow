@@ -30,5 +30,16 @@ vi.mock('@/lib/auth', () => ({
   logout: vi.fn(),
 }));
 
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    loading: vi.fn(),
+  },
+}));
+
 // Setup global fetch mock
 global.fetch = vi.fn();
