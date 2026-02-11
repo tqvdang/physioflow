@@ -15,6 +15,8 @@ import (
 type OutcomeMeasuresRepository interface {
 	// Measures
 	Create(ctx context.Context, measure *model.OutcomeMeasure) error
+	Update(ctx context.Context, measure *model.OutcomeMeasure) error
+	Delete(ctx context.Context, id string) error
 	GetByID(ctx context.Context, id string) (*model.OutcomeMeasure, error)
 	GetByPatientID(ctx context.Context, patientID string) ([]*model.OutcomeMeasure, error)
 	GetByPatientAndType(ctx context.Context, patientID string, measureType model.MeasureType) ([]*model.OutcomeMeasure, error)
@@ -85,6 +87,78 @@ func (r *postgresOutcomeMeasuresRepo) Create(ctx context.Context, measure *model
 
 	if err != nil {
 		return fmt.Errorf("failed to create outcome measure: %w", err)
+	}
+
+	return nil
+}
+
+// Update updates an existing outcome measure record.
+func (r *postgresOutcomeMeasuresRepo) Update(ctx context.Context, measure *model.OutcomeMeasure) error {
+	responsesJSON, err := json.Marshal(measure.Responses)
+	if err != nil {
+		return fmt.Errorf("failed to marshal responses: %w", err)
+	}
+
+	var interpretJSON []byte
+	if measure.Interpretation != nil {
+		interpretJSON, err = json.Marshal(measure.Interpretation)
+		if err != nil {
+			return fmt.Errorf("failed to marshal interpretation: %w", err)
+		}
+	}
+
+	query := `
+		UPDATE outcome_measures SET
+			score = $1,
+			max_possible = $2,
+			percentage = $3,
+			responses = $4,
+			interpretation = $5,
+			notes = $6,
+			measured_at = $7,
+			updated_by = $8,
+			updated_at = NOW()
+		WHERE id = $9
+		RETURNING updated_at`
+
+	err = r.db.QueryRowContext(ctx, query,
+		measure.Score,
+		measure.MaxPossible,
+		measure.Percentage,
+		responsesJSON,
+		interpretJSON,
+		NullableStringValue(measure.Notes),
+		measure.MeasuredAt,
+		NullableString(measure.UpdatedBy),
+		measure.ID,
+	).Scan(&measure.UpdatedAt)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("failed to update outcome measure: %w", err)
+	}
+
+	return nil
+}
+
+// Delete removes an outcome measure record.
+func (r *postgresOutcomeMeasuresRepo) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM outcome_measures WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete outcome measure: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rows == 0 {
+		return ErrNotFound
 	}
 
 	return nil
@@ -600,6 +674,14 @@ func NewMockOutcomeMeasuresRepository() OutcomeMeasuresRepository {
 }
 
 func (r *mockOutcomeMeasuresRepo) Create(ctx context.Context, measure *model.OutcomeMeasure) error {
+	return nil
+}
+
+func (r *mockOutcomeMeasuresRepo) Update(ctx context.Context, measure *model.OutcomeMeasure) error {
+	return nil
+}
+
+func (r *mockOutcomeMeasuresRepo) Delete(ctx context.Context, id string) error {
 	return nil
 }
 

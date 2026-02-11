@@ -175,12 +175,19 @@ func registerRoutes(e *echo.Echo, h *handler.Handler, cfg *config.Config) {
 	// Outcome measures routes (nested under patients)
 	outcomeMeasures := patients.Group("/:patientId/outcome-measures")
 	outcomeMeasures.POST("", h.OutcomeMeasures.RecordMeasure)
+	outcomeMeasures.PUT("/:measureId", h.OutcomeMeasures.UpdateMeasure)
+	outcomeMeasures.DELETE("/:measureId", h.OutcomeMeasures.DeleteMeasure)
 	outcomeMeasures.GET("", h.OutcomeMeasures.GetPatientMeasures)
 	outcomeMeasures.GET("/progress", h.OutcomeMeasures.CalculateProgress)
 	outcomeMeasures.GET("/trending", h.OutcomeMeasures.GetTrending)
 
 	// Outcome measures library (not nested under patients)
 	api.GET("/outcome-measures/library", h.OutcomeMeasures.GetMeasureLibrary)
+
+	// Anatomy regions routes
+	anatomyRegions := api.Group("/anatomy/regions")
+	anatomyRegions.GET("", h.AnatomyRegions.ListRegions)
+	anatomyRegions.GET("/:id", h.AnatomyRegions.GetRegion)
 
 	// Insurance routes (nested under patients)
 	insurance := patients.Group("/:patientId/insurance",

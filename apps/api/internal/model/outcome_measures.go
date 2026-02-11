@@ -191,6 +191,15 @@ type CreateOutcomeMeasureRequest struct {
 	MeasuredAt  string            `json:"measured_at" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
 }
 
+// UpdateOutcomeMeasureRequest represents the request body for updating an outcome measure.
+type UpdateOutcomeMeasureRequest struct {
+	MeasureID   string             `json:"measure_id" validate:"required,uuid"`
+	PatientID   string             `json:"patient_id" validate:"required,uuid"`
+	Responses   *[]MeasureResponse `json:"responses" validate:"omitempty,min=1"`
+	Notes       *string            `json:"notes" validate:"omitempty,max=2000"`
+	MeasuredAt  *string            `json:"measured_at" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+}
+
 // OutcomeMeasureSearchParams represents search and filter parameters for outcome measures.
 type OutcomeMeasureSearchParams struct {
 	ClinicID    string      `query:"clinic_id"`

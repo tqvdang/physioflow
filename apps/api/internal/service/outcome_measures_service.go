@@ -107,6 +107,8 @@ func ValidateMeasureTypeForCondition(measureType model.MeasureType, bodyRegion s
 // OutcomeMeasuresService defines the interface for outcome measures business logic.
 type OutcomeMeasuresService interface {
 	RecordMeasure(ctx context.Context, clinicID, therapistID string, req *model.CreateOutcomeMeasureRequest) (*model.OutcomeMeasure, error)
+	UpdateMeasure(ctx context.Context, clinicID, therapistID string, req *model.UpdateOutcomeMeasureRequest) (*model.OutcomeMeasure, error)
+	DeleteMeasure(ctx context.Context, patientID, measureID, userID string) error
 	GetPatientMeasures(ctx context.Context, patientID string) ([]*model.OutcomeMeasure, error)
 	CalculateProgress(ctx context.Context, patientID string, measureType model.MeasureType) (*model.ProgressCalculation, error)
 	GetTrending(ctx context.Context, patientID string, measureType model.MeasureType) (*model.TrendingData, error)
@@ -242,6 +244,103 @@ func (s *outcomeMeasuresService) RecordMeasure(ctx context.Context, clinicID, th
 		Msg("outcome measure recorded")
 
 	return measure, nil
+}
+
+// UpdateMeasure updates an existing outcome measure.
+func (s *outcomeMeasuresService) UpdateMeasure(ctx context.Context, clinicID, therapistID string, req *model.UpdateOutcomeMeasureRequest) (*model.OutcomeMeasure, error) {
+	// Get existing measure
+	measure, err := s.repo.GetByID(ctx, req.MeasureID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify patient ownership
+	if measure.PatientID != req.PatientID {
+		return nil, fmt.Errorf("measure does not belong to patient")
+	}
+
+	// Verify clinic ownership
+	if measure.ClinicID != clinicID {
+		return nil, fmt.Errorf("measure does not belong to clinic")
+	}
+
+	// Update fields if provided
+	if req.Responses != nil {
+		// Recalculate score with new responses
+		lib, err := s.repo.GetLibraryByID(ctx, measure.LibraryID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get library entry: %w", err)
+		}
+
+		score := s.calculateScore(*req.Responses, lib)
+		measure.Score = score
+		measure.Responses = *req.Responses
+
+		// Recalculate percentage
+		if lib.MaxScore != lib.MinScore {
+			pct := ((score - lib.MinScore) / (lib.MaxScore - lib.MinScore)) * 100
+			measure.Percentage = &pct
+		}
+
+		// Regenerate interpretation
+		measure.Interpretation = s.interpretScore(score, lib)
+	}
+
+	if req.Notes != nil {
+		measure.Notes = *req.Notes
+	}
+
+	if req.MeasuredAt != nil {
+		measuredAt, err := time.Parse(time.RFC3339, *req.MeasuredAt)
+		if err != nil {
+			return nil, fmt.Errorf("invalid measured_at format: %w", err)
+		}
+		measure.MeasuredAt = measuredAt
+	}
+
+	measure.UpdatedBy = &therapistID
+
+	if err := s.repo.Update(ctx, measure); err != nil {
+		return nil, err
+	}
+
+	// Attach library info for the response
+	lib, _ := s.repo.GetLibraryByID(ctx, measure.LibraryID)
+	measure.Library = lib
+
+	log.Info().
+		Str("measure_id", measure.ID).
+		Str("patient_id", measure.PatientID).
+		Str("updated_by", therapistID).
+		Msg("outcome measure updated")
+
+	return measure, nil
+}
+
+// DeleteMeasure deletes an outcome measure.
+func (s *outcomeMeasuresService) DeleteMeasure(ctx context.Context, patientID, measureID, userID string) error {
+	// Get existing measure to verify ownership
+	measure, err := s.repo.GetByID(ctx, measureID)
+	if err != nil {
+		return err
+	}
+
+	// Verify patient ownership
+	if measure.PatientID != patientID {
+		return fmt.Errorf("measure does not belong to patient")
+	}
+
+	if err := s.repo.Delete(ctx, measureID); err != nil {
+		return err
+	}
+
+	log.Info().
+		Str("measure_id", measureID).
+		Str("patient_id", patientID).
+		Str("deleted_by", userID).
+		Msg("outcome measure deleted")
+
+	return nil
 }
 
 // calculateScore calculates the total score from individual responses.

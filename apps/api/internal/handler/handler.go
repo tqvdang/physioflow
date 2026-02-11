@@ -27,6 +27,7 @@ type Handler struct {
 	FinancialReport      *FinancialReportHandler
 	AssessmentTemplate   *AssessmentTemplateHandler
 	SpecialTest          *SpecialTestHandler
+	AnatomyRegions       *AnatomyRegionsHandler
 }
 
 // New creates a new Handler with all sub-handlers initialized.
@@ -53,5 +54,6 @@ func New(svc *service.Service) *Handler {
 		FinancialReport:    NewFinancialReportHandler(svc),
 		AssessmentTemplate: NewAssessmentTemplateHandler(svc),
 		SpecialTest:        NewSpecialTestHandler(svc),
+		AnatomyRegions:     NewAnatomyRegionsHandler(),
 	}
 }

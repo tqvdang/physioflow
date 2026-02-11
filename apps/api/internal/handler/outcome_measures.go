@@ -460,6 +460,141 @@ func toProgressCalculationResponse(p *model.ProgressCalculation) ProgressCalcula
 	}
 }
 
+// UpdateMeasure updates an existing outcome measure.
+// @Summary Update outcome measure
+// @Description Updates an existing outcome measure record for a patient
+// @Tags outcome-measures
+// @Accept json
+// @Produce json
+// @Param patientId path string true "Patient ID"
+// @Param measureId path string true "Measure ID"
+// @Param measure body model.UpdateOutcomeMeasureRequest true "Updated outcome measure data"
+// @Success 200 {object} OutcomeMeasureResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /api/v1/patients/{patientId}/outcome-measures/{measureId} [put]
+func (h *OutcomeMeasuresHandler) UpdateMeasure(c echo.Context) error {
+	user := middleware.GetUser(c)
+	if user == nil {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error:   "unauthorized",
+			Message: "User not authenticated",
+		})
+	}
+
+	patientID := c.Param("patientId")
+	if patientID == "" {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Patient ID is required",
+		})
+	}
+
+	measureID := c.Param("measureId")
+	if measureID == "" {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Measure ID is required",
+		})
+	}
+
+	var req model.UpdateOutcomeMeasureRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Failed to parse request body",
+		})
+	}
+
+	// Set IDs from URL path
+	req.MeasureID = measureID
+	req.PatientID = patientID
+
+	if err := validator.Validate(req); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_failed",
+			Message: "Request validation failed",
+			Details: validator.FormatErrors(err),
+		})
+	}
+
+	measure, err := h.svc.OutcomeMeasures().UpdateMeasure(c.Request().Context(), user.ClinicID, user.UserID, &req)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{
+				Error:   "not_found",
+				Message: "Outcome measure not found",
+			})
+		}
+		log.Error().Err(err).Str("measure_id", measureID).Msg("failed to update outcome measure")
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "internal_error",
+			Message: "Failed to update outcome measure",
+		})
+	}
+
+	return c.JSON(http.StatusOK, toOutcomeMeasureResponse(measure))
+}
+
+// DeleteMeasure deletes an existing outcome measure.
+// @Summary Delete outcome measure
+// @Description Deletes an outcome measure record
+// @Tags outcome-measures
+// @Produce json
+// @Param patientId path string true "Patient ID"
+// @Param measureId path string true "Measure ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /api/v1/patients/{patientId}/outcome-measures/{measureId} [delete]
+func (h *OutcomeMeasuresHandler) DeleteMeasure(c echo.Context) error {
+	user := middleware.GetUser(c)
+	if user == nil {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error:   "unauthorized",
+			Message: "User not authenticated",
+		})
+	}
+
+	patientID := c.Param("patientId")
+	if patientID == "" {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Patient ID is required",
+		})
+	}
+
+	measureID := c.Param("measureId")
+	if measureID == "" {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Measure ID is required",
+		})
+	}
+
+	err := h.svc.OutcomeMeasures().DeleteMeasure(c.Request().Context(), patientID, measureID, user.UserID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{
+				Error:   "not_found",
+				Message: "Outcome measure not found",
+			})
+		}
+		log.Error().Err(err).Str("measure_id", measureID).Msg("failed to delete outcome measure")
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "internal_error",
+			Message: "Failed to delete outcome measure",
+		})
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
 // toTrendingDataResponse converts TrendingData model to response.
 func toTrendingDataResponse(t *model.TrendingData) TrendingDataResponse {
 	dataPoints := make([]TrendDataPointResponse, len(t.DataPoints))
