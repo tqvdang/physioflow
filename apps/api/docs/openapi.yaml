@@ -1,0 +1,1168 @@
+openapi: 3.0.3
+info:
+  title: PhysioFlow API
+  description: |
+    Physical Therapy EHR API for Vietnamese healthcare settings.
+
+    This API provides endpoints for managing patients, clinical assessments, outcome measures,
+    anatomy regions, appointments, billing, and more.
+
+    ## Authentication
+    All endpoints (except `/health` and `/ready`) require JWT authentication via Keycloak.
+    Include the Bearer token in the `Authorization` header.
+
+    ## Rate Limiting
+    Some endpoints are rate-limited. Check response headers for limits:
+    - `X-RateLimit-Limit`: Maximum requests allowed
+    - `X-RateLimit-Remaining`: Remaining requests in current window
+    - `Retry-After`: Seconds to wait when rate limit exceeded (429 response)
+
+  version: 1.0.0
+  contact:
+    name: PhysioFlow Support
+    url: https://physioflow.trancloud.work
+    email: support@physioflow.local
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://physioflow.trancloud.work/api
+    description: Production server
+  - url: https://physioflow-staging.trancloud.work/api
+    description: Staging server
+  - url: https://physioflow-dev.trancloud.work/api
+    description: Development server
+  - url: http://localhost:7011
+    description: Local development
+
+tags:
+  - name: anatomy
+    description: Anatomy regions for pain location marking
+  - name: outcome-measures
+    description: Standardized outcome measures and assessments
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/v1/anatomy/regions:
+    get:
+      summary: List anatomy regions
+      description: Retrieves all available anatomy regions for pain location marking
+      operationId: listAnatomyRegions
+      tags:
+        - anatomy
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnatomyRegion'
+              examples:
+                success:
+                  summary: List of anatomy regions
+                  value:
+                    - id: shoulder_left
+                      name: Left Shoulder
+                      name_vi: Vai trái
+                      category: upper_limb
+                      view: front
+                      side: left
+                      description: Left glenohumeral joint and deltoid region
+                    - id: lumbar_spine
+                      name: Lumbar Spine
+                      name_vi: Cột sống thắt lưng
+                      category: spine
+                      view: back
+                      side: bilateral
+                      description: L1-L5 vertebrae
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/anatomy/regions/{id}:
+    get:
+      summary: Get anatomy region
+      description: Retrieves details for a specific anatomy region by ID
+      operationId: getAnatomyRegion
+      tags:
+        - anatomy
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Anatomy region ID
+          schema:
+            type: string
+            example: shoulder_left
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnatomyRegion'
+              examples:
+                success:
+                  summary: Anatomy region details
+                  value:
+                    id: shoulder_left
+                    name: Left Shoulder
+                    name_vi: Vai trái
+                    category: upper_limb
+                    view: front
+                    side: left
+                    description: Left glenohumeral joint and deltoid region
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/patients/{patientId}/outcome-measures:
+    post:
+      summary: Record outcome measure
+      description: Records a new outcome measure score for a patient
+      operationId: recordOutcomeMeasure
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOutcomeMeasureRequest'
+            examples:
+              vas:
+                summary: Visual Analog Scale (VAS)
+                value:
+                  library_id: 123e4567-e89b-12d3-a456-426614174000
+                  responses:
+                    - question_id: vas_pain
+                      value: 7
+                  notes: Patient reports sharp pain during movement
+                  measured_at: "2026-02-11T10:30:00Z"
+              ndi:
+                summary: Neck Disability Index (NDI)
+                value:
+                  library_id: 123e4567-e89b-12d3-a456-426614174001
+                  session_id: 550e8400-e29b-41d4-a716-446655440001
+                  responses:
+                    - question_id: ndi_q1
+                      value: 2
+                    - question_id: ndi_q2
+                      value: 3
+                    - question_id: ndi_q3
+                      value: 1
+                  notes: Patient showing improvement since last visit
+      responses:
+        '201':
+          description: Outcome measure created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeMeasure'
+              examples:
+                success:
+                  summary: Created outcome measure
+                  value:
+                    id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    patient_id: 550e8400-e29b-41d4-a716-446655440000
+                    clinic_id: 123e4567-e89b-12d3-a456-426614174002
+                    therapist_id: 223e4567-e89b-12d3-a456-426614174003
+                    library_id: 123e4567-e89b-12d3-a456-426614174000
+                    measure_type: vas
+                    score: 7.0
+                    max_possible: 10.0
+                    percentage: 70.0
+                    responses:
+                      - question_id: vas_pain
+                        value: 7
+                    interpretation:
+                      severity: moderate
+                      severity_vi: Trung bình
+                      description: Moderate pain
+                      description_vi: Đau mức độ trung bình
+                    notes: Patient reports sharp pain during movement
+                    measured_at: "2026-02-11T10:30:00Z"
+                    created_at: "2026-02-11T10:32:15Z"
+                    updated_at: "2026-02-11T10:32:15Z"
+                    version: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+    get:
+      summary: Get patient outcome measures
+      description: Retrieves all outcome measure records for a patient
+      operationId: getPatientOutcomeMeasures
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutcomeMeasure'
+              examples:
+                success:
+                  summary: Patient outcome measures
+                  value:
+                    - id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                      patient_id: 550e8400-e29b-41d4-a716-446655440000
+                      clinic_id: 123e4567-e89b-12d3-a456-426614174002
+                      therapist_id: 223e4567-e89b-12d3-a456-426614174003
+                      library_id: 123e4567-e89b-12d3-a456-426614174000
+                      measure_type: vas
+                      score: 7.0
+                      max_possible: 10.0
+                      percentage: 70.0
+                      measured_at: "2026-02-11T10:30:00Z"
+                      created_at: "2026-02-11T10:32:15Z"
+                      updated_at: "2026-02-11T10:32:15Z"
+                      version: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/v1/patients/{patientId}/outcome-measures/{measureId}:
+    put:
+      summary: Update outcome measure
+      description: Updates an existing outcome measure record for a patient
+      operationId: updateOutcomeMeasure
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+        - name: measureId
+          in: path
+          required: true
+          description: Outcome measure UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOutcomeMeasureRequest'
+            examples:
+              update:
+                summary: Update responses and notes
+                value:
+                  responses:
+                    - question_id: vas_pain
+                      value: 5
+                  notes: Patient reports improvement with prescribed exercises
+                  version: 1
+      responses:
+        '200':
+          description: Outcome measure updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeMeasure'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/VersionConflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+    delete:
+      summary: Delete outcome measure
+      description: Deletes an outcome measure record
+      operationId: deleteOutcomeMeasure
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+        - name: measureId
+          in: path
+          required: true
+          description: Outcome measure UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Outcome measure deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/v1/patients/{patientId}/outcome-measures/progress:
+    get:
+      summary: Calculate outcome measure progress
+      description: Calculates progress comparing baseline to current score for a measure type
+      operationId: calculateProgress
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+        - name: measureType
+          in: query
+          required: true
+          description: Type of outcome measure
+          schema:
+            $ref: '#/components/schemas/MeasureType'
+          example: vas
+      responses:
+        '200':
+          description: Progress calculation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressCalculation'
+              examples:
+                improvement:
+                  summary: Patient showing improvement
+                  value:
+                    patient_id: 550e8400-e29b-41d4-a716-446655440000
+                    measure_type: vas
+                    library_id: 123e4567-e89b-12d3-a456-426614174000
+                    current_score: 4.0
+                    previous_score: 7.0
+                    baseline_score: 8.0
+                    change: -4.0
+                    change_percent: -50.0
+                    meets_mcid: true
+                    trend: improved
+                    total_measurements: 5
+                    calculated_at: "2026-02-11T10:45:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/v1/patients/{patientId}/outcome-measures/trending:
+    get:
+      summary: Get outcome measure trending data
+      description: Retrieves time-series data points for charting trends
+      operationId: getTrending
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          description: Patient UUID
+          schema:
+            type: string
+            format: uuid
+        - name: measureType
+          in: query
+          required: true
+          description: Type of outcome measure
+          schema:
+            $ref: '#/components/schemas/MeasureType'
+      responses:
+        '200':
+          description: Trending data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/v1/outcome-measures/library:
+    get:
+      summary: Get outcome measure library
+      description: Retrieves all standardized outcome measure definitions
+      operationId: getOutcomeMeasureLibrary
+      tags:
+        - outcome-measures
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutcomeMeasureLibrary'
+              examples:
+                success:
+                  summary: Outcome measure library
+                  value:
+                    - id: 123e4567-e89b-12d3-a456-426614174000
+                      code: VAS-001
+                      measure_type: vas
+                      category: pain
+                      name: Visual Analog Scale
+                      name_vi: Thang đo thị giác tương tự
+                      description: Measures pain intensity on a 0-10 scale
+                      description_vi: Đo cường độ đau trên thang điểm 0-10
+                      min_score: 0
+                      max_score: 10
+                      higher_is_better: false
+                      mcid: 2.0
+                      is_global: true
+                      is_active: true
+                      created_at: "2026-01-01T00:00:00Z"
+                      updated_at: "2026-01-01T00:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from Keycloak.
+
+        To obtain a token:
+        ```
+        POST https://keycloak.trancloud.work/realms/physioflow-dev/protocol/openid-connect/token
+        Content-Type: application/x-www-form-urlencoded
+
+        grant_type=password&username=therapist@physioflow.local&password=Therapist@123&client_id=physioflow-web
+        ```
+
+  schemas:
+    AnatomyRegion:
+      type: object
+      required:
+        - id
+        - name
+        - name_vi
+        - category
+        - view
+      properties:
+        id:
+          type: string
+          description: Unique region identifier
+          example: shoulder_left
+        name:
+          type: string
+          description: English name
+          example: Left Shoulder
+        name_vi:
+          type: string
+          description: Vietnamese name (Tên tiếng Việt)
+          example: Vai trái
+        category:
+          type: string
+          description: Body region category
+          enum:
+            - upper_limb
+            - lower_limb
+            - spine
+            - trunk
+            - head_neck
+          example: upper_limb
+        view:
+          type: string
+          description: Anatomical view
+          enum:
+            - front
+            - back
+          example: front
+        side:
+          type: string
+          description: Laterality
+          enum:
+            - left
+            - right
+            - bilateral
+          example: left
+        description:
+          type: string
+          description: Detailed description of the anatomical region
+          example: Left glenohumeral joint and deltoid region
+
+    MeasureType:
+      type: string
+      description: Type of standardized outcome measure
+      enum:
+        - vas
+        - nrs
+        - ndi
+        - odi
+        - dash
+        - lefs
+        - koos
+        - womac
+        - sf36
+        - bbs
+        - tug
+        - fim
+        - mmt
+        - rom
+        - custom
+      example: vas
+
+    MeasureCategory:
+      type: string
+      description: Clinical category of outcome measure
+      enum:
+        - pain
+        - function
+        - disability
+        - balance
+        - strength
+        - mobility
+        - quality_of_life
+        - custom
+      example: pain
+
+    MeasureResponse:
+      type: object
+      required:
+        - question_id
+        - value
+      properties:
+        question_id:
+          type: string
+          description: Question identifier from the measure library
+          example: vas_pain
+        value:
+          type: number
+          format: double
+          description: Numeric response value
+          example: 7.0
+        text_value:
+          type: string
+          description: Text response for open-ended questions
+          example: Sharp pain during overhead movements
+
+    MeasureInterpretation:
+      type: object
+      properties:
+        severity:
+          type: string
+          description: English severity level
+          enum:
+            - minimal
+            - mild
+            - moderate
+            - severe
+          example: moderate
+        severity_vi:
+          type: string
+          description: Vietnamese severity level (Mức độ tiếng Việt)
+          example: Trung bình
+        description:
+          type: string
+          description: English interpretation
+          example: Moderate pain
+        description_vi:
+          type: string
+          description: Vietnamese interpretation (Giải thích tiếng Việt)
+          example: Đau mức độ trung bình
+
+    OutcomeMeasure:
+      type: object
+      required:
+        - id
+        - patient_id
+        - clinic_id
+        - therapist_id
+        - library_id
+        - measure_type
+        - score
+        - max_possible
+        - measured_at
+        - created_at
+        - updated_at
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique measure record ID
+        patient_id:
+          type: string
+          format: uuid
+          description: Patient UUID
+        clinic_id:
+          type: string
+          format: uuid
+          description: Clinic UUID
+        therapist_id:
+          type: string
+          format: uuid
+          description: Therapist UUID who recorded the measure
+        library_id:
+          type: string
+          format: uuid
+          description: Reference to outcome measure library entry
+        measure_type:
+          $ref: '#/components/schemas/MeasureType'
+        session_id:
+          type: string
+          format: uuid
+          description: Associated treatment session UUID
+          nullable: true
+        score:
+          type: number
+          format: double
+          description: Calculated total score
+          example: 7.0
+        max_possible:
+          type: number
+          format: double
+          description: Maximum possible score
+          example: 10.0
+        percentage:
+          type: number
+          format: double
+          description: Score as percentage (0-100)
+          nullable: true
+          example: 70.0
+        responses:
+          type: array
+          description: Individual question responses
+          items:
+            $ref: '#/components/schemas/MeasureResponse'
+        interpretation:
+          $ref: '#/components/schemas/MeasureInterpretation'
+          nullable: true
+        notes:
+          type: string
+          description: Clinical notes
+          maxLength: 2000
+          example: Patient reports improvement with prescribed exercises
+        measured_at:
+          type: string
+          format: date-time
+          description: When the measure was taken (ISO 8601)
+          example: "2026-02-11T10:30:00Z"
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        version:
+          type: integer
+          description: Optimistic locking version
+          example: 1
+        library:
+          $ref: '#/components/schemas/OutcomeMeasureLibrary'
+          nullable: true
+
+    OutcomeMeasureLibrary:
+      type: object
+      required:
+        - id
+        - code
+        - measure_type
+        - category
+        - name
+        - name_vi
+        - min_score
+        - max_score
+        - higher_is_better
+        - is_global
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Library entry UUID
+        clinic_id:
+          type: string
+          format: uuid
+          description: Clinic UUID for custom measures (null for global)
+          nullable: true
+        code:
+          type: string
+          description: Unique measure code
+          example: VAS-001
+        measure_type:
+          $ref: '#/components/schemas/MeasureType'
+        category:
+          $ref: '#/components/schemas/MeasureCategory'
+        name:
+          type: string
+          description: English name
+          example: Visual Analog Scale
+        name_vi:
+          type: string
+          description: Vietnamese name (Tên tiếng Việt)
+          example: Thang đo thị giác tương tự
+        description:
+          type: string
+          description: English description
+        description_vi:
+          type: string
+          description: Vietnamese description (Mô tả tiếng Việt)
+        instructions:
+          type: string
+          description: English administration instructions
+        instructions_vi:
+          type: string
+          description: Vietnamese instructions (Hướng dẫn tiếng Việt)
+        min_score:
+          type: number
+          format: double
+          description: Minimum possible score
+          example: 0
+        max_score:
+          type: number
+          format: double
+          description: Maximum possible score
+          example: 10
+        higher_is_better:
+          type: boolean
+          description: Whether higher scores indicate improvement
+          example: false
+        mcid:
+          type: number
+          format: double
+          description: Minimal Clinically Important Difference
+          nullable: true
+          example: 2.0
+        mdc:
+          type: number
+          format: double
+          description: Minimal Detectable Change
+          nullable: true
+        body_region:
+          type: string
+          description: Specific body region if applicable
+          nullable: true
+          example: shoulder
+        is_global:
+          type: boolean
+          description: Whether this is a global (built-in) measure
+          example: true
+        is_active:
+          type: boolean
+          description: Whether this measure is currently active
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateOutcomeMeasureRequest:
+      type: object
+      required:
+        - library_id
+        - responses
+      properties:
+        library_id:
+          type: string
+          format: uuid
+          description: UUID of the outcome measure library entry
+        session_id:
+          type: string
+          format: uuid
+          description: UUID of associated treatment session (optional)
+        responses:
+          type: array
+          description: Question responses (minimum 1 required)
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/MeasureResponse'
+        notes:
+          type: string
+          description: Clinical notes
+          maxLength: 2000
+        measured_at:
+          type: string
+          format: date-time
+          description: When the measure was taken (defaults to current time if omitted)
+          example: "2026-02-11T10:30:00Z"
+
+    UpdateOutcomeMeasureRequest:
+      type: object
+      required:
+        - version
+      properties:
+        responses:
+          type: array
+          description: Updated question responses
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/MeasureResponse'
+        notes:
+          type: string
+          description: Updated clinical notes
+          maxLength: 2000
+        measured_at:
+          type: string
+          format: date-time
+          description: Updated measurement time
+        version:
+          type: integer
+          description: Current version number (for optimistic locking)
+          minimum: 1
+          example: 1
+
+    ProgressCalculation:
+      type: object
+      required:
+        - patient_id
+        - measure_type
+        - library_id
+        - current_score
+        - trend
+        - total_measurements
+        - calculated_at
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        measure_type:
+          $ref: '#/components/schemas/MeasureType'
+        library_id:
+          type: string
+          format: uuid
+        current_score:
+          type: number
+          format: double
+          description: Most recent score
+        previous_score:
+          type: number
+          format: double
+          description: Previous score for comparison
+          nullable: true
+        baseline_score:
+          type: number
+          format: double
+          description: First recorded score (baseline)
+          nullable: true
+        change:
+          type: number
+          format: double
+          description: Absolute change from baseline
+          nullable: true
+        change_percent:
+          type: number
+          format: double
+          description: Percentage change from baseline
+          nullable: true
+        meets_mcid:
+          type: boolean
+          description: Whether change meets Minimal Clinically Important Difference
+          nullable: true
+        trend:
+          type: string
+          description: Direction of change
+          enum:
+            - improved
+            - declined
+            - stable
+            - insufficient_data
+        total_measurements:
+          type: integer
+          description: Total number of measurements recorded
+        calculated_at:
+          type: string
+          format: date-time
+
+    TrendingData:
+      type: object
+      required:
+        - patient_id
+        - measure_type
+        - library_id
+        - measure_name
+        - data_points
+        - trend
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        measure_type:
+          $ref: '#/components/schemas/MeasureType'
+        library_id:
+          type: string
+          format: uuid
+        measure_name:
+          type: string
+          description: English measure name
+        measure_name_vi:
+          type: string
+          description: Vietnamese measure name (Tên tiếng Việt)
+        data_points:
+          type: array
+          description: Time-series data for charting
+          items:
+            $ref: '#/components/schemas/TrendDataPoint'
+        baseline:
+          type: number
+          format: double
+          description: Baseline score (first measurement)
+          nullable: true
+        goal:
+          type: number
+          format: double
+          description: Target goal score
+          nullable: true
+        mcid:
+          type: number
+          format: double
+          description: Minimal Clinically Important Difference threshold
+          nullable: true
+        trend:
+          type: string
+          enum:
+            - improved
+            - declined
+            - stable
+            - insufficient_data
+
+    TrendDataPoint:
+      type: object
+      required:
+        - score
+        - measured_at
+      properties:
+        score:
+          type: number
+          format: double
+        percentage:
+          type: number
+          format: double
+          nullable: true
+        measured_at:
+          type: string
+          format: date-time
+        session_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: validation_failed
+        message:
+          type: string
+          description: Human-readable error message
+          example: Request validation failed
+        details:
+          type: object
+          description: Additional error details (field-level validation errors)
+          additionalProperties:
+            type: string
+          example:
+            responses: field is required
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid request format or missing required parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: invalid_request
+            message: Patient ID is required
+
+    Unauthorized:
+      description: Unauthorized - Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: unauthorized
+            message: Invalid or expired token
+
+    Forbidden:
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: forbidden
+            message: Insufficient permissions
+
+    NotFound:
+      description: Not Found - Resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: not_found
+            message: Outcome measure not found
+
+    VersionConflict:
+      description: Conflict - Version mismatch (optimistic locking)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: version_conflict
+            message: This record was modified by another request. Please reload and try again.
+
+    ValidationError:
+      description: Unprocessable Entity - Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: validation_failed
+            message: Request validation failed
+            details:
+              responses: field is required
+              library_id: must be a valid UUID
+
+    RateLimitExceeded:
+      description: Too Many Requests - Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Maximum requests allowed per window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: rate_limit_exceeded
+            message: Rate limit exceeded. Maximum 100 requests per 1m.
+
+    InternalServerError:
+      description: Internal Server Error - An unexpected error occurred
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: internal_error
+            message: An unexpected error occurred
+
+    ServiceUnavailable:
+      description: Service Unavailable - Circuit breaker open or service temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: service_unavailable
+            message: The service is temporarily unavailable. Please try again shortly.
