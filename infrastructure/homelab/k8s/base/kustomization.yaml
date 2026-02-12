@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - postgres.yaml
   - deployment-web.yaml
+  - deployment-web-blue.yaml
+  - deployment-web-green.yaml
   - deployment-api.yaml
   - deployment-api-blue.yaml
   - deployment-api-green.yaml

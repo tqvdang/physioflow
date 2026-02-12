@@ -22,3 +22,11 @@ data:
   KEYCLOAK_URL: "https://keycloak.trancloud.work"
   KEYCLOAK_REALM: "physioflow-dev"
   KEYCLOAK_CLIENT_ID: "physioflow-api"
+
+  # Database (K8s internal postgres service)
+  DATABASE_URL: "postgres://physioflow:PhysioFlow_Dev_2026!@physioflow-postgres:5432/physioflow?sslmode=disable"
+  DB_HOST: "physioflow-postgres"
+  DB_PORT: "5432"
+  DB_USER: "physioflow"
+  DB_NAME: "physioflow"
+  DB_SSLMODE: "disable"

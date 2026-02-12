@@ -284,3 +284,508 @@ data:
       "uid": "physioflow-database",
       "version": 1
     }
+
+  physioflow-bhyt-detail.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "description": "BHYT card validation success vs failure rate by prefix code",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "color": {"mode": "palette-classic"}
+            }
+          },
+          "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [
+            {
+              "expr": "sum by (status, prefix_code) (rate(bhyt_validations_total[5m]))",
+              "legendFormat": "{{status}} - {{prefix_code}}"
+            }
+          ],
+          "title": "BHYT Validation Rate by Prefix Code",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Percentage of validation failures",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.05},
+                  {"color": "red", "value": 0.1}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 6, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [
+            {
+              "expr": "sum(rate(bhyt_validation_errors_total[5m])) / sum(rate(bhyt_validations_total[5m]))",
+              "legendFormat": "Error Rate"
+            }
+          ],
+          "title": "BHYT Validation Error Rate",
+          "type": "gauge"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Total validations processed",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "blue", "value": null}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 6, "x": 18, "y": 0},
+          "id": 3,
+          "targets": [
+            {
+              "expr": "sum(bhyt_validations_total)",
+              "legendFormat": "Total Validations"
+            }
+          ],
+          "title": "Total BHYT Validations",
+          "type": "stat"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Coverage calculation latency percentiles",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 500},
+                  {"color": "orange", "value": 800},
+                  {"color": "red", "value": 1000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 9},
+          "id": 4,
+          "targets": [
+            {"expr": "bhyt_coverage_p50_duration_ms", "legendFormat": "p50"},
+            {"expr": "bhyt_coverage_p95_duration_ms", "legendFormat": "p95"},
+            {"expr": "bhyt_coverage_p99_duration_ms", "legendFormat": "p99"},
+            {"expr": "bhyt_coverage_avg_duration_ms", "legendFormat": "avg"}
+          ],
+          "title": "BHYT Coverage Calculation Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Breakdown of validation errors by type",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 9},
+          "id": 5,
+          "targets": [
+            {
+              "expr": "sum by (error_type) (bhyt_validation_errors_total)",
+              "legendFormat": "{{error_type}}"
+            }
+          ],
+          "title": "BHYT Validation Errors by Type",
+          "type": "piechart"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Invalid card attempts over time",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 17},
+          "id": 6,
+          "targets": [
+            {
+              "expr": "sum by (error_type) (rate(bhyt_validation_errors_total[5m]))",
+              "legendFormat": "{{error_type}}"
+            }
+          ],
+          "title": "Invalid Card Attempts (Rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Coverage calculation throughput",
+          "fieldConfig": {"defaults": {"unit": "cps"}},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 17},
+          "id": 7,
+          "targets": [
+            {
+              "expr": "rate(bhyt_coverage_calculations_total[5m])",
+              "legendFormat": "Coverage Calculations/sec"
+            }
+          ],
+          "title": "Coverage Calculation Throughput",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": ["physioflow", "bhyt", "insurance"],
+      "time": {"from": "now-6h", "to": "now"},
+      "title": "PhysioFlow BHYT Insurance Detail",
+      "uid": "physioflow-bhyt-detail",
+      "version": 1
+    }
+
+  physioflow-performance.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "description": "API response times at different percentiles",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 500},
+                  {"color": "orange", "value": 1000},
+                  {"color": "red", "value": 2000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [
+            {"expr": "avg(api_request_duration_p50_ms)", "legendFormat": "p50"},
+            {"expr": "avg(api_request_duration_p95_ms)", "legendFormat": "p95"},
+            {"expr": "avg(api_request_duration_p99_ms)", "legendFormat": "p99"}
+          ],
+          "title": "API Response Time (Overall)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Response times by endpoint",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms"
+            }
+          },
+          "gridPos": {"h": 9, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [
+            {
+              "expr": "api_request_duration_p95_ms",
+              "legendFormat": "{{method}} {{endpoint}}"
+            }
+          ],
+          "title": "API p95 Latency by Endpoint",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Outcome progress calculation performance",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 500},
+                  {"color": "red", "value": 1000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 9},
+          "id": 3,
+          "targets": [
+            {"expr": "outcome_progress_avg_duration_ms", "legendFormat": "avg"},
+            {"expr": "outcome_progress_p95_duration_ms", "legendFormat": "p95"}
+          ],
+          "title": "Outcome Measures Calculation Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Medical term search performance",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 200},
+                  {"color": "orange", "value": 300},
+                  {"color": "red", "value": 500}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 9},
+          "id": 4,
+          "targets": [
+            {"expr": "medical_terms_search_avg_duration_ms", "legendFormat": "avg"},
+            {"expr": "medical_terms_search_p95_duration_ms", "legendFormat": "p95"}
+          ],
+          "title": "Medical Term Search Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Discharge PDF generation performance",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 3000},
+                  {"color": "orange", "value": 4000},
+                  {"color": "red", "value": 5000}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 9},
+          "id": 5,
+          "targets": [
+            {"expr": "discharge_pdf_avg_duration_ms", "legendFormat": "avg"},
+            {"expr": "discharge_pdf_p95_duration_ms", "legendFormat": "p95"}
+          ],
+          "title": "Discharge PDF Generation Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Request throughput by status code",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 17},
+          "id": 6,
+          "targets": [
+            {
+              "expr": "sum by (status) (rate(api_requests_total[5m]))",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "title": "Request Throughput by Status",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Top slowest endpoints by p95 latency",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 17},
+          "id": 7,
+          "targets": [
+            {
+              "expr": "topk(10, api_request_duration_p95_ms)",
+              "legendFormat": "{{method}} {{endpoint}}"
+            }
+          ],
+          "title": "Top 10 Slowest Endpoints (p95)",
+          "type": "barchart"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": ["physioflow", "performance"],
+      "time": {"from": "now-3h", "to": "now"},
+      "title": "PhysioFlow Performance Metrics",
+      "uid": "physioflow-performance",
+      "version": 1
+    }
+
+  physioflow-errors.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "description": "Error rate by endpoint",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.01},
+                  {"color": "orange", "value": 0.05},
+                  {"color": "red", "value": 0.1}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [
+            {
+              "expr": "sum by (endpoint) (rate(api_requests_total{status=~\"4xx|5xx\"}[5m])) / sum by (endpoint) (rate(api_requests_total[5m]))",
+              "legendFormat": "{{endpoint}}"
+            }
+          ],
+          "title": "Error Rate by Endpoint",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Overall API error rate",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.01},
+                  {"color": "red", "value": 0.05}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 6, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [
+            {
+              "expr": "sum(rate(api_requests_total{status=~\"5xx\"}[5m])) / sum(rate(api_requests_total[5m]))",
+              "legendFormat": "5xx Error Rate"
+            }
+          ],
+          "title": "Overall 5xx Error Rate",
+          "type": "gauge"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Overall API 4xx rate",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.05},
+                  {"color": "red", "value": 0.1}
+                ]
+              }
+            }
+          },
+          "gridPos": {"h": 9, "w": 6, "x": 18, "y": 0},
+          "id": 3,
+          "targets": [
+            {
+              "expr": "sum(rate(api_requests_total{status=\"4xx\"}[5m])) / sum(rate(api_requests_total[5m]))",
+              "legendFormat": "4xx Error Rate"
+            }
+          ],
+          "title": "Overall 4xx Error Rate",
+          "type": "gauge"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Billing calculation errors",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 9},
+          "id": 4,
+          "targets": [
+            {
+              "expr": "rate(billing_calculation_errors_total[5m])",
+              "legendFormat": "Errors/sec"
+            }
+          ],
+          "title": "Billing Calculation Errors",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "BHYT validation errors",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 9},
+          "id": 5,
+          "targets": [
+            {
+              "expr": "sum by (error_type) (rate(bhyt_validation_errors_total[5m]))",
+              "legendFormat": "{{error_type}}"
+            }
+          ],
+          "title": "BHYT Validation Errors by Type",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "Error breakdown by status code",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 9},
+          "id": 6,
+          "targets": [
+            {
+              "expr": "sum by (status) (api_requests_total{status=~\"4xx|5xx\"})",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "title": "Error Types Breakdown",
+          "type": "piechart"
+        },
+        {
+          "datasource": "Loki",
+          "description": "Recent error logs from the API",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 17},
+          "id": 7,
+          "targets": [
+            {
+              "expr": "{app=\"physioflow-api\"} |= \"level=error\" | json | line_format \"{{.timestamp}} [{{.level}}] {{.method}} {{.uri}} - {{.message}}\"",
+              "legendFormat": ""
+            }
+          ],
+          "title": "Recent Error Logs",
+          "type": "logs"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": ["physioflow", "errors"],
+      "time": {"from": "now-1h", "to": "now"},
+      "title": "PhysioFlow Error Dashboard",
+      "uid": "physioflow-errors",
+      "version": 1
+    }

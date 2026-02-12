@@ -6,8 +6,8 @@ This directory contains scripts for deploying PhysioFlow using blue-green deploy
 
 ### Blue-Green Deployment
 
-**`blue-green-deploy.sh`**
-- Implements blue-green deployment strategy
+**`blue-green-deploy.sh`** (API only)
+- Implements blue-green deployment strategy for API
 - Automatically detects current active version
 - Deploys to inactive environment
 - Runs smoke tests before switching traffic
@@ -21,6 +21,23 @@ This directory contains scripts for deploying PhysioFlow using blue-green deploy
 ./blue-green-deploy.sh dev v1.2.3
 ./blue-green-deploy.sh staging v1.2.3 --skip-tests
 ./blue-green-deploy.sh prod v1.2.3
+```
+
+**`blue-green-deploy-full.sh`** (API + Web)
+- Deploys both API and Web applications using blue-green strategy
+- Coordinates deployment of both services
+- Runs smoke tests on API before switching
+- Monitors both deployments
+- Automatic database backup for production
+- Requires explicit confirmation for production
+
+```bash
+./blue-green-deploy-full.sh <environment> <api-tag> <web-tag> [--skip-tests]
+
+# Examples:
+./blue-green-deploy-full.sh dev v1.2.3 v1.2.3
+./blue-green-deploy-full.sh staging v1.2.3 v1.2.3
+./blue-green-deploy-full.sh prod v1.2.3 v1.2.3  # Requires typing "DEPLOY"
 ```
 
 ### Smoke Tests

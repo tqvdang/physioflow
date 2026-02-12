@@ -6,6 +6,7 @@ spec:
   selector:
     app: physioflow
     component: web
+    version: blue
   ports:
     - port: 3000
       targetPort: 3000

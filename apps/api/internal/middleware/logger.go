@@ -106,9 +106,10 @@ func Logger() echo.MiddlewareFunc {
 				logEvent = logEvent.Err(err)
 			}
 
-			// Log Vietnamese PT-specific endpoints at INFO level.
-			if isVietnamesePTEndpoint(operation) {
-				logEvent = logEvent.Str("feature", "vietnamese_pt")
+			// Log Vietnamese PT-specific endpoints at INFO level with feature tagging.
+			feature := detectFeature(operation)
+			if feature != "" {
+				logEvent = logEvent.Str("feature", feature)
 			}
 
 			logEvent.Msg("http request")
@@ -122,26 +123,33 @@ func Logger() echo.MiddlewareFunc {
 	}
 }
 
-// isVietnamesePTEndpoint checks if the endpoint is Vietnamese PT-specific.
-func isVietnamesePTEndpoint(path string) bool {
-	ptEndpoints := []string{
-		"/api/v1/patients/:patientId/insurance",
-		"/api/v1/patients/:patientId/billing",
-		"/api/v1/patients/:patientId/outcome-measures",
-		"/api/v1/patients/:patientId/protocols",
-		"/api/v1/patients/:patientId/discharge",
-		"/api/v1/medical-terms",
-		"/api/v1/protocols",
-		"/api/v1/billing/service-codes",
+// detectFeature detects which feature domain the endpoint belongs to.
+func detectFeature(path string) string {
+	// Map endpoint patterns to feature domains
+	featureMap := map[string]string{
+		"/api/v1/patients/:patientId/insurance":        "bhyt_insurance",
+		"/api/v1/patients/:patientId/billing":          "billing",
+		"/api/v1/billing/service-codes":                "billing",
+		"/api/v1/billing/claims":                       "bhyt_claims",
+		"/api/v1/patients/:patientId/outcome-measures": "outcome_measures",
+		"/api/v1/patients/:patientId/protocols":        "clinical_protocols",
+		"/api/v1/protocols":                            "clinical_protocols",
+		"/api/v1/patients/:patientId/discharge":        "discharge_planning",
+		"/api/v1/discharge":                            "discharge_planning",
+		"/api/v1/medical-terms":                        "medical_terms",
+		"/api/v1/patients/:patientId/assessments/rom": "assessments",
+		"/api/v1/patients/:patientId/assessments/mmt": "assessments",
+		"/api/v1/special-tests":                        "special_tests",
+		"/api/v1/reports":                              "reports",
 	}
 
-	for _, endpoint := range ptEndpoints {
-		if matchesPath(path, endpoint) {
-			return true
+	for pattern, feature := range featureMap {
+		if matchesPath(path, pattern) {
+			return feature
 		}
 	}
 
-	return false
+	return ""
 }
 
 // matchesPath checks if a path matches a pattern with path parameters.

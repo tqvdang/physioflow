@@ -11,7 +11,8 @@
         psql redis-cli test test-e2e test-e2e-ui test-e2e-headed test-api test-all lint typecheck \
         secrets secrets-local secrets-init secrets-web secrets-push \
         deploy-dev deploy-staging deploy-prod deploy-build \
-        homelab-keycloak homelab-secrets homelab-status homelab-setup
+        homelab-keycloak homelab-secrets homelab-status homelab-setup \
+        deploy-monitoring test-metrics metrics-status
 
 # Colors
 CYAN := \033[36m
@@ -324,6 +325,53 @@ deploy-build: ## Build images for all environments
 	$(HOMELAB_DIR)/scripts/deploy.sh staging --build
 	$(HOMELAB_DIR)/scripts/deploy.sh prod --build
 
+# Blue-Green Deployment Targets
+deploy-blue-green: ## Blue-green deploy (usage: make deploy-blue-green ENV=dev API_TAG=v1.2.3 WEB_TAG=v1.2.3)
+	@if [ -z "$(ENV)" ] || [ -z "$(API_TAG)" ] || [ -z "$(WEB_TAG)" ]; then \
+		echo "$(RED)Error: ENV, API_TAG, and WEB_TAG are required$(RESET)"; \
+		echo "Usage: make deploy-blue-green ENV=dev API_TAG=v1.2.3 WEB_TAG=v1.2.3"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Running blue-green deployment for $(ENV)...$(RESET)"
+	@$(HOMELAB_DIR)/scripts/blue-green-deploy-full.sh $(ENV) $(API_TAG) $(WEB_TAG)
+
+deploy-blue-green-api: ## Blue-green deploy API only (usage: make deploy-blue-green-api ENV=dev TAG=v1.2.3)
+	@if [ -z "$(ENV)" ] || [ -z "$(TAG)" ]; then \
+		echo "$(RED)Error: ENV and TAG are required$(RESET)"; \
+		echo "Usage: make deploy-blue-green-api ENV=dev TAG=v1.2.3"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Running blue-green deployment (API only) for $(ENV)...$(RESET)"
+	@$(HOMELAB_DIR)/scripts/blue-green-deploy.sh $(ENV) $(TAG)
+
+deploy-rollback: ## Rollback to previous version (usage: make deploy-rollback ENV=prod)
+	@if [ -z "$(ENV)" ]; then \
+		echo "$(RED)Error: ENV is required$(RESET)"; \
+		echo "Usage: make deploy-rollback ENV=prod"; \
+		exit 1; \
+	fi
+	@echo "$(YELLOW)Rolling back $(ENV) to previous version...$(RESET)"
+	@CURRENT=$$(kubectl get svc physioflow-api -n physioflow-$(ENV) -o jsonpath='{.spec.selector.version}' 2>/dev/null || echo "blue"); \
+	PREVIOUS=$$(if [ "$$CURRENT" = "blue" ]; then echo "green"; else echo "blue"; fi); \
+	echo "Current: $$CURRENT → Rolling back to: $$PREVIOUS"; \
+	kubectl patch svc physioflow-api -n physioflow-$(ENV) -p "{\"spec\":{\"selector\":{\"version\":\"$$PREVIOUS\"}}}"; \
+	kubectl patch svc physioflow-web -n physioflow-$(ENV) -p "{\"spec\":{\"selector\":{\"version\":\"$$PREVIOUS\"}}}"; \
+	kubectl scale deployment/physioflow-api-$$PREVIOUS --replicas=2 -n physioflow-$(ENV); \
+	kubectl scale deployment/physioflow-web-$$PREVIOUS --replicas=1 -n physioflow-$(ENV); \
+	echo "$(GREEN)Rollback complete!$(RESET)"
+
+deploy-smoke-test: ## Run smoke tests (usage: make deploy-smoke-test ENV=dev)
+	@if [ -z "$(ENV)" ]; then \
+		echo "$(RED)Error: ENV is required$(RESET)"; \
+		echo "Usage: make deploy-smoke-test ENV=dev"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Running smoke tests for $(ENV)...$(RESET)"
+	@URL=$$(if [ "$(ENV)" = "dev" ]; then echo "https://physioflow-dev.trancloud.work/api"; \
+	elif [ "$(ENV)" = "staging" ]; then echo "https://physioflow-staging.trancloud.work/api"; \
+	else echo "https://physioflow.trancloud.work/api"; fi); \
+	$(HOMELAB_DIR)/scripts/smoke-tests.sh $$URL
+
 homelab-keycloak: ## Import Keycloak realms to homelab
 	@echo "$(GREEN)Importing Keycloak realms...$(RESET)"
 	$(HOMELAB_DIR)/scripts/import-keycloak-realms.sh
@@ -346,6 +394,58 @@ homelab-status: ## Check homelab deployment status
 
 homelab-setup: ## Show homelab setup instructions
 	@$(HOMELAB_DIR)/scripts/setup-infisical-project.sh
+
+# =============================================================================
+# Monitoring and Observability
+# =============================================================================
+
+deploy-monitoring: ## Deploy Grafana dashboards and Prometheus alerts (usage: make deploy-monitoring ENV=dev)
+	@echo "$(GREEN)Deploying monitoring configuration...$(RESET)"
+	@if [ -z "$(ENV)" ]; then \
+		echo "$(YELLOW)No ENV specified, deploying to dev$(RESET)"; \
+		$(HOMELAB_DIR)/scripts/deploy-monitoring.sh dev; \
+	else \
+		$(HOMELAB_DIR)/scripts/deploy-monitoring.sh $(ENV); \
+	fi
+
+test-metrics: ## Test metrics endpoint locally (requires API running)
+	@echo "$(GREEN)Testing metrics endpoint...$(RESET)"
+	@$(HOMELAB_DIR)/scripts/test-metrics.sh
+
+test-metrics-prometheus: ## Test metrics endpoint in Prometheus format
+	@echo "$(GREEN)Testing metrics endpoint (Prometheus format)...$(RESET)"
+	@$(HOMELAB_DIR)/scripts/test-metrics.sh prometheus
+
+metrics-status: ## Show metrics and monitoring status
+	@echo ""
+	@echo "$(CYAN)PhysioFlow Metrics Status$(RESET)"
+	@echo "$(CYAN)============================$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Local Development:$(RESET)"
+	@echo "  Metrics endpoint:  http://localhost:7011/metrics"
+	@echo "  JSON format:       http://localhost:7011/metrics"
+	@echo "  Prometheus format: http://localhost:7011/metrics?format=prometheus"
+	@echo ""
+	@echo "$(GREEN)Homelab Monitoring:$(RESET)"
+	@echo "  Grafana:           https://grafana.trancloud.work"
+	@echo "  Prometheus:        https://prometheus.trancloud.work"
+	@echo ""
+	@echo "$(GREEN)Available Dashboards:$(RESET)"
+	@echo "  1. PT Features:     https://grafana.trancloud.work/d/physioflow-pt-features"
+	@echo "  2. BHYT Detail:     https://grafana.trancloud.work/d/physioflow-bhyt-detail"
+	@echo "  3. Performance:     https://grafana.trancloud.work/d/physioflow-performance"
+	@echo "  4. Errors:          https://grafana.trancloud.work/d/physioflow-errors"
+	@echo "  5. Database:        https://grafana.trancloud.work/d/physioflow-database"
+	@echo ""
+	@echo "$(GREEN)Test Metrics:$(RESET)"
+	@echo "  make test-metrics              - Test metrics endpoint (JSON)"
+	@echo "  make test-metrics-prometheus   - Test metrics endpoint (Prometheus)"
+	@echo ""
+	@echo "$(GREEN)Deploy Monitoring:$(RESET)"
+	@echo "  make deploy-monitoring ENV=dev        - Deploy to dev"
+	@echo "  make deploy-monitoring ENV=staging    - Deploy to staging"
+	@echo "  make deploy-monitoring ENV=prod       - Deploy to prod"
+	@echo ""
 
 # =============================================================================
 # Quick Reference

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: physioflow-web-blue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physioflow
+      component: web
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: physioflow
+        component: web
+        version: blue
+    spec:
+      containers:
+        - name: web
+          image: registry.trancloud.work/physioflow-web:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: physioflow-config
+            - configMapRef:
+                name: feature-flags
+            - secretRef:
+                name: physioflow-secrets
+          env:
+            - name: DEPLOYMENT_VERSION
+              value: "blue"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3

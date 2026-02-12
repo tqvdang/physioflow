@@ -169,3 +169,138 @@ spec:
             summary: "Database has slow queries"
             description: "Query {{ $labels.queryid }} average execution time is {{ $value }}s"
             runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/db-slow-queries"
+
+    - name: physioflow.protocols
+      interval: 30s
+      rules:
+        - alert: ProtocolAssignmentFailureRate
+          expr: |
+            (
+              rate(api_requests_total{endpoint=~".*protocols/assign.*",status="5xx"}[5m])
+              /
+              rate(api_requests_total{endpoint=~".*protocols/assign.*"}[5m])
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            component: protocols
+            feature: clinical
+          annotations:
+            summary: "High protocol assignment failure rate"
+            description: "Protocol assignment error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/protocol-assignment-errors"
+
+    - name: physioflow.cache
+      interval: 30s
+      rules:
+        - alert: RedisCacheDown
+          expr: up{job="redis"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: cache
+          annotations:
+            summary: "Redis cache is down"
+            description: "Redis cache has been down for more than 2 minutes"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/redis-down"
+
+        - alert: CacheHitRateLow
+          expr: |
+            (
+              rate(redis_keyspace_hits_total[5m])
+              /
+              (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+            ) < 0.8
+          for: 10m
+          labels:
+            severity: warning
+            component: cache
+          annotations:
+            summary: "Low Redis cache hit rate"
+            description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 80%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/cache-hit-rate-low"
+
+    - name: physioflow.security
+      interval: 30s
+      rules:
+        - alert: HighAuthenticationFailureRate
+          expr: |
+            (
+              rate(api_requests_total{status="401"}[5m])
+              /
+              rate(api_requests_total[5m])
+            ) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: security
+          annotations:
+            summary: "High authentication failure rate"
+            description: "Authentication failure rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/auth-failures"
+
+        - alert: SuspiciousActivityDetected
+          expr: |
+            rate(api_requests_total{status="403"}[5m]) > 10
+          for: 5m
+          labels:
+            severity: critical
+            component: security
+          annotations:
+            summary: "Suspicious activity: High rate of forbidden requests"
+            description: "{{ $value }} forbidden requests per second detected"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/suspicious-activity"
+
+    - name: physioflow.availability
+      interval: 30s
+      rules:
+        - alert: APIHighLatencyP99
+          expr: |
+            avg(api_request_duration_p99_ms) > 3000
+          for: 10m
+          labels:
+            severity: warning
+            component: api
+          annotations:
+            summary: "API p99 latency is very high"
+            description: "API p99 latency is {{ $value }}ms (threshold: 3000ms)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/api-p99-latency"
+
+        - alert: APIServiceDown
+          expr: up{job="physioflow-api"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: api
+          annotations:
+            summary: "PhysioFlow API is down"
+            description: "PhysioFlow API has been down for more than 1 minute"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/api-down"
+
+        - alert: HighMemoryUsage
+          expr: |
+            (
+              container_memory_usage_bytes{pod=~"physioflow-api-.*"}
+              /
+              container_spec_memory_limit_bytes{pod=~"physioflow-api-.*"}
+            ) > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            component: infrastructure
+          annotations:
+            summary: "High memory usage on {{ $labels.pod }}"
+            description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/high-memory"
+
+        - alert: HighCPUUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{pod=~"physioflow-api-.*"}[5m]) > 0.8
+          for: 10m
+          labels:
+            severity: warning
+            component: infrastructure
+          annotations:
+            summary: "High CPU usage on {{ $labels.pod }}"
+            description: "CPU usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+            runbook_url: "https://wiki.trancloud.work/physioflow/runbooks/high-cpu"
