@@ -307,6 +307,12 @@
       "error": "Lỗi",
       "errorDesc": "Đã xảy ra lỗi. Vui lòng thử lại."
     },
+    "error": {
+      "title": "Không thể tải lịch hẹn",
+      "appointmentsLoadFailed": "Không thể tải dữ liệu lịch hẹn. Máy chủ có thể không khả dụng. Bạn vẫn có thể xem lịch, nhưng dữ liệu lịch hẹn sẽ không hiển thị.",
+      "therapistsLoadFailed": "Không thể tải danh sách chuyên viên. Bộ lọc chuyên viên có thể không hoạt động chính xác.",
+      "retry": "Thử lại"
+    },
     "quickActions": {
       "plus3Days": "+3 ngày",
       "plus7Days": "+7 ngày"

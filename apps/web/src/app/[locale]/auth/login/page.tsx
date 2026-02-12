@@ -68,7 +68,7 @@ export default function LoginPage() {
       {/* Logo and branding */}
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center mb-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-blue-700 rounded-xl flex items-center justify-center">
             <svg
               className="w-10 h-10 text-white"
               fill="none"
@@ -128,7 +128,7 @@ export default function LoginPage() {
         <button
           onClick={handleLogin}
           disabled={isLoading}
-          className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           aria-busy={isLoading}
         >
           {isLoading ? (

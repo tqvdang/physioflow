@@ -18,7 +18,7 @@ async function globalSetup(config: FullConfig) {
   }
 
   const browser = await chromium.launch();
-  const context = await browser.newContext();
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
   const page = await context.newPage();
 
   try {
@@ -33,14 +33,20 @@ async function globalSetup(config: FullConfig) {
       console.log('Logging in via Keycloak...');
 
       // Fill in Keycloak login form
-      // All test users have password "Therapist@123" (see CLAUDE.md and Makefile)
-      console.log('Logging in as therapist1...');
-      await page.fill('#username', 'therapist1');
-      await page.fill('#password', 'Therapist@123');
+      // Use homelab credentials: therapist@physioflow.local / Therapist@123
+      const username = baseURL?.includes('trancloud.work') ? 'therapist@physioflow.local' : 'therapist1';
+      const password = 'Therapist@123';
+
+      console.log(`Logging in as ${username}...`);
+      await page.fill('#username', username);
+      await page.fill('#password', password);
       await page.click('#kc-login');
 
       // Wait for redirect back to app (may go to /dashboard or /vi/*)
-      await page.waitForURL(/localhost:7010\/(vi|en|dashboard)/, { timeout: 30000 });
+      const urlPattern = baseURL?.includes('trancloud.work')
+        ? /physioflow-dev\.trancloud\.work\/(vi|en|dashboard)/
+        : /localhost:7010\/(vi|en|dashboard)/;
+      await page.waitForURL(urlPattern, { timeout: 30000 });
       console.log('Login successful, redirected to:', page.url());
     }
 

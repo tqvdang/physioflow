@@ -307,6 +307,12 @@
       "error": "Error",
       "errorDesc": "Something went wrong. Please try again."
     },
+    "error": {
+      "title": "Unable to load schedule",
+      "appointmentsLoadFailed": "Could not load appointments. The server may be unavailable. You can still view the calendar, but appointment data will not be displayed.",
+      "therapistsLoadFailed": "Could not load therapist list. The therapist filter may not work correctly.",
+      "retry": "Retry"
+    },
     "quickActions": {
       "plus3Days": "+3 days",
       "plus7Days": "+7 days"

@@ -430,13 +430,15 @@ export function InsuranceCardForm({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>{t("card.expirationDate")}</FormLabel>
-                  <DatePickerDialog
-                    value={field.value ?? undefined}
-                    onChange={field.onChange}
-                    locale={locale}
-                    placeholder={t("form.selectDate")}
-                    dialogTitle={t("card.expirationDate")}
-                  />
+                  <FormControl>
+                    <DatePickerDialog
+                      value={field.value ?? undefined}
+                      onChange={field.onChange}
+                      locale={locale}
+                      placeholder={t("form.selectDate")}
+                      dialogTitle={t("card.expirationDate")}
+                    />
+                  </FormControl>
                   <FormDescription>{t("form.expirationDateHint")}</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -451,13 +453,15 @@ export function InsuranceCardForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>{t("card.validFrom")} *</FormLabel>
-                    <DatePickerDialog
-                      value={field.value}
-                      onChange={field.onChange}
-                      locale={locale}
-                      placeholder={t("form.selectDate")}
-                      dialogTitle={t("card.validFrom")}
-                    />
+                    <FormControl>
+                      <DatePickerDialog
+                        value={field.value}
+                        onChange={field.onChange}
+                        locale={locale}
+                        placeholder={t("form.selectDate")}
+                        dialogTitle={t("card.validFrom")}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -469,17 +473,19 @@ export function InsuranceCardForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>{t("card.validTo")} *</FormLabel>
-                    <DatePickerDialog
-                      value={field.value}
-                      onChange={field.onChange}
-                      locale={locale}
-                      placeholder={t("form.selectDate")}
-                      dialogTitle={t("card.validTo")}
-                      disabledFn={(date) => {
-                        const validFrom = form.getValues("valid_from");
-                        return validFrom ? date < validFrom : false;
-                      }}
-                    />
+                    <FormControl>
+                      <DatePickerDialog
+                        value={field.value}
+                        onChange={field.onChange}
+                        locale={locale}
+                        placeholder={t("form.selectDate")}
+                        dialogTitle={t("card.validTo")}
+                        disabledFn={(date) => {
+                          const validFrom = form.getValues("valid_from");
+                          return validFrom ? date < validFrom : false;
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

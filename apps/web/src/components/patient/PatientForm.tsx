@@ -438,13 +438,15 @@ export function PatientForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>{t("fields.dateOfBirth")} *</FormLabel>
-                    <DatePickerDialog
-                      value={field.value}
-                      onChange={field.onChange}
-                      locale={locale}
-                      placeholder={t("fields.selectDate")}
-                      dialogTitle={t("fields.selectDateOfBirth")}
-                    />
+                    <FormControl>
+                      <DatePickerDialog
+                        value={field.value}
+                        onChange={field.onChange}
+                        locale={locale}
+                        placeholder={t("fields.selectDate")}
+                        dialogTitle={t("fields.selectDateOfBirth")}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -71,6 +71,7 @@ export function useAppointments(params: AppointmentListParams = {}) {
         },
       } as PaginatedResponse<Appointment>;
     },
+    throwOnError: false, // Don't throw errors during render, use error state instead
   });
 }
 
@@ -110,6 +111,7 @@ export function useTodayAppointments(therapistId?: string) {
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
+    throwOnError: false, // Don't throw errors during render, use error state instead
   });
 }
 
@@ -150,6 +152,7 @@ export function useAppointmentsByDateRange(
       return response.data;
     },
     enabled: enabled && !!startDate && !!endDate,
+    throwOnError: false, // Don't throw errors during render, use error state instead
   });
 }
 
@@ -186,6 +189,7 @@ export function useTherapists(enabled = true) {
     },
     enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    throwOnError: false, // Don't throw errors during render, use error state instead
   });
 }
 

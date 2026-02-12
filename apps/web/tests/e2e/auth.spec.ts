@@ -53,7 +53,7 @@ test.describe('Authentication', () => {
       await waitForLoading(page);
 
       // User should see dashboard or main content (app may redirect to /dashboard)
-      expect(page.url()).toMatch(/localhost:7010\/(vi|en|dashboard)/);
+      expect(page.url()).toMatch(/\/(vi|en|dashboard)/);
     });
 
     test('should persist session across page reloads', async ({ page }) => {
@@ -109,8 +109,8 @@ test.describe('Authentication', () => {
       await page.goto('/vi/patients');
       await waitForLoading(page);
       // Should stay on authenticated app (not redirected to login)
-      expect(page.url()).toMatch(/localhost:7010/);
-      expect(page.url()).not.toMatch(/localhost:7014|keycloak/);
+      expect(page.url()).toContain('/vi/patients');
+      expect(page.url()).not.toMatch(/keycloak/);
     });
 
     test('should work with English locale', async ({ page }) => {
@@ -118,8 +118,8 @@ test.describe('Authentication', () => {
       await page.goto('/en/patients');
       await waitForLoading(page);
       // Should stay on authenticated app (not redirected to login)
-      expect(page.url()).toMatch(/localhost:7010/);
-      expect(page.url()).not.toMatch(/localhost:7014|keycloak/);
+      expect(page.url()).toContain('/en/patients');
+      expect(page.url()).not.toMatch(/keycloak/);
     });
   });
 });

@@ -2,27 +2,30 @@ import { test as base, expect, Page } from '@playwright/test';
 
 /**
  * Test user credentials
- * Note: Default password for all test users is "password" (see Makefile urls target)
+ * Local: password is "Therapist@123" for all users
+ * Homelab: therapist@physioflow.local / Therapist@123
  */
+const isHomelab = process.env.PLAYWRIGHT_BASE_URL?.includes('trancloud.work') || false;
+
 export const TEST_USERS = {
   therapist: {
-    username: 'therapist1',
-    password: 'password',
+    username: isHomelab ? 'therapist@physioflow.local' : 'therapist1',
+    password: 'Therapist@123',
     role: 'therapist',
   },
   admin: {
-    username: 'admin',
-    password: 'password',
+    username: isHomelab ? 'admin@physioflow.local' : 'admin',
+    password: 'Therapist@123',
     role: 'super_admin',
   },
   assistant: {
-    username: 'assistant1',
-    password: 'password',
+    username: isHomelab ? 'assistant@physioflow.local' : 'assistant1',
+    password: 'Therapist@123',
     role: 'assistant',
   },
   frontDesk: {
-    username: 'frontdesk1',
-    password: 'password',
+    username: isHomelab ? 'frontdesk@physioflow.local' : 'frontdesk1',
+    password: 'Therapist@123',
     role: 'front_desk',
   },
 } as const;
@@ -47,7 +50,10 @@ export async function loginViaKeycloak(
     await page.fill('#username', username);
     await page.fill('#password', password);
     await page.click('#kc-login');
-    await page.waitForURL('**/vi/**', { timeout: 30000 });
+    await page.waitForURL('**/vi/**', { timeout: 30000 }).catch(() => {
+      // May redirect to /en or /dashboard instead
+      page.waitForURL('**/(en|dashboard)/**', { timeout: 30000 });
+    });
   }
 }
 

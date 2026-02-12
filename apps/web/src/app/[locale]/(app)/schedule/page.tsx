@@ -3,7 +3,7 @@
 import * as React from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays } from "date-fns";
 import { useTranslations } from "next-intl";
-import { Plus, Filter, Users, RefreshCw } from "lucide-react";
+import { Plus, Filter, Users, RefreshCw, AlertCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Calendar } from "@/components/schedule/Calendar";
 import { AppointmentDialog } from "@/components/schedule/AppointmentDialog";
@@ -98,10 +99,17 @@ export default function SchedulePage() {
   const dateRange = getDateRange();
 
   // Queries
-  const { data: therapists = [] } = useTherapists();
+  const {
+    data: therapists = [],
+    isError: isTherapistsError,
+    error: therapistsError
+  } = useTherapists();
+
   const {
     data: appointments = [],
     isLoading,
+    isError: isAppointmentsError,
+    error: appointmentsError,
     refetch,
   } = useAppointmentsByDateRange(
     dateRange.start,
@@ -278,6 +286,35 @@ export default function SchedulePage() {
           </Button>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {(isAppointmentsError || isTherapistsError) && (
+        <div className="p-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{t("error.title")}</AlertTitle>
+            <AlertDescription>
+              {isAppointmentsError && (
+                <p>{t("error.appointmentsLoadFailed")}</p>
+              )}
+              {isTherapistsError && (
+                <p>{t("error.therapistsLoadFailed")}</p>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (isAppointmentsError) refetch();
+                }}
+                className="mt-2"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {t("error.retry")}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Calendar */}
       <div className="flex-1 overflow-hidden">

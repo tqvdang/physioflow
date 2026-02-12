@@ -76,8 +76,8 @@ export function Header({
         >
           <Search className="mr-2 h-4 w-4" />
           <span>{t("search")}</span>
-          <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-            <span className="text-xs">Cmd</span>K
+          <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-foreground/70 opacity-100 sm:flex">
+            <span>Cmd</span>K
           </kbd>
         </Button>
 
