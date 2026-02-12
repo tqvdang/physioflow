@@ -10,7 +10,7 @@ describe('CoverageCalculator', () => {
   const mockInsurance: Insurance = {
     id: '1',
     patientId: 'patient-1',
-    cardNumber: 'DN4012345678901',
+    cardNumber: 'DN4-0123-45678-90123',
     prefixCode: 'DN',
     validFrom: '2024-01-01',
     validTo: '2024-12-31',

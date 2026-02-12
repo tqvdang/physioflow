@@ -27,38 +27,38 @@ describe('use-insurance hooks', () => {
 
   describe('validateBhytCardLocal', () => {
     it('validates correct card format', () => {
-      const result = validateBhytCardLocal('DN4012345678901');
+      const result = validateBhytCardLocal('DN4-0123-45678-90123');
 
       expect(result.valid).toBe(true);
       expect(result.prefixCode).toBe('DN');
-      expect(result.prefixLabel).toBe('DN - Doanh nghiep');
+      expect(result.prefixLabel).toBe('DN - Doanh nghiep (Enterprise)');
       expect(result.defaultCoverage).toBe(80);
       expect(result.expired).toBe(false);
     });
 
     it('rejects invalid format - too short', () => {
-      const result = validateBhytCardLocal('DN401234567');
+      const result = validateBhytCardLocal('DN4-0123-4567');
 
       expect(result.valid).toBe(false);
       expect(result.errorCode).toBe('invalid_format');
     });
 
     it('rejects invalid format - too long', () => {
-      const result = validateBhytCardLocal('DN40123456789012');
+      const result = validateBhytCardLocal('DN4-0123-45678-901234');
 
       expect(result.valid).toBe(false);
       expect(result.errorCode).toBe('invalid_format');
     });
 
     it('rejects invalid format - wrong pattern', () => {
-      const result = validateBhytCardLocal('D1N012345678901');
+      const result = validateBhytCardLocal('D1N-0123-45678-90123');
 
       expect(result.valid).toBe(false);
       expect(result.errorCode).toBe('invalid_format');
     });
 
     it('rejects unknown prefix code', () => {
-      const result = validateBhytCardLocal('XX4012345678901');
+      const result = validateBhytCardLocal('XX4-0123-45678-90123');
 
       expect(result.valid).toBe(false);
       expect(result.errorCode).toBe('invalid_prefix');
@@ -66,15 +66,15 @@ describe('use-insurance hooks', () => {
     });
 
     it('handles lowercase input', () => {
-      const result = validateBhytCardLocal('dn4012345678901');
+      const result = validateBhytCardLocal('dn4-0123-45678-90123');
 
       expect(result.valid).toBe(true);
-      expect(result.cardNumber).toBe('DN4012345678901');
+      expect(result.cardNumber).toBe('DN4-0123-45678-90123');
     });
 
     it('validates all known prefix codes', () => {
       BHYT_PREFIX_CODES.forEach((prefix) => {
-        const cardNumber = `${prefix.value}4012345678901`;
+        const cardNumber = `${prefix.value}4-0123-45678-90123`;
         const result = validateBhytCardLocal(cardNumber);
 
         expect(result.valid).toBe(true);
@@ -84,10 +84,10 @@ describe('use-insurance hooks', () => {
     });
 
     it('trims whitespace from input', () => {
-      const result = validateBhytCardLocal('  DN4012345678901  ');
+      const result = validateBhytCardLocal('  DN4-0123-45678-90123  ');
 
       expect(result.valid).toBe(true);
-      expect(result.cardNumber).toBe('DN4012345678901');
+      expect(result.cardNumber).toBe('DN4-0123-45678-90123');
     });
   });
 
@@ -96,15 +96,21 @@ describe('use-insurance hooks', () => {
       const mockData = {
         id: '1',
         patient_id: 'patient-1',
-        card_number: 'DN4012345678901',
-        prefix_code: 'DN',
+        card_number: 'DN4-0123-45678-90123',
+        prefix: 'DN',
+        beneficiary_type: 4,
+        province_code: '01',
+        holder_name: 'John Doe',
+        holder_name_vi: 'Nguyễn Văn A',
+        registered_facility_code: '12345',
+        registered_facility_name: 'Test Hospital',
+        hospital_registration_code: '67890',
+        expiration_date: '2024-12-31',
         valid_from: '2024-01-01',
         valid_to: '2024-12-31',
-        coverage_percent: 80,
-        copay_rate: 20,
-        provider: 'BHYT',
+        five_year_continuous: false,
+        verification: 'verified' as const,
         is_active: true,
-        verification_status: 'verified' as const,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
       };
@@ -120,15 +126,21 @@ describe('use-insurance hooks', () => {
       expect(result.current.data).toEqual({
         id: '1',
         patientId: 'patient-1',
-        cardNumber: 'DN4012345678901',
-        prefixCode: 'DN',
+        cardNumber: 'DN4-0123-45678-90123',
+        prefix: 'DN',
+        beneficiaryType: 4,
+        provinceCode: '01',
+        holderName: 'John Doe',
+        holderNameVi: 'Nguyễn Văn A',
+        registeredFacilityCode: '12345',
+        registeredFacilityName: 'Test Hospital',
+        hospitalRegistrationCode: '67890',
+        expirationDate: '2024-12-31',
         validFrom: '2024-01-01',
         validTo: '2024-12-31',
-        coveragePercent: 80,
-        copayRate: 20,
-        provider: 'BHYT',
+        fiveYearContinuous: false,
+        verification: 'verified',
         isActive: true,
-        verificationStatus: 'verified',
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
       });
@@ -162,7 +174,7 @@ describe('use-insurance hooks', () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const validationResult = await result.current.mutateAsync('DN4012345678901');
+      const validationResult = await result.current.mutateAsync('DN4-0123-45678-90123');
 
       expect(validationResult.valid).toBe(true);
       expect(validationResult.prefixCode).toBe('DN');
@@ -182,13 +194,13 @@ describe('use-insurance hooks', () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const validationResult = await result.current.mutateAsync('DN4012345678901');
+      const validationResult = await result.current.mutateAsync('DN4-0123-45678-90123');
 
       expect(validationResult.valid).toBe(true);
       expect(validationResult.expired).toBe(false);
       expect(apiLib.api.post).toHaveBeenCalledWith(
         '/v1/insurance/validate',
-        { card_number: 'DN4012345678901' }
+        { card_number: 'DN4-0123-45678-90123' }
       );
     });
 
@@ -199,7 +211,7 @@ describe('use-insurance hooks', () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const validationResult = await result.current.mutateAsync('DN4012345678901');
+      const validationResult = await result.current.mutateAsync('DN4-0123-45678-90123');
 
       expect(validationResult.valid).toBe(true);
       expect(validationResult.prefixCode).toBe('DN');
@@ -218,7 +230,7 @@ describe('use-insurance hooks', () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const validationResult = await result.current.mutateAsync('DN4012345678901');
+      const validationResult = await result.current.mutateAsync('DN4-0123-45678-90123');
 
       expect(validationResult.valid).toBe(true);
       expect(validationResult.expired).toBe(true);
@@ -245,7 +257,7 @@ describe('use-insurance hooks', () => {
       const mockCreatedInsurance = {
         id: '1',
         patient_id: 'patient-1',
-        card_number: 'DN4012345678901',
+        card_number: 'DN4-0123-45678-90123',
         prefix_code: 'DN',
         valid_from: '2024-01-01',
         valid_to: '2024-12-31',
@@ -265,7 +277,7 @@ describe('use-insurance hooks', () => {
       });
 
       const insuranceData = {
-        card_number: 'DN4012345678901',
+        card_number: 'DN4-0123-45678-90123',
         prefix_code: 'DN',
         valid_from: '2024-01-01',
         valid_to: '2024-12-31',
@@ -278,7 +290,7 @@ describe('use-insurance hooks', () => {
         data: insuranceData,
       });
 
-      expect(created.cardNumber).toBe('DN4012345678901');
+      expect(created.cardNumber).toBe('DN4-0123-45678-90123');
       expect(apiLib.api.post).toHaveBeenCalledWith(
         '/v1/patients/patient-1/insurance',
         insuranceData
@@ -289,7 +301,7 @@ describe('use-insurance hooks', () => {
       const mockCreatedInsurance = {
         id: '1',
         patient_id: 'patient-1',
-        card_number: 'DN4012345678901',
+        card_number: 'DN4-0123-45678-90123',
         prefix_code: 'DN',
         valid_from: '2024-01-01',
         valid_to: '2024-12-31',
@@ -313,7 +325,7 @@ describe('use-insurance hooks', () => {
       await result.current.mutateAsync({
         patientId: 'patient-1',
         data: {
-          card_number: 'DN4012345678901',
+          card_number: 'DN4-0123-45678-90123',
           prefix_code: 'DN',
           valid_from: '2024-01-01',
           valid_to: '2024-12-31',
@@ -336,7 +348,7 @@ describe('use-insurance hooks', () => {
         result.current.mutateAsync({
           patientId: 'patient-1',
           data: {
-            card_number: 'DN4012345678901',
+            card_number: 'DN4-0123-45678-90123',
             prefix_code: 'DN',
             valid_from: '2024-01-01',
             valid_to: '2024-12-31',
@@ -353,15 +365,21 @@ describe('use-insurance hooks', () => {
       const mockUpdatedInsurance = {
         id: '1',
         patient_id: 'patient-1',
-        card_number: 'DN4012345678901',
-        prefix_code: 'DN',
+        card_number: 'DN4-0123-45678-90123',
+        prefix: 'DN',
+        beneficiary_type: 4,
+        province_code: '01',
+        holder_name: 'John Doe',
+        holder_name_vi: 'Nguyễn Văn A',
+        registered_facility_code: '12345',
+        registered_facility_name: 'Test Hospital',
+        hospital_registration_code: '67890',
+        expiration_date: '2025-12-31',
         valid_from: '2024-01-01',
         valid_to: '2025-12-31',
-        coverage_percent: 85,
-        copay_rate: 15,
-        provider: 'BHYT',
+        five_year_continuous: false,
+        verification: 'verified' as const,
         is_active: true,
-        verification_status: 'verified' as const,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-06-01T00:00:00Z',
       };
@@ -375,8 +393,15 @@ describe('use-insurance hooks', () => {
       const updated = await result.current.mutateAsync({
         patientId: 'patient-1',
         data: {
-          card_number: 'DN4012345678901',
+          card_number: 'DN4-0123-45678-90123',
           prefix_code: 'DN',
+          holder_name: 'John Doe',
+          holder_name_vi: 'Nguyễn Văn A',
+          date_of_birth: '1990-01-01',
+          registered_facility_code: '12345',
+          registered_facility_name: 'Test Hospital',
+          hospital_registration_code: '67890',
+          expiration_date: '2025-12-31',
           valid_from: '2024-01-01',
           valid_to: '2025-12-31',
           coverage_percent: 85,
@@ -384,7 +409,6 @@ describe('use-insurance hooks', () => {
         },
       });
 
-      expect(updated.coveragePercent).toBe(85);
       expect(updated.validTo).toBe('2025-12-31');
     });
 
@@ -392,7 +416,7 @@ describe('use-insurance hooks', () => {
       const mockUpdatedInsurance = {
         id: '1',
         patient_id: 'patient-1',
-        card_number: 'DN4012345678901',
+        card_number: 'DN4-0123-45678-90123',
         prefix_code: 'DN',
         valid_from: '2024-01-01',
         valid_to: '2025-12-31',
@@ -416,7 +440,7 @@ describe('use-insurance hooks', () => {
       await result.current.mutateAsync({
         patientId: 'patient-1',
         data: {
-          card_number: 'DN4012345678901',
+          card_number: 'DN4-0123-45678-90123',
           prefix_code: 'DN',
           valid_from: '2024-01-01',
           valid_to: '2025-12-31',

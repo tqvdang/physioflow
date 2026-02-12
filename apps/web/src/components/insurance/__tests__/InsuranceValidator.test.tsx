@@ -25,7 +25,7 @@ describe('InsuranceValidator', () => {
     it('input has correct placeholder', () => {
       renderWithQuery(<InsuranceValidator />);
 
-      const input = screen.getByPlaceholderText('DN4012345678901');
+      const input = screen.getByPlaceholderText('DN4-0123-45678-90123');
       expect(input).toBeInTheDocument();
     });
   });
@@ -62,7 +62,7 @@ describe('InsuranceValidator', () => {
       const input = screen.getByRole('textbox') as HTMLInputElement;
       await user.type(input, 'dn4012345678901');
 
-      expect(input.value).toBe('DN4012345678901');
+      expect(input.value).toBe('DN4-0123-45678-90123');
     });
 
     it('clears result when input changes', async () => {
@@ -76,7 +76,7 @@ describe('InsuranceValidator', () => {
 
       mockMutateAsync.mockResolvedValue({
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -86,7 +86,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
@@ -116,7 +116,7 @@ describe('InsuranceValidator', () => {
 
       const validResult: InsuranceValidationResult = {
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -128,13 +128,13 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator onValidResult={mockOnValidResult} />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(mockMutateAsync).toHaveBeenCalledWith('DN4012345678901');
+        expect(mockMutateAsync).toHaveBeenCalledWith('DN4-0123-45678-90123');
       });
     });
 
@@ -149,7 +149,7 @@ describe('InsuranceValidator', () => {
 
       mockMutateAsync.mockResolvedValue({
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -159,10 +159,10 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901{Enter}');
+      await user.type(input, 'DN4-0123-45678-90123{Enter}');
 
       await waitFor(() => {
-        expect(mockMutateAsync).toHaveBeenCalledWith('DN4012345678901');
+        expect(mockMutateAsync).toHaveBeenCalledWith('DN4-0123-45678-90123');
       });
     });
 
@@ -195,7 +195,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       expect(validateButton).toBeDisabled();
@@ -214,7 +214,7 @@ describe('InsuranceValidator', () => {
 
       const validResult: InsuranceValidationResult = {
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -226,13 +226,13 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(screen.getByText('DN4012345678901')).toBeInTheDocument();
+        expect(screen.getByText('DN4-0123-45678-90123')).toBeInTheDocument();
         expect(screen.getByText('DN - Doanh nghiep')).toBeInTheDocument();
         expect(screen.getByText('80%')).toBeInTheDocument();
       });
@@ -285,7 +285,7 @@ describe('InsuranceValidator', () => {
 
       const validResult: InsuranceValidationResult = {
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -297,7 +297,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator onValidResult={mockOnValidResult} />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
@@ -388,7 +388,7 @@ describe('InsuranceValidator', () => {
 
       const invalidResult: InsuranceValidationResult = {
         valid: false,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -401,7 +401,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
@@ -424,7 +424,7 @@ describe('InsuranceValidator', () => {
 
       const expiredResult: InsuranceValidationResult = {
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -438,7 +438,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
@@ -459,7 +459,7 @@ describe('InsuranceValidator', () => {
 
       const expiredResult: InsuranceValidationResult = {
         valid: true,
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         prefixLabel: 'DN - Doanh nghiep',
         defaultCoverage: 80,
@@ -471,7 +471,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator onValidResult={mockOnValidResult} />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);

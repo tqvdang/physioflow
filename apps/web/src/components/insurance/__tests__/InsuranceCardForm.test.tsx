@@ -36,7 +36,7 @@ describe('InsuranceCardForm', () => {
       const mockInsurance: Insurance = {
         id: '1',
         patientId: 'patient-1',
-        cardNumber: 'DN4012345678901',
+        cardNumber: 'DN4-0123-45678-90123',
         prefixCode: 'DN',
         validFrom: '2024-01-01',
         validTo: '2024-12-31',
@@ -58,7 +58,7 @@ describe('InsuranceCardForm', () => {
         />
       );
 
-      const cardNumberInput = screen.getByDisplayValue('DN4012345678901');
+      const cardNumberInput = screen.getByDisplayValue('DN4-0123-45678-90123');
       expect(cardNumberInput).toBeInTheDocument();
     });
 
@@ -114,7 +114,7 @@ describe('InsuranceCardForm', () => {
       const input = screen.getByLabelText(/card.number/i);
 
       // Type valid card number
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       // Should show validation badge
       await waitFor(() => {
@@ -136,7 +136,7 @@ describe('InsuranceCardForm', () => {
 
       await user.type(input, 'dn4012345678901');
 
-      expect(input.value).toBe('DN4012345678901');
+      expect(input.value).toBe('DN4-0123-45678-90123');
     });
 
     it('shows invalid prefix error for unknown prefix code', async () => {
@@ -172,7 +172,7 @@ describe('InsuranceCardForm', () => {
       );
 
       const input = screen.getByLabelText(/card.number/i);
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       // Wait for auto-fill
       await waitFor(() => {
@@ -192,7 +192,7 @@ describe('InsuranceCardForm', () => {
       );
 
       const input = screen.getByLabelText(/card.number/i);
-      await user.type(input, 'DN4012345678901');
+      await user.type(input, 'DN4-0123-45678-90123');
 
       await waitFor(() => {
         const coverageInput = screen.getByLabelText(/card.coverage/i) as HTMLInputElement;
@@ -236,7 +236,7 @@ describe('InsuranceCardForm', () => {
 
       // Fill in all required fields
       const cardNumberInput = screen.getByLabelText(/card.number/i);
-      await user.type(cardNumberInput, 'DN4012345678901');
+      await user.type(cardNumberInput, 'DN4-0123-45678-90123');
 
       // Wait for auto-fill of prefix and coverage
       await waitFor(() => {
