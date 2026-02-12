@@ -2,10 +2,11 @@
 
 import { WifiOff } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 /**
  * Banner displayed when the user is offline.
- * Renders at the top of the page to inform users that some features may not work.
+ * Uses shadcn Alert component to inform users that some features may not work.
  */
 export function OfflineBanner() {
   const { isOnline } = useOnlineStatus();
@@ -13,12 +14,11 @@ export function OfflineBanner() {
   if (isOnline) return null;
 
   return (
-    <div
-      role="alert"
-      className="flex items-center justify-center gap-2 bg-destructive px-4 py-2 text-sm text-destructive-foreground"
-    >
+    <Alert variant="destructive" className="rounded-none border-0 border-b">
       <WifiOff className="h-4 w-4" />
-      <span>You are offline. Some features may not work.</span>
-    </div>
+      <AlertDescription>
+        You are offline. Some features may not work.
+      </AlertDescription>
+    </Alert>
   );
 }
