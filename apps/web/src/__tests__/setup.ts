@@ -43,3 +43,20 @@ vi.mock('sonner', () => ({
 
 // Setup global fetch mock
 global.fetch = vi.fn();
+
+// Polyfill for Radix UI Pointer Capture (JSDOM limitation)
+// Radix UI's Select component uses pointer capture APIs that JSDOM doesn't implement
+if (typeof Element.prototype.hasPointerCapture === 'undefined') {
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+}
+if (typeof Element.prototype.setPointerCapture === 'undefined') {
+  Element.prototype.setPointerCapture = vi.fn();
+}
+if (typeof Element.prototype.releasePointerCapture === 'undefined') {
+  Element.prototype.releasePointerCapture = vi.fn();
+}
+
+// Polyfill for scrollIntoView (used by Radix UI)
+if (typeof Element.prototype.scrollIntoView === 'undefined') {
+  Element.prototype.scrollIntoView = vi.fn();
+}

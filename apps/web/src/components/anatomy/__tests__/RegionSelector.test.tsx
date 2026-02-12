@@ -144,13 +144,13 @@ describe('RegionSelector', () => {
     await user.click(screen.getByRole('combobox'));
 
     await waitFor(() => {
-      // Front view regions should be present
-      expect(screen.getByText('Left Shoulder')).toBeInTheDocument();
-      expect(screen.getByText('Front Neck')).toBeInTheDocument();
-      expect(screen.getByText('Left Knee')).toBeInTheDocument();
+      // Front view regions should be present (Vietnamese names due to mocked locale)
+      expect(screen.getByText('Vai trái')).toBeInTheDocument();
+      expect(screen.getByText('Cổ trước')).toBeInTheDocument();
+      expect(screen.getByText('Đầu gối trái')).toBeInTheDocument();
 
       // Back view regions should NOT be present
-      expect(screen.queryByText('Lower Back')).not.toBeInTheDocument();
+      expect(screen.queryByText('Lưng dưới')).not.toBeInTheDocument();
     });
   });
 
@@ -171,11 +171,11 @@ describe('RegionSelector', () => {
     await user.click(screen.getByRole('combobox'));
 
     await waitFor(() => {
-      // Back view regions should be present
-      expect(screen.getByText('Lower Back')).toBeInTheDocument();
+      // Back view regions should be present (Vietnamese names)
+      expect(screen.getByText('Lưng dưới')).toBeInTheDocument();
 
       // Front view regions should NOT be present
-      expect(screen.queryByText('Front Neck')).not.toBeInTheDocument();
+      expect(screen.queryByText('Cổ trước')).not.toBeInTheDocument();
     });
   });
 
@@ -196,11 +196,11 @@ describe('RegionSelector', () => {
     await user.click(screen.getByRole('combobox'));
 
     await waitFor(() => {
-      // All regions should be visible
-      expect(screen.getByText('Left Shoulder')).toBeInTheDocument();
-      expect(screen.getByText('Front Neck')).toBeInTheDocument();
-      expect(screen.getByText('Lower Back')).toBeInTheDocument();
-      expect(screen.getByText('Left Knee')).toBeInTheDocument();
+      // All regions should be visible (Vietnamese names)
+      expect(screen.getByText('Vai trái')).toBeInTheDocument();
+      expect(screen.getByText('Cổ trước')).toBeInTheDocument();
+      expect(screen.getByText('Lưng dưới')).toBeInTheDocument();
+      expect(screen.getByText('Đầu gối trái')).toBeInTheDocument();
     });
   });
 
@@ -220,7 +220,7 @@ describe('RegionSelector', () => {
 
     await user.click(screen.getByRole('combobox'));
 
-    const shoulder = await screen.findByText('Left Shoulder');
+    const shoulder = await screen.findByText('Vai trái'); // Vietnamese name
     await user.click(shoulder);
 
     expect(handleChange).toHaveBeenCalledWith('shoulder_left');
@@ -239,8 +239,8 @@ describe('RegionSelector', () => {
       expect(screen.getByRole('combobox')).not.toBeDisabled();
     });
 
-    // The selected value should be displayed
-    expect(screen.getByText('Left Shoulder')).toBeInTheDocument();
+    // The selected value should be displayed (Vietnamese name)
+    expect(screen.getByText('Vai trái')).toBeInTheDocument();
   });
 
   it('respects disabled prop', async () => {
