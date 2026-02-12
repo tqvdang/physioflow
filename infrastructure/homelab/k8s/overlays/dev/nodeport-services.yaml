@@ -23,6 +23,6 @@ spec:
     app: physioflow
     component: api
   ports:
-    - port: 7011
-      targetPort: 7011
+    - port: 8080
+      targetPort: 8080
       nodePort: 30201

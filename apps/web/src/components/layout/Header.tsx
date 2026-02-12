@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import {
   Bell,
   ChevronDown,
@@ -41,7 +41,6 @@ export function Header({
   mobileMenuOpen,
   onMobileMenuChange,
 }: HeaderProps) {
-  const locale = useLocale();
   const t = useTranslations("header");
   const tAuth = useTranslations("auth");
   const { user, logout } = useAuth();
@@ -107,19 +106,19 @@ export function Header({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/patients/new` as any}>
+              <Link href="/patients/new">
                 <UserPlus className="mr-2 h-4 w-4" />
                 {t("quickActions.newPatient")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/assessments/new` as any}>
+              <Link href="/assessments/new">
                 <FileText className="mr-2 h-4 w-4" />
                 {t("quickActions.newAssessment")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/sessions/new` as any}>
+              <Link href="/sessions/new">
                 <Calendar className="mr-2 h-4 w-4" />
                 {t("quickActions.newSession")}
               </Link>
@@ -137,19 +136,19 @@ export function Header({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/patients/new` as any}>
+              <Link href="/patients/new">
                 <UserPlus className="mr-2 h-4 w-4" />
                 {t("quickActions.newPatient")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/assessments/new` as any}>
+              <Link href="/assessments/new">
                 <FileText className="mr-2 h-4 w-4" />
                 {t("quickActions.newAssessment")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/sessions/new` as any}>
+              <Link href="/sessions/new">
                 <Calendar className="mr-2 h-4 w-4" />
                 {t("quickActions.newSession")}
               </Link>
@@ -203,7 +202,7 @@ export function Header({
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="justify-center">
-              <Link href={`/${locale}/notifications` as any}>
+              <Link href="/notifications">
                 {t("viewAllNotifications")}
               </Link>
             </DropdownMenuItem>
@@ -234,13 +233,13 @@ export function Header({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/settings/profile` as any}>
+              <Link href="/settings/profile">
                 <User className="mr-2 h-4 w-4" />
                 {tAuth("profile")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/settings` as any}>
+              <Link href="/settings">
                 <Settings className="mr-2 h-4 w-4" />
                 {t("settings")}
               </Link>

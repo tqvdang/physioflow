@@ -143,6 +143,7 @@ export default function LibraryPage() {
               setPage(1);
             }}
             className="pl-10"
+            aria-label={t("searchPlaceholder")}
           />
         </div>
 
@@ -204,12 +205,14 @@ export default function LibraryPage() {
           )}
 
           {/* View mode toggle */}
-          <div className="flex items-center border rounded-lg">
+          <div className="flex items-center border rounded-lg" role="group" aria-label={t("viewMode")}>
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="icon"
               className="rounded-r-none"
               onClick={() => setViewMode("grid")}
+              aria-label={t("viewGrid")}
+              aria-pressed={viewMode === "grid"}
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -218,6 +221,8 @@ export default function LibraryPage() {
               size="icon"
               className="rounded-l-none"
               onClick={() => setViewMode("list")}
+              aria-label={t("viewList")}
+              aria-pressed={viewMode === "list"}
             >
               <List className="h-4 w-4" />
             </Button>
@@ -234,28 +239,40 @@ export default function LibraryPage() {
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
               "{searchQuery}"
-              <X
-                className="h-3 w-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-              />
+                aria-label={t("filters.removeSearch")}
+                className="ml-1 rounded-full hover:bg-foreground/10"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
           {selectedCategory !== "all" && (
             <Badge variant="secondary" className={cn("gap-1", CATEGORY_INFO[selectedCategory].color)}>
               {t(`categories.${selectedCategory}`)}
-              <X
-                className="h-3 w-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setSelectedCategory("all")}
-              />
+                aria-label={t("filters.removeCategory")}
+                className="ml-1 rounded-full hover:bg-foreground/10"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
           {selectedDifficulty !== "all" && (
             <Badge variant="secondary" className="gap-1">
               {t(`difficulties.${selectedDifficulty}`)}
-              <X
-                className="h-3 w-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setSelectedDifficulty("all")}
-              />
+                aria-label={t("filters.removeDifficulty")}
+                className="ml-1 rounded-full hover:bg-foreground/10"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
         </div>

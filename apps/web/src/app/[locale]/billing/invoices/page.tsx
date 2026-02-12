@@ -6,8 +6,9 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import {
   Search,
   Filter,
@@ -101,10 +102,9 @@ function ErrorState({
 }
 
 export default function InvoicesPage() {
-  const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
 
   const t = useTranslations("billing");
   const tCommon = useTranslations("common");
@@ -156,7 +156,7 @@ export default function InvoicesPage() {
 
     const queryString = urlParams.toString();
     router.replace(
-      `/${locale}/billing/invoices${queryString ? `?${queryString}` : ""}`,
+      `/billing/invoices${queryString ? `?${queryString}` : ""}`,
       { scroll: false }
     );
   }, [page, debouncedSearch, status, startDate, endDate, locale, router]);

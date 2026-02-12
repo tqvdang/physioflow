@@ -35,10 +35,10 @@ import type {
 
 function getDefaultDateRange(): { startDate: string; endDate: string } {
   const now = new Date();
-  const endDate = now.toISOString().split("T")[0];
+  const endDate = now.toISOString().split("T")[0] || "";
   const start = new Date(now);
   start.setMonth(start.getMonth() - 6);
-  const startDate = start.toISOString().split("T")[0];
+  const startDate = start.toISOString().split("T")[0] || "";
   return { startDate, endDate };
 }
 

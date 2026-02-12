@@ -46,7 +46,7 @@ export interface ApiInsurance {
   id: string;
   patient_id: string;
   card_number: string;
-  prefix: string;
+  prefix_code: string;
   beneficiary_type: number;
   province_code: string;
   holder_name: string;
@@ -55,8 +55,10 @@ export interface ApiInsurance {
   registered_facility_name?: string;
   hospital_registration_code?: string;
   expiration_date?: string;
+  coverage_percent: number;
   valid_from: string;
   valid_to?: string;
+  copay_rate: number;
   five_year_continuous: boolean;
   verification: "pending" | "verified" | "expired" | "invalid" | "failed";
   is_active: boolean;
@@ -71,7 +73,7 @@ export interface Insurance {
   id: string;
   patientId: string;
   cardNumber: string;
-  prefix: string;
+  prefixCode: string;
   beneficiaryType: number;
   provinceCode: string;
   holderName: string;
@@ -80,8 +82,10 @@ export interface Insurance {
   registeredFacilityName?: string;
   hospitalRegistrationCode?: string;
   expirationDate?: string;
+  coveragePercent: number;
   validFrom: string;
   validTo?: string;
+  copayRate: number;
   fiveYearContinuous: boolean;
   verification: "pending" | "verified" | "expired" | "invalid" | "failed";
   isActive: boolean;
@@ -142,7 +146,7 @@ function transformInsurance(data: ApiInsurance): Insurance {
     id: data.id,
     patientId: data.patient_id,
     cardNumber: data.card_number,
-    prefix: data.prefix,
+    prefixCode: data.prefix_code,
     beneficiaryType: data.beneficiary_type,
     provinceCode: data.province_code,
     holderName: data.holder_name,
@@ -151,8 +155,10 @@ function transformInsurance(data: ApiInsurance): Insurance {
     registeredFacilityName: data.registered_facility_name,
     hospitalRegistrationCode: data.hospital_registration_code,
     expirationDate: data.expiration_date,
+    coveragePercent: data.coverage_percent,
     validFrom: data.valid_from,
     validTo: data.valid_to,
+    copayRate: data.copay_rate,
     fiveYearContinuous: data.five_year_continuous,
     verification: data.verification,
     isActive: data.is_active,

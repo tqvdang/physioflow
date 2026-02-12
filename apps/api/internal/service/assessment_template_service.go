@@ -117,7 +117,7 @@ func (s *assessmentTemplateService) GetResultByID(ctx context.Context, id string
 
 // validateResults checks that all required checklist items have answers in the results JSON.
 // The results are expected to be a JSON object keyed by item name.
-func validateResults(checklistItems []model.ChecklistItem, resultsJSON json.RawMessage) error {
+func validateResults(checklistItems []model.AssessmentChecklistItem, resultsJSON json.RawMessage) error {
 	var results map[string]interface{}
 	if err := json.Unmarshal(resultsJSON, &results); err != nil {
 		return fmt.Errorf("results must be a valid JSON object: %w", err)

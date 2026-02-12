@@ -8,5 +8,5 @@ spec:
     component: api
     version: blue
   ports:
-    - port: 7011
-      targetPort: 7011
+    - port: 8080
+      targetPort: 8080

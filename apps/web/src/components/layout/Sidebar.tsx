@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import {
   BarChart3,
   BookOpen,
@@ -60,18 +59,16 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("sidebar");
   const tAuth = useTranslations("auth");
   const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
-    const fullPath = `/${locale}${href}`;
     if (href === "") {
-      // Dashboard - exact match for locale root
-      return pathname === `/${locale}` || pathname === `/${locale}/`;
+      // Dashboard - exact match for root
+      return pathname === "/" || pathname === "";
     }
-    return pathname.startsWith(fullPath);
+    return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
@@ -99,7 +96,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b px-4">
           <Link
-            href={`/${locale}` as any}
+            href="/dashboard"
             className="flex items-center gap-2 font-semibold"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -117,6 +114,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
           size="icon"
           className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full border bg-background shadow-sm"
           onClick={() => onCollapsedChange(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
             <ChevronRight className="h-3 w-3" />
@@ -127,18 +125,18 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
 
         {/* Navigation */}
         <ScrollArea className="flex-1 px-3 py-4">
-          <nav className="flex flex-col gap-1">
+          <nav aria-label="Main navigation" className="flex flex-col gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
-              const href = `/${locale}${item.href}`;
+              const href = item.href || "/dashboard";
 
               if (collapsed) {
                 return (
                   <Tooltip key={item.labelKey}>
                     <TooltipTrigger asChild>
                       <Link
-                        href={href as any}
+                        href={href}
                         className={cn(
                           "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
                           active
@@ -159,7 +157,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
               return (
                 <Link
                   key={item.labelKey}
-                  href={href as any}
+                  href={href}
                   className={cn(
                     "flex h-10 items-center gap-3 rounded-lg px-3 transition-colors",
                     active
@@ -242,13 +240,13 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings/profile` as any}>
+                <Link href="/settings/profile">
                   <User className="mr-2 h-4 w-4" />
                   {tAuth("profile")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings` as any}>
+                <Link href="/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   {t("settings")}
                 </Link>

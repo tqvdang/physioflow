@@ -25,20 +25,20 @@ func NewAssessmentTemplateHandler(svc *service.Service) *AssessmentTemplateHandl
 	return &AssessmentTemplateHandler{svc: svc}
 }
 
-// TemplateResponse represents an assessment template in API responses.
-type TemplateResponse struct {
-	ID             string                `json:"id"`
-	Name           string                `json:"name"`
-	NameVi         string                `json:"name_vi"`
-	Condition      string                `json:"condition"`
-	Category       string                `json:"category"`
-	Description    string                `json:"description,omitempty"`
-	DescriptionVi  string                `json:"description_vi,omitempty"`
-	ChecklistItems []model.ChecklistItem `json:"checklist_items"`
-	ItemCount      int                   `json:"item_count"`
-	IsActive       bool                  `json:"is_active"`
-	CreatedAt      string                `json:"created_at"`
-	UpdatedAt      string                `json:"updated_at"`
+// AssessmentTemplateResponse represents an assessment template in API responses.
+type AssessmentTemplateResponse struct {
+	ID             string                           `json:"id"`
+	Name           string                           `json:"name"`
+	NameVi         string                           `json:"name_vi"`
+	Condition      string                           `json:"condition"`
+	Category       string                           `json:"category"`
+	Description    string                           `json:"description,omitempty"`
+	DescriptionVi  string                           `json:"description_vi,omitempty"`
+	ChecklistItems []model.AssessmentChecklistItem  `json:"checklist_items"`
+	ItemCount      int                              `json:"item_count"`
+	IsActive       bool                             `json:"is_active"`
+	CreatedAt      string                           `json:"created_at"`
+	UpdatedAt      string                           `json:"updated_at"`
 }
 
 // AssessmentResultResponse represents a patient assessment result in API responses.
@@ -97,9 +97,9 @@ func (h *AssessmentTemplateHandler) ListTemplates(c echo.Context) error {
 		})
 	}
 
-	results := make([]TemplateResponse, len(templates))
+	results := make([]AssessmentTemplateResponse, len(templates))
 	for i, t := range templates {
-		results[i] = toTemplateResponse(t)
+		results[i] = toAssessmentTemplateResponse(t)
 	}
 
 	return c.JSON(http.StatusOK, results)
@@ -148,7 +148,7 @@ func (h *AssessmentTemplateHandler) GetTemplate(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, toTemplateResponse(template))
+	return c.JSON(http.StatusOK, toAssessmentTemplateResponse(template))
 }
 
 // SaveResult saves a patient assessment result.
@@ -255,9 +255,9 @@ func (h *AssessmentTemplateHandler) GetPatientResults(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses)
 }
 
-// toTemplateResponse converts an AssessmentTemplate model to a response.
-func toTemplateResponse(t *model.AssessmentTemplate) TemplateResponse {
-	return TemplateResponse{
+// toAssessmentTemplateResponse converts an AssessmentTemplate model to a response.
+func toAssessmentTemplateResponse(t *model.AssessmentTemplate) AssessmentTemplateResponse {
+	return AssessmentTemplateResponse{
 		ID:             t.ID,
 		Name:           t.Name,
 		NameVi:         t.NameVi,

@@ -32,7 +32,6 @@ import { usePatientROM } from "@/hooks/use-rom";
 import { usePatientMMT } from "@/hooks/use-mmt";
 import { usePatientMeasures } from "@/hooks/use-outcome-measures";
 import { TrendingUp, TrendingDown, Minus, Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ReevaluationFormProps {
   patientId: string;
@@ -66,7 +65,6 @@ export function ReevaluationForm({
   onSuccess,
 }: ReevaluationFormProps) {
   const t = useTranslations("reevaluation");
-  const tCommon = useTranslations("common");
   const createReevaluation = useCreateReevaluation();
 
   const [items, setItems] = useState<AssessmentItem[]>([EMPTY_ITEM()]);
@@ -74,9 +72,9 @@ export function ReevaluationForm({
   const [activeTab, setActiveTab] = useState("form");
 
   // Fetch existing data for baseline selector
-  const { data: romData } = usePatientROM(patientId);
-  const { data: mmtData } = usePatientMMT(patientId);
-  const { data: outcomeData } = usePatientMeasures(patientId);
+  usePatientROM(patientId);
+  usePatientMMT(patientId);
+  usePatientMeasures(patientId);
 
   // Fetch existing re-evaluation history
   const { data: historyData } = useReevaluationHistory(patientId);

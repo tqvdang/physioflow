@@ -60,7 +60,7 @@ describe('InsuranceValidator', () => {
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox') as HTMLInputElement;
-      await user.type(input, 'dn4012345678901');
+      await user.type(input, 'dn40123456789012 3');
 
       expect(input.value).toBe('DN4-0123-45678-90123');
     });
@@ -76,30 +76,33 @@ describe('InsuranceValidator', () => {
 
       mockMutateAsync.mockResolvedValue({
         valid: true,
-        cardNumber: 'DN4-0123-45678-90123',
-        prefixCode: 'DN',
-        prefixLabel: 'DN - Doanh nghiep',
-        defaultCoverage: 80,
+        cardNumber: 'CH40123456789023',
+        prefixCode: 'CH',
+        prefixLabel: 'CH - Chinh sach',
+        defaultCoverage: 100,
         expired: false,
       });
 
       renderWithQuery(<InsuranceValidator />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'DN4-0123-45678-90123');
+      await user.type(input, 'CH40123456789023');
 
       const validateButton = screen.getByRole('button', { name: /validation.validate/i });
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/validation.valid/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/validation.valid/i).length).toBeGreaterThan(0);
       });
 
-      // Change input - result should clear
-      await user.type(input, '2');
+      // Manually modify input to trigger onChange
+      await user.tripleClick(input);
+      await user.keyboard('DN');
 
+      // After changing input, result should be cleared
+      // Use exact match to avoid matching the button's "validation.validate" text
       await waitFor(() => {
-        expect(screen.queryByText(/validation.valid/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/^validation\.valid$/i)).not.toBeInTheDocument();
       });
     });
   });
@@ -197,7 +200,8 @@ describe('InsuranceValidator', () => {
       const input = screen.getByRole('textbox');
       await user.type(input, 'DN4-0123-45678-90123');
 
-      const validateButton = screen.getByRole('button', { name: /validation.validate/i });
+      // When isPending is true, button shows loader icon instead of text
+      const validateButton = screen.getByRole('button');
       expect(validateButton).toBeDisabled();
     });
   });
@@ -407,7 +411,8 @@ describe('InsuranceValidator', () => {
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/validation.invalid/i)).toBeInTheDocument();
+        // Should have at least one instance of validation.invalid (appears in both badge and text)
+        expect(screen.getAllByText(/validation.invalid/i).length).toBeGreaterThan(0);
       });
     });
   });
@@ -444,7 +449,9 @@ describe('InsuranceValidator', () => {
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/validation.expired/i)).toBeInTheDocument();
+        // Should show expired badge (which contains the text "validation.expired")
+        const badges = screen.getAllByText(/validation.expired/i);
+        expect(badges.length).toBeGreaterThan(0);
       });
     });
 
@@ -477,7 +484,7 @@ describe('InsuranceValidator', () => {
       await user.click(validateButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/validation.expired/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/validation.expired/i).length).toBeGreaterThan(0);
       });
 
       expect(mockOnValidResult).not.toHaveBeenCalled();

@@ -6,7 +6,7 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PatientStatusBadge } from "./PatientStatusBadge";
@@ -81,7 +81,7 @@ export function PatientSearch({
     if (onSelect) {
       onSelect(patient);
     } else {
-      router.push(`/${locale}/patients/${patient.id}`);
+      router.push(`/patients/${patient.id}`);
     }
   };
 
@@ -169,6 +169,7 @@ export function PatientSearch({
               inputRef.current?.focus();
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Xoa tim kiem"
           >
             <X className="h-4 w-4" />
           </button>

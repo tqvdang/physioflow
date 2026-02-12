@@ -21,12 +21,27 @@ import {
 } from "@/components/ui/card";
 import {
   useInsuranceValidation,
-  validateBhytCardLocal,
+  BHYT_PREFIX_CODES,
   type InsuranceValidationResult,
 } from "@/hooks/use-insurance";
 
 interface InsuranceValidatorProps {
   onValidResult?: (result: InsuranceValidationResult) => void;
+}
+
+/**
+ * Format BHYT card number with dashes (XX#-####-#####-#####)
+ */
+function formatCardNumber(value: string): string {
+  const cleaned = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  let formatted = '';
+  for (let i = 0; i < cleaned.length && i < 17; i++) {
+    if (i === 3 || i === 7 || i === 12) {
+      formatted += '-';
+    }
+    formatted += cleaned[i];
+  }
+  return formatted;
 }
 
 export function InsuranceValidator({ onValidResult }: InsuranceValidatorProps) {
@@ -41,7 +56,7 @@ export function InsuranceValidator({ onValidResult }: InsuranceValidatorProps) {
     const validationResult = await validateMutation.mutateAsync(cardNumber);
     setResult(validationResult);
 
-    if (validationResult.valid && onValidResult) {
+    if (validationResult.valid && !validationResult.expired && onValidResult) {
       onValidResult(validationResult);
     }
   };
@@ -56,7 +71,30 @@ export function InsuranceValidator({ onValidResult }: InsuranceValidatorProps) {
   // Real-time local preview as user types
   const localPreview = React.useMemo(() => {
     if (cardNumber.length < 2) return null;
-    return validateBhytCardLocal(cardNumber);
+
+    // For partial input, just check the prefix
+    const prefixCode = cardNumber.substring(0, 2).toUpperCase();
+    const prefix = BHYT_PREFIX_CODES.find((p) => p.value === prefixCode);
+
+    if (prefix) {
+      return {
+        valid: false,
+        cardNumber,
+        prefixCode: prefix.value,
+        prefixLabel: prefix.label,
+        defaultCoverage: prefix.coverage,
+        expired: false,
+      };
+    }
+
+    return {
+      valid: false,
+      cardNumber,
+      prefixCode,
+      prefixLabel: "",
+      defaultCoverage: 0,
+      expired: false,
+    };
   }, [cardNumber]);
 
   const getStatusIcon = () => {
@@ -108,13 +146,14 @@ export function InsuranceValidator({ onValidResult }: InsuranceValidatorProps) {
           <Input
             value={cardNumber}
             onChange={(e) => {
-              setCardNumber(e.target.value.toUpperCase());
+              const formatted = formatCardNumber(e.target.value);
+              setCardNumber(formatted);
               setResult(null);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="DN4012345678901"
+            placeholder="DN4-0123-45678-90123"
             className="font-mono flex-1"
-            maxLength={15}
+            maxLength={21}
           />
           <Button
             onClick={handleValidate}

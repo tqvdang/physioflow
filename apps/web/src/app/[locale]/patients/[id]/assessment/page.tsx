@@ -6,8 +6,9 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,6 @@ export default function AssessmentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const patientId = params.id as string;
-  const locale = (params.locale as string) ?? "vi";
 
   const t = useTranslations("assessment");
   const tReeval = useTranslations("reevaluation");
@@ -38,7 +38,7 @@ export default function AssessmentPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+          onClick={() => router.push(`/patients/${patientId}`)}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

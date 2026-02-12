@@ -6,9 +6,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
 import {
   ArrowLeft,
   Shield,
@@ -63,7 +63,7 @@ function InsurancePageSkeleton() {
 export default function PatientInsurancePage() {
   const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
   const patientId = params.id as string;
   const t = useTranslations("insurance");
   const tCommon = useTranslations("common");
@@ -106,7 +106,7 @@ export default function PatientInsurancePage() {
     if (hasInsurance) {
       setIsEditing(false);
     } else {
-      router.push(`/${locale}/patients/${patientId}`);
+      router.push(`/patients/${patientId}`);
     }
   };
 
@@ -119,7 +119,7 @@ export default function PatientInsurancePage() {
     return (
       <div className="container mx-auto py-12 text-center">
         <h1 className="text-2xl font-bold mb-4">{t("patientNotFound")}</h1>
-        <Link href={`/${locale}/patients`}>
+        <Link href={"/patients"}>
           <Button>{t("backToPatients")}</Button>
         </Link>
       </div>
@@ -144,21 +144,21 @@ export default function PatientInsurancePage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+          onClick={() => router.push(`/patients/${patientId}`)}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link
-              href={`/${locale}/patients`}
+              href={"/patients"}
               className="hover:text-foreground transition-colors"
             >
               {t("breadcrumb.patients")}
             </Link>
             <span>/</span>
             <Link
-              href={`/${locale}/patients/${patientId}`}
+              href={`/patients/${patientId}`}
               className="hover:text-foreground transition-colors"
             >
               {displayName}
@@ -262,11 +262,13 @@ export default function PatientInsurancePage() {
                         isExpired && "text-red-600"
                       )}
                     >
-                      {formatDate(insurance.validTo, {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
+                      {insurance.validTo
+                        ? formatDate(insurance.validTo, {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          })
+                        : "—"}
                     </p>
                   </div>
                   <div>
@@ -283,15 +285,15 @@ export default function PatientInsurancePage() {
                       variant="outline"
                       className={cn(
                         "text-xs",
-                        insurance.verificationStatus === "verified" &&
+                        insurance.verification === "verified" &&
                           "bg-green-50 text-green-700 border-green-200",
-                        insurance.verificationStatus === "pending" &&
+                        insurance.verification === "pending" &&
                           "bg-yellow-50 text-yellow-700 border-yellow-200",
-                        insurance.verificationStatus === "failed" &&
+                        insurance.verification === "failed" &&
                           "bg-red-50 text-red-700 border-red-200"
                       )}
                     >
-                      {t(`status.${insurance.verificationStatus}`)}
+                      {t(`status.${insurance.verification}`)}
                     </Badge>
                   </div>
                 </div>

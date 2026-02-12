@@ -67,12 +67,12 @@ export function TopServicesChart({
     payload,
   }: {
     active?: boolean;
-    payload?: Array<{
+    payload?: ReadonlyArray<{
       payload: { name: string; nameVi: string; code: string; revenue: number; quantity: number };
     }>;
   }) => {
     if (!active || !payload || payload.length === 0) return null;
-    const item = payload[0].payload;
+    const item = payload[0]!.payload;
     return (
       <div className="rounded-lg border bg-background p-3 shadow-sm">
         <p className="font-medium">{item.nameVi || item.name}</p>

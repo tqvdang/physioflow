@@ -233,7 +233,7 @@ export default function SchedulePage() {
           {/* Status/Type Filters */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" aria-label={t("filter.label")}>
                 <Filter className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -267,7 +267,7 @@ export default function SchedulePage() {
           </DropdownMenu>
 
           {/* Refresh */}
-          <Button variant="outline" size="icon" onClick={() => refetch()}>
+          <Button variant="outline" size="icon" onClick={() => refetch()} aria-label={t("refresh")}>
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
           </Button>
 

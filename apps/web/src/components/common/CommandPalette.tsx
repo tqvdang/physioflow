@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import {
   Calculator,
   Calendar,
@@ -41,41 +41,40 @@ interface CommandItemData {
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const router = useRouter();
-  const locale = useLocale();
   const t = useTranslations("commandPalette");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
-  // Navigation items
+  // Navigation items (next-intl router auto-adds locale prefix)
   const navigationItems: CommandItemData[] = React.useMemo(
     () => [
       {
         icon: LayoutDashboard,
         label: t("navigation.dashboard"),
-        action: () => router.push(`/${locale}`),
+        action: () => router.push("/dashboard"),
       },
       {
         icon: Calendar,
         label: t("navigation.schedule"),
-        action: () => router.push(`/${locale}/schedule`),
+        action: () => router.push("/schedule"),
       },
       {
         icon: Users,
         label: t("navigation.patients"),
-        action: () => router.push(`/${locale}/patients`),
+        action: () => router.push("/patients"),
       },
       {
         icon: Library,
         label: t("navigation.library"),
-        action: () => router.push(`/${locale}/library`),
+        action: () => router.push("/library"),
       },
       {
         icon: FileText,
         label: t("navigation.reports"),
-        action: () => router.push(`/${locale}/reports`),
+        action: () => router.push("/reports"),
       },
     ],
-    [router, locale, t]
+    [router, t]
   );
 
   // Quick actions
@@ -85,22 +84,22 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         icon: UserPlus,
         label: t("actions.newPatient"),
         shortcut: "N",
-        action: () => router.push(`/${locale}/patients/new`),
+        action: () => router.push("/patients/new"),
       },
       {
         icon: Calculator,
         label: t("actions.newAssessment"),
         shortcut: "A",
-        action: () => router.push(`/${locale}/assessments/new`),
+        action: () => router.push("/assessments/new"),
       },
       {
         icon: CreditCard,
         label: t("actions.newSession"),
         shortcut: "S",
-        action: () => router.push(`/${locale}/sessions/new`),
+        action: () => router.push("/sessions/new"),
       },
     ],
-    [router, locale, t]
+    [router, t]
   );
 
   // Settings items
@@ -109,15 +108,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       {
         icon: User,
         label: t("settings.profile"),
-        action: () => router.push(`/${locale}/settings/profile`),
+        action: () => router.push("/settings/profile"),
       },
       {
         icon: Settings,
         label: t("settings.preferences"),
-        action: () => router.push(`/${locale}/settings`),
+        action: () => router.push("/settings"),
       },
     ],
-    [router, locale, t]
+    [router, t]
   );
 
   // All items flattened for keyboard navigation - used via filteredAllItems

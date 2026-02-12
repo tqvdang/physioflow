@@ -6,9 +6,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
 import {
   ArrowLeft,
   Plus,
@@ -69,7 +69,7 @@ function InvoiceStatusBadge({ status, t }: { status: InvoiceStatus; t: (key: str
 export default function PatientBillingPage() {
   const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
   const patientId = params.id as string;
 
   const t = useTranslations("billing");
@@ -121,7 +121,7 @@ export default function PatientBillingPage() {
     return (
       <div className="container mx-auto py-12 text-center">
         <p className="text-muted-foreground">Patient not found</p>
-        <Link href={`/${locale}/patients`}>
+        <Link href={"/patients"}>
           <Button className="mt-4">{tCommon("retry")}</Button>
         </Link>
       </div>
@@ -136,7 +136,7 @@ export default function PatientBillingPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+            onClick={() => router.push(`/patients/${patientId}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

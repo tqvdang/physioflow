@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import {
   BarChart3,
   BookOpen,
@@ -52,17 +51,15 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("sidebar");
   const tAuth = useTranslations("auth");
   const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
-    const fullPath = `/${locale}${href}`;
     if (href === "") {
-      return pathname === `/${locale}` || pathname === `/${locale}/`;
+      return pathname === "/" || pathname === "";
     }
-    return pathname.startsWith(fullPath);
+    return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
@@ -107,12 +104,12 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
-              const href = `/${locale}${item.href}`;
+              const href = item.href || "/dashboard";
 
               return (
                 <Link
                   key={item.labelKey}
-                  href={href as any}
+                  href={href}
                   onClick={handleNavClick}
                   className={cn(
                     "flex h-10 items-center gap-3 rounded-lg px-3 transition-colors",
@@ -158,7 +155,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
 
           <div className="flex flex-col gap-1">
             <Link
-              href={`/${locale}/settings/profile` as any}
+              href="/settings/profile"
               onClick={handleNavClick}
               className="flex h-10 items-center gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
@@ -166,7 +163,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
               <span className="text-sm font-medium">{tAuth("profile")}</span>
             </Link>
             <Link
-              href={`/${locale}/settings` as any}
+              href="/settings"
               onClick={handleNavClick}
               className="flex h-10 items-center gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >

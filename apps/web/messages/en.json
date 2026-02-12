@@ -209,8 +209,10 @@
     "filter": {
       "allTherapists": "All Therapists",
       "status": "Status",
-      "type": "Type"
+      "type": "Type",
+      "label": "Filter appointments"
     },
+    "refresh": "Refresh schedule",
     "status": {
       "scheduled": "Scheduled",
       "confirmed": "Confirmed",
@@ -333,7 +335,8 @@
     "actions": {
       "view": "View Details",
       "edit": "Edit",
-      "startSession": "Start Session"
+      "startSession": "Start Session",
+      "more": "More actions"
     },
     "empty": "No patients found",
     "error": "Unable to load patient list",
@@ -350,8 +353,14 @@
       "category": "Category",
       "difficulty": "Difficulty",
       "muscleGroup": "Muscle Group",
-      "clear": "Clear Filters"
+      "clear": "Clear Filters",
+      "removeSearch": "Remove search filter",
+      "removeCategory": "Remove category filter",
+      "removeDifficulty": "Remove difficulty filter"
     },
+    "viewMode": "View mode",
+    "viewGrid": "Grid view",
+    "viewList": "List view",
     "categories": {
       "stretching": "Stretching",
       "strengthening": "Strengthening",
@@ -576,10 +585,14 @@
     "medicalAlerts": {
       "title": "Medical Alerts",
       "placeholder": "Enter medical alert (allergies, conditions, etc.)",
-      "add": "Add Alert"
+      "add": "Add Alert",
+      "inputLabel": "New medical alert",
+      "addButton": "Add medical alert",
+      "removeAlert": "Remove alert"
     },
     "notes": {
       "title": "Notes",
+      "label": "Patient notes",
       "placeholder": "Additional notes about the patient..."
     },
     "validation": {

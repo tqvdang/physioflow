@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import {
   AlertCircle,
   AlertTriangle,
@@ -234,7 +234,7 @@ export function Alerts() {
                               asChild
                               className="h-auto p-0 text-xs"
                             >
-                              <Link href={`/${locale}${alert.actionHref}`}>
+                              <Link href={alert.actionHref!}>
                                 {actionLabel}
                               </Link>
                             </Button>

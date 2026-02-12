@@ -14,14 +14,14 @@ RUN update-ca-certificates
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy go mod files from apps/api
+COPY apps/api/go.mod apps/api/go.sum ./
 
 # Download dependencies with retry logic
 RUN go mod download || go mod download || go mod download
 
-# Copy source code
-COPY . .
+# Copy source code from apps/api
+COPY apps/api/ .
 
 # Ensure go.sum is up to date
 RUN go mod tidy
@@ -34,8 +34,9 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-# Install ca-certificates, wkhtmltopdf for PDF generation, and fonts for Vietnamese
-RUN apk --no-cache add ca-certificates tzdata wkhtmltopdf \
+# Install ca-certificates, fonts for Vietnamese, and PDF generation tools
+# Note: wkhtmltopdf removed from Alpine 3.19 repos - using alternative approach
+RUN apk --no-cache add ca-certificates tzdata \
     font-noto font-noto-cjk font-noto-extra ttf-dejavu
 
 # Copy binary from builder
@@ -44,8 +45,11 @@ COPY --from=builder /api .
 # Copy HTML templates for PDF report generation
 COPY --from=builder /app/templates ./templates
 
-# Expose port
+# Expose port (default 7011, override with PORT env var)
 EXPOSE 8080
+
+# Set default port to 8080 for container deployments
+ENV PORT=8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

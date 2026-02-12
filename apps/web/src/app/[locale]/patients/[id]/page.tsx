@@ -6,9 +6,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,7 +220,7 @@ function PatientDashboardSkeleton() {
 export default function PatientDashboardPage() {
   const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
   const patientId = params.id as string;
   const t = useTranslations("patientDetail");
 
@@ -248,7 +248,7 @@ export default function PatientDashboardPage() {
         <p className="text-muted-foreground mb-6">
           {t("notFound.description")}
         </p>
-        <Link href={`/${locale}/patients`}>
+        <Link href={"/patients"}>
           <Button>{t("notFound.backToList")}</Button>
         </Link>
       </div>
@@ -265,7 +265,7 @@ export default function PatientDashboardPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push(`/${locale}/patients`)}
+          onClick={() => router.push("/patients")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -345,7 +345,7 @@ export default function PatientDashboardPage() {
 
                 {/* Actions - Right side */}
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link href={`/${locale}/patients/${patientId}/edit`}>
+                  <Link href={`/patients/${patientId}/edit`}>
                     <Button variant="outline" size="sm" className="w-full">
                       <Edit className="mr-2 h-4 w-4" />
                       {t("actions.edit")}
@@ -402,7 +402,7 @@ export default function PatientDashboardPage() {
                     {t("startSession.description")}
                   </p>
                 </div>
-                <Link href={`/${locale}/patients/${patientId}/session/new`}>
+                <Link href={`/patients/${patientId}/session/new`}>
                   <Button
                     size="lg"
                     variant="secondary"
@@ -741,19 +741,19 @@ export default function PatientDashboardPage() {
                   <CardTitle>{t("progress.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Link href={`/${locale}/patients/${patientId}/assessment`}>
+                  <Link href={`/patients/${patientId}/assessment`}>
                     <Button variant="outline" className="w-full justify-start">
                       <Activity className="mr-2 h-4 w-4" />
                       {t("progress.romMmt")}
                     </Button>
                   </Link>
-                  <Link href={`/${locale}/patients/${patientId}/outcomes`}>
+                  <Link href={`/patients/${patientId}/outcomes`}>
                     <Button variant="outline" className="w-full justify-start">
                       <TrendingUp className="mr-2 h-4 w-4" />
                       {t("progress.outcomeMeasures")}
                     </Button>
                   </Link>
-                  <Link href={`/${locale}/patients/${patientId}/assessment?tab=reevaluation`}>
+                  <Link href={`/patients/${patientId}/assessment?tab=reevaluation`}>
                     <Button variant="outline" className="w-full justify-start">
                       <TrendingUp className="mr-2 h-4 w-4" />
                       {t("progress.reevaluation")}

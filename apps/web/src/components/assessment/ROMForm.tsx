@@ -56,7 +56,6 @@ interface ROMFormProps {
 
 export function ROMForm({ patientId, visitId, onSuccess }: ROMFormProps) {
   const t = useTranslations("assessment.rom");
-  const tCommon = useTranslations("common");
   const createROM = useCreateROM();
 
   const [joint, setJoint] = useState<ROMJoint | "">("");

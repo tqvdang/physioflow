@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { AlertCircle, Eye, Play, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
@@ -167,7 +167,7 @@ export function RecentPatients() {
             <CardDescription>{t("description")}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/${locale}/patients`}>{t("viewAll")}</Link>
+            <Link href="/patients">{t("viewAll")}</Link>
           </Button>
         </div>
       </CardHeader>
@@ -205,7 +205,7 @@ export function RecentPatients() {
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center justify-between">
                           <Link
-                            href={`/${locale}/patients/${patient.id}`}
+                            href={`/patients/${patient.id}`}
                             className="font-medium hover:underline"
                           >
                             {displayName}
@@ -249,7 +249,7 @@ export function RecentPatients() {
                               asChild
                               className="h-7 text-xs"
                             >
-                              <Link href={`/${locale}/patients/${patient.id}/session`}>
+                              <Link href={`/patients/${patient.id}/session`}>
                                 <Play className="mr-1 h-3 w-3" />
                                 {t("continue")}
                               </Link>
@@ -261,7 +261,7 @@ export function RecentPatients() {
                             asChild
                             className="h-7 text-xs"
                           >
-                            <Link href={`/${locale}/patients/${patient.id}`}>
+                            <Link href={`/patients/${patient.id}`}>
                               <Eye className="mr-1 h-3 w-3" />
                               {t("view")}
                             </Link>

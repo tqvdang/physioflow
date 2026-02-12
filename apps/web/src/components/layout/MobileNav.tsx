@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import {
   BarChart3,
   BookOpen,
@@ -52,23 +51,20 @@ const moreMenuItems: NavItem[] = [
 export function MobileNav() {
   const [moreMenuOpen, setMoreMenuOpen] = React.useState(false);
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("sidebar");
   const tAuth = useTranslations("auth");
   const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
-    const fullPath = `/${locale}${href}`;
     if (href === "") {
-      // Dashboard - exact match for locale root
-      return pathname === `/${locale}` || pathname === `/${locale}/`;
+      return pathname === "/" || pathname === "";
     }
-    return pathname.startsWith(fullPath);
+    return pathname.startsWith(href);
   };
 
   // Check if any "more" menu item is active
   const isMoreActive = moreMenuItems.some((item) => isActive(item.href)) ||
-    pathname.startsWith(`/${locale}/settings`);
+    pathname.startsWith("/settings");
 
   const handleLogout = async () => {
     try {
@@ -90,18 +86,18 @@ export function MobileNav() {
     : "U";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden">
+    <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden">
       <div className="flex h-16 items-center justify-around px-2">
         {/* Main navigation items */}
         {mainNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
-          const href = `/${locale}${item.href}`;
+          const href = item.href || "/dashboard";
 
           return (
             <Link
               key={item.labelKey}
-              href={href as any}
+              href={href}
               className={cn(
                 "flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
                 active
@@ -150,12 +146,12 @@ export function MobileNav() {
                 {moreMenuItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
-                  const href = `/${locale}${item.href}`;
+                  const href = item.href || "/dashboard";
 
                   return (
                     <Link
                       key={item.labelKey}
-                      href={href as any}
+                      href={href}
                       onClick={handleNavClick}
                       className={cn(
                         "flex h-12 items-center gap-3 rounded-lg px-3 transition-colors",
@@ -178,11 +174,11 @@ export function MobileNav() {
               {/* Settings and profile */}
               <div className="flex flex-col gap-1">
                 <Link
-                  href={`/${locale}/settings` as any}
+                  href="/settings"
                   onClick={handleNavClick}
                   className={cn(
                     "flex h-12 items-center gap-3 rounded-lg px-3 transition-colors",
-                    pathname.startsWith(`/${locale}/settings`)
+                    pathname.startsWith("/settings")
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
@@ -220,7 +216,7 @@ export function MobileNav() {
 
               <div className="mt-2 flex flex-col gap-1">
                 <Link
-                  href={`/${locale}/settings/profile` as any}
+                  href="/settings/profile"
                   onClick={handleNavClick}
                   className="flex h-12 items-center gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                 >

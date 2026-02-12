@@ -63,14 +63,14 @@ export function RevenueChart({
     label,
   }: {
     active?: boolean;
-    payload?: Array<{ name: string; value: number; color: string }>;
-    label?: string;
+    payload?: readonly any[];
+    label?: string | number;
   }) => {
     if (!active || !payload) return null;
     return (
       <div className="rounded-lg border bg-background p-3 shadow-sm">
         <p className="font-medium">{label}</p>
-        {payload.map((entry, index) => (
+        {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
             {entry.name}: {formatFullVND(entry.value)}
           </p>

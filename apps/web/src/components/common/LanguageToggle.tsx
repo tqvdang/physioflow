@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 interface LanguageToggleProps {
@@ -16,11 +16,8 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
 
   const toggleLocale = () => {
     const newLocale = locale === "vi" ? "en" : "vi";
-    // Replace the locale in the pathname
-    const segments = pathname.split("/");
-    segments[1] = newLocale;
-    const newPath = segments.join("/");
-    router.push(newPath);
+    // next-intl's useRouter handles locale switching automatically
+    router.replace(pathname, { locale: newLocale });
   };
 
   return (

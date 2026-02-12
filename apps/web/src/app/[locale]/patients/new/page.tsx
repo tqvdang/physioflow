@@ -6,8 +6,8 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,9 @@ import {
 import { api } from "@/lib/api";
 
 export default function NewPatientPage() {
-  const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
   const t = useTranslations();
+  const locale = useLocale();
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -35,7 +34,7 @@ export default function NewPatientPage() {
       const response = await api.post<{ id: string }>("/v1/patients", apiData);
 
       // Redirect to patient detail page
-      router.push(`/${locale}/patients/${response.data.id}`);
+      router.push(`/patients/${response.data.id}`);
     } catch (err) {
       console.error("Failed to create patient:", err);
       setError(t("common.error"));
@@ -44,7 +43,7 @@ export default function NewPatientPage() {
   };
 
   const handleCancel = () => {
-    router.push(`/${locale}/patients`);
+    router.push("/patients");
   };
 
   return (
@@ -53,7 +52,7 @@ export default function NewPatientPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          onClick={() => router.push(`/${locale}/patients`)}
+          onClick={() => router.push("/patients")}
           className="mb-4 -ml-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

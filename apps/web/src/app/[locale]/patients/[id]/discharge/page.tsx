@@ -6,8 +6,9 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import {
   ArrowLeft,
   FileText,
@@ -69,7 +70,7 @@ function LoadingSkeleton() {
 export default function DischargePlanningPage() {
   const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
   const patientId = params.id as string;
   const t = useTranslations("discharge");
   const tCommon = useTranslations("common");
@@ -170,7 +171,7 @@ export default function DischargePlanningPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+            onClick={() => router.push(`/patients/${patientId}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

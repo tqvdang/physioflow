@@ -11,9 +11,6 @@ import (
 	"github.com/tqvdang/physioflow/apps/api/internal/model"
 )
 
-// ErrVersionConflict is returned when an optimistic locking check fails.
-var ErrVersionConflict = fmt.Errorf("version conflict: record has been modified")
-
 // InsuranceRepository defines the interface for insurance data access.
 type InsuranceRepository interface {
 	Create(ctx context.Context, card *model.BHYTCard) error

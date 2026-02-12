@@ -6,9 +6,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,10 +82,9 @@ function ErrorState({
 }
 
 export default function PatientsPage() {
-  const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
 
   // Translations
   const t = useTranslations("patients");
@@ -136,10 +135,10 @@ export default function PatientsPage() {
     if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
 
     const queryString = params.toString();
-    router.replace(`/${locale}/patients${queryString ? `?${queryString}` : ""}`, {
+    router.replace(`/patients${queryString ? `?${queryString}` : ""}`, {
       scroll: false,
     });
-  }, [page, debouncedSearch, status, sortBy, sortOrder, locale, router]);
+  }, [page, debouncedSearch, status, sortBy, sortOrder, router]);
 
   // Handle search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,7 +169,7 @@ export default function PatientsPage() {
 
   // Navigate to patient
   const handleRowClick = (patient: Patient) => {
-    router.push(`/${locale}/patients/${patient.id}`);
+    router.push(`/patients/${patient.id}`);
   };
 
   // Table columns
@@ -233,6 +232,7 @@ export default function PatientsPage() {
               variant="ghost"
               size="icon"
               onClick={(e) => e.stopPropagation()}
+              aria-label={t("actions.more")}
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -241,7 +241,7 @@ export default function PatientsPage() {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/${locale}/patients/${patient.id}`);
+                router.push(`/patients/${patient.id}`);
               }}
             >
               <Eye className="mr-2 h-4 w-4" />
@@ -250,7 +250,7 @@ export default function PatientsPage() {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/${locale}/patients/${patient.id}/edit`);
+                router.push(`/patients/${patient.id}/edit`);
               }}
             >
               <Edit className="mr-2 h-4 w-4" />
@@ -259,7 +259,7 @@ export default function PatientsPage() {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/${locale}/patients/${patient.id}/session/new`);
+                router.push(`/patients/${patient.id}/session/new`);
               }}
               className="text-green-600"
             >
@@ -282,7 +282,7 @@ export default function PatientsPage() {
             {t("description")}
           </p>
         </div>
-        <Link href={`/${locale}/patients/new` as any}>
+        <Link href="/patients/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             {t("newPatient")}
@@ -303,6 +303,7 @@ export default function PatientsPage() {
                 onChange={handleSearchChange}
                 placeholder={t("searchPlaceholder")}
                 className="pl-9"
+                aria-label={t("searchPlaceholder")}
               />
             </div>
 

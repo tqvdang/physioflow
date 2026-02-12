@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import {
   useCalculateCoverage,
+  BHYT_PREFIX_CODES,
   type Insurance,
 } from "@/hooks/use-insurance";
 
@@ -72,8 +73,10 @@ export function CoverageCalculator({
       };
     }
 
-    const coveragePercent = insurance.coveragePercent;
-    const copayRate = insurance.copayRate;
+    // Get coverage from prefix code
+    const prefixData = BHYT_PREFIX_CODES.find((p) => p.value === insurance.prefixCode);
+    const coveragePercent = prefixData?.coverage ?? 80;
+    const copayRate = 100 - coveragePercent;
     const insurancePays = Math.round((totalAmount * coveragePercent) / 100);
     const patientPays = totalAmount - insurancePays;
 

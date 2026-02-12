@@ -174,13 +174,13 @@ function DatePickerDialog({
 function insuranceToFormValues(insurance: Insurance): Partial<InsuranceFormValues> {
   return {
     card_number: insurance.cardNumber,
-    prefix_code: insurance.prefix,
+    prefix_code: insurance.prefixCode,
     hospital_registration_code: insurance.hospitalRegistrationCode || "",
     expiration_date: insurance.expirationDate ? new Date(insurance.expirationDate) : undefined,
     valid_from: new Date(insurance.validFrom),
     valid_to: insurance.validTo ? new Date(insurance.validTo) : undefined,
-    coverage_percent: BHYT_PREFIX_CODES.find((p) => p.value === insurance.prefix)?.coverage ?? 80,
-    copay_rate: 100 - (BHYT_PREFIX_CODES.find((p) => p.value === insurance.prefix)?.coverage ?? 80),
+    coverage_percent: insurance.coveragePercent,
+    copay_rate: insurance.copayRate,
   };
 }
 
@@ -551,7 +551,7 @@ export function InsuranceCardForm({
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+          <div role="alert" className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {error}
           </div>
         )}

@@ -706,6 +706,7 @@ export function PatientForm({
                       type="button"
                       onClick={() => handleRemoveAlert(alert)}
                       className="ml-1 hover:bg-destructive-foreground/20 rounded-full p-0.5"
+                      aria-label={`${t("medicalAlerts.removeAlert")}: ${alert}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -722,6 +723,7 @@ export function PatientForm({
                 onChange={(e) => setNewAlert(e.target.value)}
                 onKeyDown={handleAlertKeyDown}
                 placeholder={t("medicalAlerts.placeholder")}
+                aria-label={t("medicalAlerts.inputLabel")}
                 className="flex-1"
               />
               <Button
@@ -730,6 +732,7 @@ export function PatientForm({
                 size="icon"
                 onClick={handleAddAlert}
                 disabled={!newAlert.trim()}
+                aria-label={t("medicalAlerts.addButton")}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -754,6 +757,7 @@ export function PatientForm({
               name="notes"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>{t("notes.label")}</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder={t("notes.placeholder")}
@@ -811,7 +815,7 @@ export function PatientForm({
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+          <div role="alert" className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {error}
           </div>
         )}

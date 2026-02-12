@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { handleCallback, getAndClearRedirectPath } from "@/lib/auth";
 
 /**
@@ -11,6 +12,7 @@ import { handleCallback, getAndClearRedirectPath } from "@/lib/auth";
  */
 export default function CallbackPage() {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -42,10 +44,21 @@ export default function CallbackPage() {
         // Set session cookie for middleware
         document.cookie = `physioflow_session=active; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
 
-        // Get redirect path
-        const redirectPath = getAndClearRedirectPath() ?? "/";
+        // Get redirect path and strip any locale prefix to avoid double-prefixing
+        let redirectPath = getAndClearRedirectPath() ?? "/dashboard";
+        // Strip locale prefix if present (e.g., /vi/dashboard -> /dashboard)
+        const localePrefix = `/${locale}/`;
+        if (redirectPath.startsWith(localePrefix)) {
+          redirectPath = redirectPath.slice(localePrefix.length - 1);
+        } else if (redirectPath === `/${locale}`) {
+          redirectPath = "/dashboard";
+        }
+        // Ensure we redirect to dashboard instead of root
+        if (redirectPath === "/" || redirectPath === "") {
+          redirectPath = "/dashboard";
+        }
 
-        // Redirect to the original destination
+        // Redirect to the original destination (locale prefix is auto-added by next-intl router)
         router.replace(redirectPath);
       } catch (err) {
         console.error("Callback error:", err);
@@ -54,7 +67,7 @@ export default function CallbackPage() {
     };
 
     processCallback();
-  }, [searchParams, router, t]);
+  }, [searchParams, router, t, locale]);
 
   // Show error state
   if (error) {
@@ -79,7 +92,7 @@ export default function CallbackPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("authenticationFailed")}</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => router.push("/auth/login")}
+            onClick={() => router.push("/auth/login" as any)}
             className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
           >
             {t("backToLogin")}

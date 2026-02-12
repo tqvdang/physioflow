@@ -5,7 +5,7 @@
  * Displays patient info with photo, name, and status
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export function PatientCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/${locale}/patients/${patient.id}`}
+                  href={`/patients/${patient.id}`}
                   className="font-medium truncate hover:underline"
                 >
                   {displayName}
@@ -92,7 +92,7 @@ export function PatientCard({
               </p>
             </div>
             {showActions && (
-              <Link href={`/${locale}/patients/${patient.id}`}>
+              <Link href={`/patients/${patient.id}`}>
                 <Button variant="ghost" size="icon">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -117,7 +117,7 @@ export function PatientCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Link
-                href={`/${locale}/patients/${patient.id}`}
+                href={`/patients/${patient.id}`}
                 className="text-lg font-semibold hover:underline"
               >
                 {displayName}
@@ -167,17 +167,17 @@ export function PatientCard({
         {/* Actions */}
         {showActions && (
           <div className="flex items-center gap-2 pt-2 border-t">
-            <Link href={`/${locale}/patients/${patient.id}`} className="flex-1">
+            <Link href={`/patients/${patient.id}`} className="flex-1">
               <Button variant="outline" size="sm" className="w-full">
                 Xem chi tiet
               </Button>
             </Link>
-            <Link href={`/${locale}/patients/${patient.id}/edit`}>
+            <Link href={`/patients/${patient.id}/edit`}>
               <Button variant="ghost" size="icon">
                 <Edit className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href={`/${locale}/patients/${patient.id}/session/new`}>
+            <Link href={`/patients/${patient.id}/session/new`}>
               <Button size="icon" className="bg-green-600 hover:bg-green-700">
                 <Play className="h-4 w-4" />
               </Button>

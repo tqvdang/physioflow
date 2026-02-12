@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Calculator, Calendar, FileText, UserPlus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -54,7 +54,6 @@ const quickActions: QuickAction[] = [
 ];
 
 export function QuickActions() {
-  const locale = useLocale();
   const t = useTranslations("dashboard.quickActions");
 
   return (
@@ -70,7 +69,7 @@ export function QuickActions() {
             return (
               <Link
                 key={action.labelKey}
-                href={`/${locale}${action.href}`}
+                href={action.href}
                 className="group flex flex-col items-center rounded-lg border p-4 text-center transition-colors hover:bg-accent"
               >
                 <div

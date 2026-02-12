@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { AlertCircle, Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
@@ -168,7 +168,7 @@ export function TodaySchedule() {
             <CardDescription className="mt-1">{formattedDate}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/${locale}/schedule` as any}>{t("viewAll")}</Link>
+            <Link href="/schedule">{t("viewAll")}</Link>
           </Button>
         </div>
       </CardHeader>
@@ -188,7 +188,7 @@ export function TodaySchedule() {
               {appointments.map((appointment: Appointment) => (
                 <Link
                   key={appointment.id}
-                  href={`/${locale}/schedule/${appointment.id}` as any}
+                  href={`/schedule/${appointment.id}`}
                   className={cn(
                     "block rounded-lg border border-l-4 bg-card p-3 transition-colors hover:bg-accent",
                     getTypeColor(appointment.type)

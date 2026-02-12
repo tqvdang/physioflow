@@ -8,8 +8,9 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -106,7 +107,7 @@ export default function PatientProtocolPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+            onClick={() => router.push(`/patients/${patientId}`)}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

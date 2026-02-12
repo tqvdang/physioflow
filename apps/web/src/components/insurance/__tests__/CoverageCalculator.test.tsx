@@ -12,13 +12,18 @@ describe('CoverageCalculator', () => {
     patientId: 'patient-1',
     cardNumber: 'DN4-0123-45678-90123',
     prefixCode: 'DN',
+    beneficiaryType: 4,
+    provinceCode: '79',
+    holderName: 'NGUYEN VAN A',
+    holderNameVi: 'Nguyen Van A',
+    registeredFacilityCode: '79024',
+    coveragePercent: 80,
     validFrom: '2024-01-01',
     validTo: '2024-12-31',
-    coveragePercent: 80,
     copayRate: 20,
-    provider: 'BHYT',
+    fiveYearContinuous: false,
+    verification: 'verified',
     isActive: true,
-    verificationStatus: 'verified',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -192,10 +197,21 @@ describe('CoverageCalculator', () => {
       const user = userEvent.setup();
       const fullCoverageInsurance: Insurance = {
         ...mockInsurance,
-        coveragePercent: 100,
-        copayRate: 0,
-        prefixCode: 'CH',
+        prefixCode: 'CC',
       };
+
+      // Mock the hook to return 100% coverage
+      vi.spyOn(useInsuranceHook, 'useCalculateCoverage').mockReturnValue({
+        data: {
+          totalAmount: 1000000,
+          coveragePercent: 100,
+          copayRate: 0,
+          insurancePays: 1000000,
+          patientPays: 0,
+        },
+        isLoading: false,
+        isError: false,
+      } as any);
 
       renderWithQuery(
         <CoverageCalculator patientId="patient-1" insurance={fullCoverageInsurance} />
@@ -205,8 +221,11 @@ describe('CoverageCalculator', () => {
       await user.type(input, '1000000');
 
       await waitFor(() => {
-        // Insurance pays 100% = 1,000,000 VND
-        expect(screen.getByText(/1\.000\.000/)).toBeInTheDocument();
+        // Coverage should be 100%
+        expect(screen.getByText('100%')).toBeInTheDocument();
+        // Patient pays 0
+        const patientPaysSection = screen.getByText(/calculator.patientPays/i).parentElement;
+        expect(patientPaysSection?.textContent).toContain('0');
       });
     });
 

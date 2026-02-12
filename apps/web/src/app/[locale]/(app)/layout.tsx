@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/auth-context";

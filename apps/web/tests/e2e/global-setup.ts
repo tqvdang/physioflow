@@ -33,10 +33,10 @@ async function globalSetup(config: FullConfig) {
       console.log('Logging in via Keycloak...');
 
       // Fill in Keycloak login form
-      // All test users have password "password" (see CLAUDE.md and Makefile)
+      // All test users have password "Therapist@123" (see CLAUDE.md and Makefile)
       console.log('Logging in as therapist1...');
       await page.fill('#username', 'therapist1');
-      await page.fill('#password', 'password');
+      await page.fill('#password', 'Therapist@123');
       await page.click('#kc-login');
 
       // Wait for redirect back to app (may go to /dashboard or /vi/*)

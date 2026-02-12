@@ -1,7 +1,5 @@
 import { test as base, expect, Page } from '@playwright/test';
 
-const _KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:7014';
-
 /**
  * Test user credentials
  * Note: Default password for all test users is "password" (see Makefile urls target)

@@ -6,8 +6,9 @@
  */
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ function transformToFormValues(patient: ApiPatient): Partial<PatientFormValues> 
 export default function EditPatientPage() {
   const params = useParams();
   const router = useRouter();
-  const locale = (params.locale as string) ?? "vi";
+  const locale = useLocale();
   const patientId = params.id as string;
   const t = useTranslations();
 
@@ -134,7 +135,7 @@ export default function EditPatientPage() {
       await api.put(`/v1/patients/${patientId}`, apiData);
 
       // Redirect to patient detail page
-      router.push(`/${locale}/patients/${patientId}`);
+      router.push(`/patients/${patientId}`);
     } catch (err) {
       console.error("Failed to update patient:", err);
       setError(t("common.error"));
@@ -143,7 +144,7 @@ export default function EditPatientPage() {
   };
 
   const handleCancel = () => {
-    router.push(`/${locale}/patients/${patientId}`);
+    router.push(`/patients/${patientId}`);
   };
 
   // Loading state
@@ -161,7 +162,7 @@ export default function EditPatientPage() {
         <p className="text-muted-foreground mb-6">
           {t("patientForm.notFoundDescription")}
         </p>
-        <Button onClick={() => router.push(`/${locale}/patients`)}>
+        <Button onClick={() => router.push("/patients")}>
           {t("patientForm.backToList")}
         </Button>
       </div>
@@ -177,7 +178,7 @@ export default function EditPatientPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          onClick={() => router.push(`/${locale}/patients/${patientId}`)}
+          onClick={() => router.push(`/patients/${patientId}`)}
           className="mb-4 -ml-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

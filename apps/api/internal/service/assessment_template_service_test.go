@@ -78,7 +78,7 @@ func sampleTemplate() *model.AssessmentTemplate {
 		NameVi:    "Danh gia Dau lung duoi",
 		Condition: "lower_back_pain",
 		Category:  model.TemplateCategoryMusculoskeletal,
-		ChecklistItems: []model.ChecklistItem{
+		ChecklistItems: []model.AssessmentChecklistItem{
 			{
 				Item:     "Posture Assessment",
 				ItemVi:   "Danh gia tu the",

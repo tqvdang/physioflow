@@ -209,8 +209,10 @@
     "filter": {
       "allTherapists": "Tất cả chuyên viên",
       "status": "Trạng thái",
-      "type": "Loại"
+      "type": "Loại",
+      "label": "Lọc lịch hẹn"
     },
+    "refresh": "Làm mới lịch",
     "status": {
       "scheduled": "Đã lên lịch",
       "confirmed": "Đã xác nhận",
@@ -333,7 +335,8 @@
     "actions": {
       "view": "Xem chi tiết",
       "edit": "Chỉnh sửa",
-      "startSession": "Bắt đầu buổi tập"
+      "startSession": "Bắt đầu buổi tập",
+      "more": "Thao tác khác"
     },
     "empty": "Không tìm thấy bệnh nhân nào",
     "error": "Không thể tải danh sách bệnh nhân",
@@ -350,8 +353,14 @@
       "category": "Danh mục",
       "difficulty": "Độ khó",
       "muscleGroup": "Nhóm cơ",
-      "clear": "Xóa bộ lọc"
+      "clear": "Xóa bộ lọc",
+      "removeSearch": "Xóa bộ lọc tìm kiếm",
+      "removeCategory": "Xóa bộ lọc danh mục",
+      "removeDifficulty": "Xóa bộ lọc độ khó"
     },
+    "viewMode": "Chế độ xem",
+    "viewGrid": "Xem dạng lưới",
+    "viewList": "Xem dạng danh sách",
     "categories": {
       "stretching": "Kéo giãn",
       "strengthening": "Tăng cường sức mạnh",
@@ -576,10 +585,14 @@
     "medicalAlerts": {
       "title": "Cảnh báo y tế",
       "placeholder": "Nhập cảnh báo y tế (dị ứng, bệnh lý, v.v.)",
-      "add": "Thêm cảnh báo"
+      "add": "Thêm cảnh báo",
+      "inputLabel": "Cảnh báo y tế mới",
+      "addButton": "Thêm cảnh báo y tế",
+      "removeAlert": "Xóa cảnh báo"
     },
     "notes": {
       "title": "Ghi chú",
+      "label": "Ghi chú bệnh nhân",
       "placeholder": "Ghi chú thêm về bệnh nhân..."
     },
     "validation": {

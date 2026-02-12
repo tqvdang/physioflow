@@ -468,11 +468,4 @@ func TestGetPatientProtocols(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
-// Helper functions
-func stringPtr(s string) *string {
-	return &s
-}
-
-func intPtr(i int) *int {
-	return &i
-}
+// Helper functions for protocol tests

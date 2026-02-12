@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { login, isAuthenticated, getAndClearRedirectPath } from "@/lib/auth";
 
 /**
@@ -11,20 +12,33 @@ import { login, isAuthenticated, getAndClearRedirectPath } from "@/lib/auth";
  */
 export default function LoginPage() {
   const t = useTranslations("auth");
+  const locale = useLocale();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Get redirect path from URL params
-  const redirectPath = searchParams.get("redirect") ?? "/";
+  const redirectPath = searchParams.get("redirect") ?? "/dashboard";
 
   // Check if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
       const storedRedirect = getAndClearRedirectPath();
-      window.location.href = storedRedirect ?? redirectPath;
+      let target = storedRedirect ?? redirectPath;
+      // Strip locale prefix if present to avoid double-prefixing
+      const localePrefix = `/${locale}/`;
+      if (target.startsWith(localePrefix)) {
+        target = target.slice(localePrefix.length - 1);
+      } else if (target === `/${locale}`) {
+        target = "/dashboard";
+      }
+      if (target === "/" || target === "") {
+        target = "/dashboard";
+      }
+      router.replace(target);
     }
-  }, [redirectPath]);
+  }, [redirectPath, locale, router]);
 
   // Handle login button click
   const handleLogin = async () => {

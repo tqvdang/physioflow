@@ -33,19 +33,9 @@ func IsValidTemplateCategory(c string) bool {
 	return false
 }
 
-// ChecklistItemType represents the type of input for a checklist item.
-type ChecklistItemType string
-
-const (
-	ChecklistItemTypeSelect   ChecklistItemType = "select"
-	ChecklistItemTypeRadio    ChecklistItemType = "radio"
-	ChecklistItemTypeNumber   ChecklistItemType = "number"
-	ChecklistItemTypeText     ChecklistItemType = "text"
-	ChecklistItemTypeCheckbox ChecklistItemType = "checkbox"
-)
-
-// ChecklistItem represents a single item within an assessment template.
-type ChecklistItem struct {
+// AssessmentChecklistItem represents a single item within an assessment template.
+// This is a simpler version compared to the full ChecklistItem in checklist.go.
+type AssessmentChecklistItem struct {
 	Item      string   `json:"item"`
 	ItemVi    string   `json:"item_vi"`
 	Type      string   `json:"type"`
@@ -66,7 +56,7 @@ type AssessmentTemplate struct {
 	Category       TemplateCategory `json:"category" db:"category"`
 	Description    string           `json:"description,omitempty" db:"description"`
 	DescriptionVi  string           `json:"description_vi,omitempty" db:"description_vi"`
-	ChecklistItems []ChecklistItem  `json:"checklist_items" db:"-"`
+	ChecklistItems []AssessmentChecklistItem `json:"checklist_items" db:"-"`
 	ChecklistJSON  json.RawMessage  `json:"-" db:"checklist_items"`
 	IsActive       bool             `json:"is_active" db:"is_active"`
 	CreatedAt      time.Time        `json:"created_at" db:"created_at"`
